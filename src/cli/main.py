@@ -213,14 +213,66 @@ def calc_led_resistor(
         typer.echo(f"  - {a}")
 
 
-# ── Agent placeholder ───────────────────────────────────────────────────
+# ── Agent sub-commands ──────────────────────────────────────────────────
 
-@app.command("agent")
-def run_agent(prompt: str) -> None:
-    """[NOT IMPLEMENTED] Start the AI orchestration pipeline."""
-    typer.echo("[NOT IMPLEMENTED] The AI agent requires a configured ModelProvider.")
-    typer.echo(f"Received prompt: '{prompt}'")
-    typer.echo("Use 'design validate', 'component', or 'calc' commands for deterministic operations.")
+import time
+from ai.provider_openai import RESTOpenAIProvider
+from ai.provider import MockModelProvider
+from ai.orchestrator import Orchestrator
+
+agent_app = typer.Typer(help="AI orchestration loop", no_args_is_help=True)
+app.add_typer(agent_app, name="agent")
+
+
+@agent_app.command("run")
+def run_agent(
+    prompt: str,
+    model: str = typer.Option("gpt-4o-mini", "--model", "-m", help="Model name"),
+    mock: bool = typer.Option(False, "--mock", help="Use offline MockModelProvider"),
+    max_repair_attempts: int = typer.Option(3, "--max-repair", help="Maximum repair attempts"),
+) -> None:
+    """Run the complete AI orchestration pipeline (prompt -> proposal -> validate -> repair)."""
+    typer.echo(f"Initializing orchestrator (model={model}, mock={mock})")
+    
+    if mock:
+        provider = MockModelProvider()
+        # Fallback empty design for mock
+        from core.models import DesignProject
+        provider.set_structured_response("smart parking", DesignProject(project_id="mock_project", name="Mock", components=[], nets=[]))
+    else:
+        provider = RESTOpenAIProvider(model_name=model)
+        
+    orchestrator = Orchestrator(provider, max_repair_attempts=max_repair_attempts)
+    
+    typer.echo(f"Processing request: '{prompt}'")
+    
+    try:
+        final_design = orchestrator.run(prompt)
+    except Exception as e:
+        typer.echo(f"Agent failed with error: {str(e)}")
+        final_design = None
+        
+    typer.echo(f"\nFinal State: {orchestrator.state.value}")
+    if final_design:
+        typer.echo(f"Resulting Design Project ID: {final_design.project_id}")
+        typer.echo(f"Valid Components: {len(final_design.components)}")
+        typer.echo(f"Valid Nets: {len(final_design.nets)}")
+    else:
+        typer.echo("No valid design produced.")
+        
+    # Save trace
+    timestamp = int(time.time())
+    run_dir = Path(f"runs/{timestamp}")
+    run_dir.mkdir(parents=True, exist_ok=True)
+    trace_path = run_dir / "trace.json"
+    
+    with open(trace_path, "w", encoding="utf-8") as f:
+        json.dump(orchestrator.traces, f, indent=2)
+        
+    typer.echo(f"\nSaved trace to {trace_path}")
+    
+    if orchestrator.state != "COMPLETED":
+        raise typer.Exit(code=1)
 
 
 if __name__ == "__main__":
