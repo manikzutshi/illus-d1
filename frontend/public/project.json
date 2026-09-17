@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "smart-parking-mvp",
+  "name": "Smart Parking System",
+  "description": "ESP32-based smart parking system using HC-SR04 ultrasonic sensor and LED indicator. Includes resistor voltage divider for 5V-to-3.3V level shifting on the ECHO line.",
+  "curriculum_context": {
+    "module": "Embedded Systems",
+    "concept": "Sensor Integration",
+    "competency_level": "BEGINNER"
+  },
+  "components": [
+    {
+      "instance_id": "u1",
+      "component_type": "board:esp32-devkit-v1",
+      "parameters": {},
+      "metadata": {"role": "main_controller"}
+    },
+    {
+      "instance_id": "s1",
+      "component_type": "sensor:hc-sr04",
+      "parameters": {},
+      "metadata": {"role": "distance_sensor"}
+    },
+    {
+      "instance_id": "d1",
+      "component_type": "passive:led-5mm",
+      "parameters": {"color": "red"},
+      "metadata": {"role": "occupancy_indicator"}
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {"resistance": "330"},
+      "metadata": {"role": "led_current_limiter", "calculation": "R=(3.3-2.0)/0.01=130, using 330 for safety"}
+    },
+    {
+      "instance_id": "r_div_top",
+      "component_type": "passive:resistor-tht",
+      "parameters": {"resistance": "1000"},
+      "metadata": {"role": "echo_voltage_divider_top", "note": "R1 in voltage divider: Vout = 5V * R2/(R1+R2) = 5*2000/3000 = 3.33V"}
+    },
+    {
+      "instance_id": "r_div_bot",
+      "component_type": "passive:resistor-tht",
+      "parameters": {"resistance": "2000"},
+      "metadata": {"role": "echo_voltage_divider_bottom", "note": "R2 in voltage divider, connected to GND"}
+    },
+    {
+      "instance_id": "pwr1",
+      "component_type": "primitive:power-rail",
+      "parameters": {"voltage": "5"},
+      "metadata": {}
+    },
+    {
+      "instance_id": "gnd1",
+      "component_type": "primitive:ground-rail",
+      "parameters": {},
+      "metadata": {}
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "n_power",
+      "connections": [
+        {"instance_id": "pwr1", "pin_id": "VCC"},
+        {"instance_id": "u1", "pin_id": "VIN"},
+        {"instance_id": "s1", "pin_id": "VCC"}
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "n_ground",
+      "connections": [
+        {"instance_id": "gnd1", "pin_id": "GND"},
+        {"instance_id": "u1", "pin_id": "GND1"},
+        {"instance_id": "s1", "pin_id": "GND"},
+        {"instance_id": "d1", "pin_id": "CATHODE"},
+        {"instance_id": "r_div_bot", "pin_id": "PIN2"}
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "n_trigger",
+      "connections": [
+        {"instance_id": "u1", "pin_id": "GPIO5"},
+        {"instance_id": "s1", "pin_id": "TRIG"}
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "n_echo_raw",
+      "connections": [
+        {"instance_id": "s1", "pin_id": "ECHO"},
+        {"instance_id": "r_div_top", "pin_id": "PIN1"}
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "n_echo_divided",
+      "connections": [
+        {"instance_id": "r_div_top", "pin_id": "PIN2"},
+        {"instance_id": "r_div_bot", "pin_id": "PIN1"},
+        {"instance_id": "u1", "pin_id": "GPIO18"}
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "n_led_drive",
+      "connections": [
+        {"instance_id": "u1", "pin_id": "GPIO19"},
+        {"instance_id": "r1", "pin_id": "PIN1"}
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "n_led_anode",
+      "connections": [
+        {"instance_id": "r1", "pin_id": "PIN2"},
+        {"instance_id": "d1", "pin_id": "ANODE"}
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "simulation": {
+    "target": "wokwi",
+    "parameters": {}
+  },
+  "metadata": {
+    "sensor_decision": "HC-SR04 selected per ADR-004. JSN-SR04T from Tinkered reference is a waterproof variant but HC-SR04 is the canonical beginner component.",
+    "level_shifting": "Resistor voltage divider (1kΩ + 2kΩ) reduces ECHO 5V output to ~3.33V safe for ESP32 GPIO (max 3.6V).",
+    "led_calculation": "R = (3.3V - 2.0V) / 10mA = 130Ω. Using 330Ω for safety (~3.9mA)."
+  }
+}

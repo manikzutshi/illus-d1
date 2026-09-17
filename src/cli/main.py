@@ -298,3 +298,49 @@ def run_agent(
 
 if __name__ == "__main__":
     app()
+import shutil
+import subprocess
+import os
+
+render_app = typer.Typer(help="Render DesignProjects in browser")
+# We just need to register this to the main app, which we will do in src/cli/main.py
+
+@render_app.command("web")
+def render_web(
+    project_file: Path = typer.Argument(
+        ...,
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        help="Path to the DesignProject JSON file"
+    )
+) -> None:
+    """Launch the browser-based visualization for a given DesignProject."""
+    frontend_dir = Path(__file__).parent.parent.parent / "frontend"
+    public_dir = frontend_dir / "public"
+    public_dir.mkdir(exist_ok=True)
+    
+    dest = public_dir / "project.json"
+    shutil.copy(project_file, dest)
+    typer.echo(f"Exported {project_file} to frontend.")
+    
+    typer.echo("Starting frontend development server...")
+    try:
+        subprocess.run(["npm.cmd" if os.name == "nt" else "npm", "run", "dev"], cwd=str(frontend_dir), check=True)
+    except KeyboardInterrupt:
+        typer.echo("\nServer stopped.")
+    except Exception as e:
+        typer.echo(f"Failed to start frontend: {e}", err=True)
+
+@render_app.command("export")
+def render_export(
+    project_file: Path = typer.Argument(..., exists=True),
+    out_dir: Path = typer.Option(Path("frontend/public"), "--out", help="Output directory")
+) -> None:
+    """Export the DesignProject JSON for the frontend to consume statically."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    dest = out_dir / "project.json"
+    shutil.copy(project_file, dest)
+    typer.echo(f"Exported {project_file} to {dest}.")
+
+app.add_typer(render_app, name='render')
