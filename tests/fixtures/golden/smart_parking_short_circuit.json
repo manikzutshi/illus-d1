@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "smart-parking-short-circuit",
+  "name": "Smart Parking (Short Circuit)",
+  "description": "Invalid design: VCC and GND directly connected on the same net with no load.",
+  "components": [
+    {"instance_id": "u1", "component_type": "board:esp32-devkit-v1", "parameters": {}},
+    {"instance_id": "pwr1", "component_type": "primitive:power-rail", "parameters": {"voltage": "5"}},
+    {"instance_id": "gnd1", "component_type": "primitive:ground-rail", "parameters": {}}
+  ],
+  "nets": [
+    {
+      "net_id": "n_short",
+      "connections": [
+        {"instance_id": "pwr1", "pin_id": "VCC"},
+        {"instance_id": "gnd1", "pin_id": "GND"}
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "n_board_pwr",
+      "connections": [
+        {"instance_id": "pwr1", "pin_id": "VCC"},
+        {"instance_id": "u1", "pin_id": "VIN"}
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "n_board_gnd",
+      "connections": [
+        {"instance_id": "gnd1", "pin_id": "GND"},
+        {"instance_id": "u1", "pin_id": "GND1"}
+      ],
+      "net_type": "ground"
+    }
+  ]
+}

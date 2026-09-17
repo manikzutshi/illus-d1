@@ -20,6 +20,8 @@ class PinDefinition(BaseModel):
     name: str = Field(..., description="Human readable name of the pin")
     direction: PinDirection = Field(..., description="Electrical direction of the pin")
     electrical_type: Optional[str] = Field(default=None, description="Electrical characteristics (e.g. '3.3V_LOGIC', '5V_TOLERANT')")
+    max_voltage: Optional[float] = Field(default=None, description="Maximum voltage this pin can tolerate (for inputs) or output (for outputs), in volts")
+    min_voltage: Optional[float] = Field(default=None, description="Minimum voltage this pin can output (for outputs), in volts. For inputs, the minimum logic-high threshold.")
     description: str = Field(default="", description="Detailed description of the pin's function")
 
 class ComponentType(BaseModel):

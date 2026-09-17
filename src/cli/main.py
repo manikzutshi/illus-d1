@@ -198,14 +198,15 @@ def calc_led_resistor(
         raise typer.Exit(code=1)
 
     typer.echo(f"\nLED Resistor Calculation")
+    typer.echo(f"  Formula:              R = (V_supply - V_forward) / I_target")
     typer.echo(f"  Supply voltage:       {result.supply_voltage} V")
     typer.echo(f"  LED forward voltage:  {result.led_forward_voltage} V")
     typer.echo(f"  Target current:       {result.target_current_ma} mA")
     typer.echo(f"  Calculated R:         {result.calculated_resistance} Ω")
     if result.nearest_standard_value:
-        typer.echo(f"  Nearest E24 value:    {result.nearest_standard_value} Ω")
+        typer.echo(f"  Selected E24 value:   {result.nearest_standard_value} Ω")
     if result.actual_current_ma:
-        typer.echo(f"  Actual current (E24): {result.actual_current_ma} mA")
+        typer.echo(f"  Predicted current:    {result.actual_current_ma} mA")
     typer.echo(f"  Power dissipation:    {result.power_dissipation_mw} mW")
     typer.echo(f"\nAssumptions:")
     for a in result.assumptions:

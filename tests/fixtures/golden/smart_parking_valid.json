@@ -2,7 +2,7 @@
   "schema_version": "0.2.0",
   "project_id": "smart-parking-mvp",
   "name": "Smart Parking System",
-  "description": "ESP32-based smart parking system using ultrasonic sensor and LED indicator. When a vehicle is detected within range, the LED turns on.",
+  "description": "ESP32-based smart parking system using HC-SR04 ultrasonic sensor and LED indicator. Includes resistor voltage divider for 5V-to-3.3V level shifting on the ECHO line.",
   "curriculum_context": {
     "module": "Embedded Systems",
     "concept": "Sensor Integration",
@@ -31,7 +31,19 @@
       "instance_id": "r1",
       "component_type": "passive:resistor-tht",
       "parameters": {"resistance": "330"},
-      "metadata": {"role": "led_current_limiter"}
+      "metadata": {"role": "led_current_limiter", "calculation": "R=(3.3-2.0)/0.01=130, using 330 for safety"}
+    },
+    {
+      "instance_id": "r_div_top",
+      "component_type": "passive:resistor-tht",
+      "parameters": {"resistance": "1000"},
+      "metadata": {"role": "echo_voltage_divider_top", "note": "R1 in voltage divider: Vout = 5V * R2/(R1+R2) = 5*2000/3000 = 3.33V"}
+    },
+    {
+      "instance_id": "r_div_bot",
+      "component_type": "passive:resistor-tht",
+      "parameters": {"resistance": "2000"},
+      "metadata": {"role": "echo_voltage_divider_bottom", "note": "R2 in voltage divider, connected to GND"}
     },
     {
       "instance_id": "pwr1",
@@ -62,7 +74,8 @@
         {"instance_id": "gnd1", "pin_id": "GND"},
         {"instance_id": "u1", "pin_id": "GND1"},
         {"instance_id": "s1", "pin_id": "GND"},
-        {"instance_id": "d1", "pin_id": "CATHODE"}
+        {"instance_id": "d1", "pin_id": "CATHODE"},
+        {"instance_id": "r_div_bot", "pin_id": "PIN2"}
       ],
       "net_type": "ground"
     },
@@ -75,10 +88,19 @@
       "net_type": "signal"
     },
     {
-      "net_id": "n_echo",
+      "net_id": "n_echo_raw",
       "connections": [
-        {"instance_id": "u1", "pin_id": "GPIO18"},
-        {"instance_id": "s1", "pin_id": "ECHO"}
+        {"instance_id": "s1", "pin_id": "ECHO"},
+        {"instance_id": "r_div_top", "pin_id": "PIN1"}
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "n_echo_divided",
+      "connections": [
+        {"instance_id": "r_div_top", "pin_id": "PIN2"},
+        {"instance_id": "r_div_bot", "pin_id": "PIN1"},
+        {"instance_id": "u1", "pin_id": "GPIO18"}
       ],
       "net_type": "signal"
     },
@@ -104,7 +126,8 @@
     "parameters": {}
   },
   "metadata": {
-    "engineering_notes": "HC-SR04 ECHO pin outputs 5V but is connected directly to ESP32 GPIO18 (3.3V tolerant). This is a known concern in hobbyist circuits. A voltage divider is recommended for production use.",
-    "resistor_calculation": "R = (3.3V - 2.0V) / 10mA = 130 ohm. Using 330 ohm for safety (approximately 3.9mA). Chosen as explicit design parameter."
+    "sensor_decision": "HC-SR04 selected per ADR-004. JSN-SR04T from Tinkered reference is a waterproof variant but HC-SR04 is the canonical beginner component.",
+    "level_shifting": "Resistor voltage divider (1kΩ + 2kΩ) reduces ECHO 5V output to ~3.33V safe for ESP32 GPIO (max 3.6V).",
+    "led_calculation": "R = (3.3V - 2.0V) / 10mA = 130Ω. Using 330Ω for safety (~3.9mA)."
   }
 }

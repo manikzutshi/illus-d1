@@ -65,6 +65,7 @@ $$\text{ValidationResult} = f(\text{DesignProject}, \text{ComponentRegistry})$$
 - `ValidationResult` is **deliberately NOT stored** inside [`DesignProject`](file:///Y:/illus-d1/illustration-engine/src/core/models.py#L82-L92).
 - Storing validation results inside the project schema would create stale state when component definitions or rules change, and would allow an untrusted AI proposal to assert `{"status": "PASS"}` without running the validator.
 - Keeping validation as external derived state ensures validation is always fresh, reproducible, and verifiable.
+- **Validation limits:** Validation is strictly limited by the electrical metadata in the Component Registry. If metadata (like `max_voltage`) is missing, the validator returns a `NOT_CHECKABLE` warning rather than silently passing, ensuring false positives are prevented.
 
 ## Consequences
 

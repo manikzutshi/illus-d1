@@ -62,6 +62,8 @@ Defines an electrical or logical terminal on a component.
 | `name` | `str` | *Required* | Human-readable pin name. |
 | `direction` | [`PinDirection`](file:///Y:/illus-d1/illustration-engine/src/core/enums.py#L8-L14) | *Required* | Electrical direction: `INPUT`, `OUTPUT`, `BIDIRECTIONAL`, `POWER`, `GROUND`, or `PASSIVE`. |
 | `electrical_type` | `Optional[str]` | `None` | Voltage or logic level specification (e.g., `"3.3V_LOGIC"`, `"5V"`, `"5V_TOLERANT"`). |
+| `max_voltage` | `Optional[float]` | `None` | Maximum voltage this pin can tolerate (input) or output (output). |
+| `min_voltage` | `Optional[float]` | `None` | Minimum voltage this pin can output (output) or requires for logic-high (input). |
 | `description` | `str` | `""` | Functional description of the pin. |
 
 ---

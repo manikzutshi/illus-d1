@@ -27,6 +27,7 @@ class ValidationStatus(str, Enum):
     PASS = "PASS"
     FAIL = "FAIL"
     UNVALIDATED = "UNVALIDATED"
+    NOT_CHECKABLE = "NOT_CHECKABLE"
 
 class ValidationSeverity(str, Enum):
     ERROR = "ERROR"

@@ -1,3 +1,7 @@
+# Component Registry — Phase 2.5
+# Machine-readable component type definitions with voltage metadata.
+# Sensor decision (ADR-004): HC-SR04 is the canonical Phase-1 ultrasonic sensor.
+
 components:
   "board:esp32-devkit-v1":
     name: "ESP32-DevKitC V1"
@@ -10,105 +14,131 @@ components:
         name: "VIN"
         direction: POWER
         electrical_type: "5V"
-        description: "5V input"
+        max_voltage: 12.0
+        description: "5V input (regulated down to 3.3V on-board)"
       - pin_id: "3V3"
         name: "3V3"
         direction: POWER
         electrical_type: "3.3V"
-        description: "3.3V output"
+        max_voltage: 3.3
+        description: "3.3V regulated output"
       - pin_id: "GND1"
         name: "GND1"
         direction: GROUND
+        max_voltage: 0.0
       - pin_id: "GND2"
         name: "GND2"
         direction: GROUND
+        max_voltage: 0.0
       - pin_id: "GND3"
         name: "GND3"
         direction: GROUND
+        max_voltage: 0.0
       - pin_id: "GPIO2"
         name: "GPIO2"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO4"
         name: "GPIO4"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO5"
         name: "GPIO5"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO12"
         name: "GPIO12"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO13"
         name: "GPIO13"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO14"
         name: "GPIO14"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO15"
         name: "GPIO15"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO16"
         name: "GPIO16"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO17"
         name: "GPIO17"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO18"
         name: "GPIO18"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO19"
         name: "GPIO19"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO21"
         name: "GPIO21"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO22"
         name: "GPIO22"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO23"
         name: "GPIO23"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO25"
         name: "GPIO25"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO26"
         name: "GPIO26"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO27"
         name: "GPIO27"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO32"
         name: "GPIO32"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "GPIO33"
         name: "GPIO33"
         direction: BIDIRECTIONAL
         electrical_type: "3.3V_LOGIC"
+        max_voltage: 3.6
       - pin_id: "EN"
         name: "EN"
         direction: INPUT
+        max_voltage: 3.6
         description: "active-high enable"
     electrical_properties:
       operating_voltage: "3.3V"
       input_voltage_max: "12V"
       gpio_max_current: "40mA"
+      gpio_abs_max_voltage: "3.6V"
       wifi: "802.11 b/g/n"
       bluetooth: "BLE 4.2"
     configurable_parameters: {}
@@ -123,28 +153,36 @@ components:
     aliases: ["hc-sr04", "ultrasonic"]
     category: SENSOR
     object_type: PHYSICAL
-    description: "HC-SR04 Ultrasonic Distance Sensor"
+    description: "HC-SR04 Ultrasonic Distance Sensor. ECHO pin outputs 5V logic — requires level shifting when connecting to 3.3V microcontrollers."
     pins:
       - pin_id: "VCC"
         name: "VCC"
         direction: POWER
-        description: "5V input"
+        electrical_type: "5V"
+        max_voltage: 5.0
+        description: "5V power input"
       - pin_id: "TRIG"
         name: "TRIG"
         direction: INPUT
         electrical_type: "5V_TOLERANT"
+        max_voltage: 5.0
+        description: "Trigger input. Accepts 3.3V logic high."
       - pin_id: "ECHO"
         name: "ECHO"
         direction: OUTPUT
         electrical_type: "5V"
-        description: "outputs 5V, ESP32 GPIOs are 3.3V only, but many people connect directly - known concern"
+        max_voltage: 5.0
+        min_voltage: 4.8
+        description: "Echo output. Outputs 5V pulse proportional to distance. REQUIRES level shifting for 3.3V MCUs."
       - pin_id: "GND"
         name: "GND"
         direction: GROUND
+        max_voltage: 0.0
     electrical_properties:
       operating_voltage: "5V"
       measuring_range: "2cm-400cm"
       trigger_pulse: "10us"
+      echo_output_voltage: "5V"
     configurable_parameters: {}
     curriculum_mapping: []
     competency_level: BEGINNER
@@ -240,6 +278,7 @@ components:
       - pin_id: "VCC"
         name: "VCC"
         direction: POWER
+        max_voltage: 5.0
     electrical_properties:
       voltage: "5V"
     configurable_parameters:
@@ -260,6 +299,7 @@ components:
       - pin_id: "GND"
         name: "GND"
         direction: GROUND
+        max_voltage: 0.0
     electrical_properties: {}
     configurable_parameters: {}
     curriculum_mapping: []
