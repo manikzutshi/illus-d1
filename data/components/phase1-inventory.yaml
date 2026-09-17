@@ -1,0 +1,198 @@
+# Phase 1 Provisional Component Inventory
+# NOTE: This is a draft for architectural bootstrapping.
+# Final taxonomy and properties will be reviewed with industry experts.
+
+components:
+  # ==========================================
+  # P0: Embedded Systems & Basic Physical Parts (Vertical Slice)
+  # ==========================================
+  esp32_dev:
+    name: "ESP32 Development Board"
+    object_type: "physical_microcontroller"
+    curriculum_mapping: ["module_embedded_basics", "smart_parking"]
+    intended_visualization: "3D GLB model of ESP32 NodeMCU"
+    simulation_requirement: "wokwi"
+    validation_status: "proposed"
+    notes: "Core controller for Phase 1 vertical slice."
+
+  breadboard_half:
+    name: "Half-size Breadboard"
+    object_type: "physical_board"
+    curriculum_mapping: ["module_electronics_101"]
+    intended_visualization: "3D GLB model with pin hole anchors"
+    simulation_requirement: "none"
+    validation_status: "proposed"
+
+  led_red:
+    name: "Red LED"
+    object_type: "physical_component"
+    curriculum_mapping: ["module_electronics_101"]
+    intended_visualization: "3D GLB model, color-tinted, emissive state"
+    simulation_requirement: "spice_or_wokwi"
+    validation_status: "proposed"
+
+  resistor:
+    name: "Resistor"
+    object_type: "physical_component"
+    curriculum_mapping: ["module_electronics_101"]
+    intended_visualization: "3D GLB model with dynamic color bands"
+    simulation_requirement: "spice_or_wokwi"
+    validation_status: "proposed"
+
+  push_button:
+    name: "Push Button (Tactile)"
+    object_type: "physical_component"
+    curriculum_mapping: ["module_electronics_101"]
+    intended_visualization: "3D GLB model with pressed state animation"
+    simulation_requirement: "spice_or_wokwi"
+    validation_status: "proposed"
+
+  ultrasonic_hcsr04:
+    name: "Ultrasonic Sensor (HC-SR04)"
+    object_type: "physical_sensor"
+    curriculum_mapping: ["module_embedded_sensors", "smart_parking"]
+    intended_visualization: "3D GLB model"
+    simulation_requirement: "wokwi"
+    validation_status: "proposed"
+
+  power_source:
+    name: "Power Supply"
+    object_type: "circuit_primitive"
+    curriculum_mapping: ["module_electronics_101"]
+    intended_visualization: "2D Schematic Symbol / 3D Power module"
+    simulation_requirement: "spice"
+    validation_status: "proposed"
+
+  ground_node:
+    name: "Ground"
+    object_type: "circuit_primitive"
+    curriculum_mapping: ["module_electronics_101"]
+    intended_visualization: "2D Schematic Symbol"
+    simulation_requirement: "spice_or_wokwi"
+    validation_status: "proposed"
+    
+  jumper_wire:
+    name: "Jumper Wire"
+    object_type: "routing_primitive"
+    curriculum_mapping: ["module_electronics_101"]
+    intended_visualization: "3D generated spline curve"
+    simulation_requirement: "netlist_connection"
+    validation_status: "proposed"
+
+  # ==========================================
+  # P1: Digital Design & RTL
+  # ==========================================
+  logic_gates:
+    name: "Digital Logic Gates (AND, OR, NOT)"
+    object_type: "digital_primitive"
+    curriculum_mapping: ["module_digital_logic"]
+    intended_visualization: "2D Schematic Symbols (ANSI/IEC)"
+    simulation_requirement: "verilator_or_icarus"
+    validation_status: "proposed"
+
+  mosfet_nmos:
+    name: "NMOS Transistor"
+    object_type: "semiconductor_primitive"
+    curriculum_mapping: ["module_vlsi_basics"]
+    intended_visualization: "2D Symbol / 3D Device Structure"
+    simulation_requirement: "spice"
+    validation_status: "proposed"
+    
+  mosfet_pmos:
+    name: "PMOS Transistor"
+    object_type: "semiconductor_primitive"
+    curriculum_mapping: ["module_vlsi_basics"]
+    intended_visualization: "2D Symbol / 3D Device Structure"
+    simulation_requirement: "spice"
+    validation_status: "proposed"
+
+  cmos_inverter:
+    name: "CMOS Inverter"
+    object_type: "rtl_object"
+    curriculum_mapping: ["module_vlsi_basics"]
+    intended_visualization: "2D Schematic / Standard Cell Layout"
+    simulation_requirement: "spice"
+    validation_status: "proposed"
+
+  flip_flop_d:
+    name: "D Flip-Flop"
+    object_type: "digital_primitive"
+    curriculum_mapping: ["module_sequential_logic"]
+    intended_visualization: "2D Schematic Symbol"
+    simulation_requirement: "verilator"
+    validation_status: "proposed"
+    
+  clock_signal:
+    name: "Clock Source"
+    object_type: "verification_object"
+    curriculum_mapping: ["module_sequential_logic"]
+    intended_visualization: "Waveform / 2D Symbol"
+    simulation_requirement: "testbench"
+    validation_status: "proposed"
+
+  reset_signal:
+    name: "Reset Source"
+    object_type: "verification_object"
+    curriculum_mapping: ["module_sequential_logic"]
+    intended_visualization: "Waveform / 2D Symbol"
+    simulation_requirement: "testbench"
+    validation_status: "proposed"
+
+  waveform_viewer:
+    name: "Waveform"
+    object_type: "visualization_primitive"
+    curriculum_mapping: ["module_sequential_logic"]
+    intended_visualization: "VCD Render (Timing Diagram)"
+    simulation_requirement: "none"
+    validation_status: "proposed"
+
+  fsm_controller:
+    name: "Finite State Machine"
+    object_type: "rtl_object"
+    curriculum_mapping: ["module_fsm_design"]
+    intended_visualization: "State Transition Diagram"
+    simulation_requirement: "verilator"
+    validation_status: "proposed"
+
+  # ==========================================
+  # P2: Advanced Concepts
+  # ==========================================
+  op_amp:
+    name: "Operational Amplifier"
+    object_type: "analog_primitive"
+    curriculum_mapping: ["module_analog_ic"]
+    intended_visualization: "2D Schematic Symbol"
+    simulation_requirement: "spice"
+    validation_status: "proposed"
+
+  sram_cell:
+    name: "6T SRAM Cell"
+    object_type: "rtl_object"
+    curriculum_mapping: ["module_memory_design"]
+    intended_visualization: "Transistor Schematic / Layout"
+    simulation_requirement: "spice_or_fastspice"
+    validation_status: "proposed"
+
+  axi_lite:
+    name: "AXI-Lite Interface"
+    object_type: "rtl_object"
+    curriculum_mapping: ["module_soc_design"]
+    intended_visualization: "Bus Block Diagram"
+    simulation_requirement: "verilator"
+    validation_status: "proposed"
+
+  async_fifo:
+    name: "Asynchronous FIFO"
+    object_type: "rtl_object"
+    curriculum_mapping: ["module_cdc"]
+    intended_visualization: "Block Diagram"
+    simulation_requirement: "verilator"
+    validation_status: "proposed"
+
+  chiplet_interposer:
+    name: "Chiplet Interposer"
+    object_type: "packaging_object"
+    curriculum_mapping: ["module_advanced_packaging"]
+    intended_visualization: "3D Cross-section"
+    simulation_requirement: "none"
+    validation_status: "proposed"

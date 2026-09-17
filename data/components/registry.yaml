@@ -1,0 +1,290 @@
+components:
+  "board:esp32-devkit-v1":
+    name: "ESP32-DevKitC V1"
+    aliases: ["esp32", "esp32-devkit"]
+    category: MICROCONTROLLER
+    object_type: PHYSICAL
+    description: "ESP32-DevKitC V1 (30-pin) development board"
+    pins:
+      - pin_id: "VIN"
+        name: "VIN"
+        direction: POWER
+        electrical_type: "5V"
+        description: "5V input"
+      - pin_id: "3V3"
+        name: "3V3"
+        direction: POWER
+        electrical_type: "3.3V"
+        description: "3.3V output"
+      - pin_id: "GND1"
+        name: "GND1"
+        direction: GROUND
+      - pin_id: "GND2"
+        name: "GND2"
+        direction: GROUND
+      - pin_id: "GND3"
+        name: "GND3"
+        direction: GROUND
+      - pin_id: "GPIO2"
+        name: "GPIO2"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO4"
+        name: "GPIO4"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO5"
+        name: "GPIO5"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO12"
+        name: "GPIO12"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO13"
+        name: "GPIO13"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO14"
+        name: "GPIO14"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO15"
+        name: "GPIO15"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO16"
+        name: "GPIO16"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO17"
+        name: "GPIO17"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO18"
+        name: "GPIO18"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO19"
+        name: "GPIO19"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO21"
+        name: "GPIO21"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO22"
+        name: "GPIO22"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO23"
+        name: "GPIO23"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO25"
+        name: "GPIO25"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO26"
+        name: "GPIO26"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO27"
+        name: "GPIO27"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO32"
+        name: "GPIO32"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "GPIO33"
+        name: "GPIO33"
+        direction: BIDIRECTIONAL
+        electrical_type: "3.3V_LOGIC"
+      - pin_id: "EN"
+        name: "EN"
+        direction: INPUT
+        description: "active-high enable"
+    electrical_properties:
+      operating_voltage: "3.3V"
+      input_voltage_max: "12V"
+      gpio_max_current: "40mA"
+      wifi: "802.11 b/g/n"
+      bluetooth: "BLE 4.2"
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: "community"
+    license: "unknown"
+    validation_status: "proposed"
+
+  "sensor:hc-sr04":
+    name: "HC-SR04 Ultrasonic Distance Sensor"
+    aliases: ["hc-sr04", "ultrasonic"]
+    category: SENSOR
+    object_type: PHYSICAL
+    description: "HC-SR04 Ultrasonic Distance Sensor"
+    pins:
+      - pin_id: "VCC"
+        name: "VCC"
+        direction: POWER
+        description: "5V input"
+      - pin_id: "TRIG"
+        name: "TRIG"
+        direction: INPUT
+        electrical_type: "5V_TOLERANT"
+      - pin_id: "ECHO"
+        name: "ECHO"
+        direction: OUTPUT
+        electrical_type: "5V"
+        description: "outputs 5V, ESP32 GPIOs are 3.3V only, but many people connect directly - known concern"
+      - pin_id: "GND"
+        name: "GND"
+        direction: GROUND
+    electrical_properties:
+      operating_voltage: "5V"
+      measuring_range: "2cm-400cm"
+      trigger_pulse: "10us"
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: "community"
+    license: "unknown"
+    validation_status: "proposed"
+
+  "passive:led-5mm":
+    name: "Generic 5mm LED"
+    aliases: ["led", "5mm-led"]
+    category: PASSIVE_COMPONENT
+    object_type: PHYSICAL
+    description: "Generic 5mm through-hole LED"
+    pins:
+      - pin_id: "ANODE"
+        name: "ANODE"
+        direction: PASSIVE
+      - pin_id: "CATHODE"
+        name: "CATHODE"
+        direction: PASSIVE
+    electrical_properties:
+      forward_voltage_typical: "2.0V"
+      forward_voltage_max: "2.4V"
+      max_forward_current: "20mA"
+      recommended_current: "10mA"
+    configurable_parameters:
+      color: "enum"
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: "community"
+    license: "unknown"
+    validation_status: "proposed"
+
+  "passive:resistor-tht":
+    name: "Generic Resistor THT"
+    aliases: ["resistor"]
+    category: PASSIVE_COMPONENT
+    object_type: PHYSICAL
+    description: "Generic through-hole resistor"
+    pins:
+      - pin_id: "PIN1"
+        name: "PIN1"
+        direction: PASSIVE
+      - pin_id: "PIN2"
+        name: "PIN2"
+        direction: PASSIVE
+    electrical_properties:
+      power_rating: "0.25W"
+    configurable_parameters:
+      resistance: "ohm"
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: "community"
+    license: "unknown"
+    validation_status: "proposed"
+
+  "passive:push-button-tactile":
+    name: "Tactile Push Button"
+    aliases: ["button", "push-button"]
+    category: PASSIVE_COMPONENT
+    object_type: PHYSICAL
+    description: "Tactile push button (4-pin, 2 connected pairs)"
+    pins:
+      - pin_id: "PIN1A"
+        name: "PIN1A"
+        direction: PASSIVE
+      - pin_id: "PIN1B"
+        name: "PIN1B"
+        direction: PASSIVE
+      - pin_id: "PIN2A"
+        name: "PIN2A"
+        direction: PASSIVE
+      - pin_id: "PIN2B"
+        name: "PIN2B"
+        direction: PASSIVE
+    electrical_properties:
+      max_voltage: "12V"
+      max_current: "50mA"
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: "community"
+    license: "unknown"
+    validation_status: "proposed"
+
+  "primitive:power-rail":
+    name: "Power Rail"
+    aliases: ["power", "vcc"]
+    category: POWER_SOURCE
+    object_type: CIRCUIT_PRIMITIVE
+    description: "Represents a power source rail"
+    pins:
+      - pin_id: "VCC"
+        name: "VCC"
+        direction: POWER
+    electrical_properties:
+      voltage: "5V"
+    configurable_parameters:
+      voltage: "V"
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: "community"
+    license: "unknown"
+    validation_status: "proposed"
+
+  "primitive:ground-rail":
+    name: "Ground Rail"
+    aliases: ["ground", "gnd"]
+    category: GROUND_NODE
+    object_type: CIRCUIT_PRIMITIVE
+    description: "Represents a ground node"
+    pins:
+      - pin_id: "GND"
+        name: "GND"
+        direction: GROUND
+    electrical_properties: {}
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: "community"
+    license: "unknown"
+    validation_status: "proposed"
+
+  "routing:jumper-wire":
+    name: "Jumper Wire"
+    aliases: ["wire", "jumper"]
+    category: ROUTING
+    object_type: CIRCUIT_PRIMITIVE
+    description: "Represents a jumper wire connection"
+    pins:
+      - pin_id: "PIN1"
+        name: "PIN1"
+        direction: PASSIVE
+      - pin_id: "PIN2"
+        name: "PIN2"
+        direction: PASSIVE
+    electrical_properties: {}
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: "community"
+    license: "unknown"
+    validation_status: "proposed"

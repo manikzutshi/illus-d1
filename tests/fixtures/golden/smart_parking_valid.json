@@ -1,0 +1,110 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "smart-parking-mvp",
+  "name": "Smart Parking System",
+  "description": "ESP32-based smart parking system using ultrasonic sensor and LED indicator. When a vehicle is detected within range, the LED turns on.",
+  "curriculum_context": {
+    "module": "Embedded Systems",
+    "concept": "Sensor Integration",
+    "competency_level": "BEGINNER"
+  },
+  "components": [
+    {
+      "instance_id": "u1",
+      "component_type": "board:esp32-devkit-v1",
+      "parameters": {},
+      "metadata": {"role": "main_controller"}
+    },
+    {
+      "instance_id": "s1",
+      "component_type": "sensor:hc-sr04",
+      "parameters": {},
+      "metadata": {"role": "distance_sensor"}
+    },
+    {
+      "instance_id": "d1",
+      "component_type": "passive:led-5mm",
+      "parameters": {"color": "red"},
+      "metadata": {"role": "occupancy_indicator"}
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {"resistance": "330"},
+      "metadata": {"role": "led_current_limiter"}
+    },
+    {
+      "instance_id": "pwr1",
+      "component_type": "primitive:power-rail",
+      "parameters": {"voltage": "5"},
+      "metadata": {}
+    },
+    {
+      "instance_id": "gnd1",
+      "component_type": "primitive:ground-rail",
+      "parameters": {},
+      "metadata": {}
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "n_power",
+      "connections": [
+        {"instance_id": "pwr1", "pin_id": "VCC"},
+        {"instance_id": "u1", "pin_id": "VIN"},
+        {"instance_id": "s1", "pin_id": "VCC"}
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "n_ground",
+      "connections": [
+        {"instance_id": "gnd1", "pin_id": "GND"},
+        {"instance_id": "u1", "pin_id": "GND1"},
+        {"instance_id": "s1", "pin_id": "GND"},
+        {"instance_id": "d1", "pin_id": "CATHODE"}
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "n_trigger",
+      "connections": [
+        {"instance_id": "u1", "pin_id": "GPIO5"},
+        {"instance_id": "s1", "pin_id": "TRIG"}
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "n_echo",
+      "connections": [
+        {"instance_id": "u1", "pin_id": "GPIO18"},
+        {"instance_id": "s1", "pin_id": "ECHO"}
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "n_led_drive",
+      "connections": [
+        {"instance_id": "u1", "pin_id": "GPIO19"},
+        {"instance_id": "r1", "pin_id": "PIN1"}
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "n_led_anode",
+      "connections": [
+        {"instance_id": "r1", "pin_id": "PIN2"},
+        {"instance_id": "d1", "pin_id": "ANODE"}
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "simulation": {
+    "target": "wokwi",
+    "parameters": {}
+  },
+  "metadata": {
+    "engineering_notes": "HC-SR04 ECHO pin outputs 5V but is connected directly to ESP32 GPIO18 (3.3V tolerant). This is a known concern in hobbyist circuits. A voltage divider is recommended for production use.",
+    "resistor_calculation": "R = (3.3V - 2.0V) / 10mA = 130 ohm. Using 330 ohm for safety (approximately 3.9mA). Chosen as explicit design parameter."
+  }
+}

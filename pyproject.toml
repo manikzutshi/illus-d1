@@ -1,0 +1,27 @@
+[project]
+name = "illustration-engine"
+version = "0.1.0"
+description = "Phase 1 - Educational Semiconductor Engineering Visualization Engine"
+authors = [
+    { name = "Engineering Team", email = "eng@example.com" }
+]
+dependencies = [
+    "typer>=0.9.0",
+    "pydantic>=2.4.0",
+    "pyyaml>=6.0.1",
+]
+requires-python = ">=3.11"
+
+[project.scripts]
+illustration-engine = "cli.main:app"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

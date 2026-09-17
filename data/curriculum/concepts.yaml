@@ -1,0 +1,88 @@
+concepts:
+  cmos_inverter:
+    name: "CMOS Inverter"
+    description: "Complementary MOS inverter using NMOS and PMOS transistors. Foundation of all CMOS digital logic."
+    prerequisites: ["mosfet_basics", "digital_logic"]
+    related_concepts: ["nand_gate", "nor_gate", "standard_cell"]
+    components: ["mosfet_nmos", "mosfet_pmos"]
+    competency_level: "INTERMEDIATE"
+    module: "VLSI Basics"
+    tools: ["ngspice", "magic_vlsi"]
+    standards: []
+
+  digital_logic_gate:
+    name: "Digital Logic Gate"
+    description: "Fundamental Boolean logic operations implemented as electronic gates (AND, OR, NOT, NAND, NOR, XOR)."
+    prerequisites: ["boolean_algebra"]
+    related_concepts: ["cmos_inverter", "truth_table", "timing_analysis"]
+    components: ["logic_gates"]
+    competency_level: "BEGINNER"
+    module: "Digital Logic"
+    tools: ["verilator", "icarus_verilog"]
+    standards: ["IEEE 1164"]
+
+  fsm_design:
+    name: "Finite State Machine"
+    description: "Sequential logic design using state diagrams, state tables, and HDL implementation (Mealy and Moore machines)."
+    prerequisites: ["digital_logic_gate", "flip_flop", "sequential_logic"]
+    related_concepts: ["state_encoding", "state_minimization"]
+    components: ["flip_flop_d", "clock_signal", "reset_signal"]
+    competency_level: "INTERMEDIATE"
+    module: "Sequential Logic"
+    tools: ["verilator"]
+    standards: []
+
+  rtl_design:
+    name: "Register Transfer Level Design"
+    description: "Describing digital hardware behavior using HDL at the register-transfer abstraction level."
+    prerequisites: ["digital_logic_gate", "fsm_design"]
+    related_concepts: ["synthesis", "timing_closure", "pipelining"]
+    components: []
+    competency_level: "INTERMEDIATE"
+    module: "RTL Design"
+    tools: ["verilator", "yosys"]
+    standards: ["IEEE 1364", "IEEE 1800"]
+
+  verification:
+    name: "Functional Verification"
+    description: "Systematic techniques for proving digital designs behave correctly, including simulation, formal verification, and UVM."
+    prerequisites: ["rtl_design"]
+    related_concepts: ["coverage", "assertions", "constrained_random"]
+    components: ["waveform_viewer"]
+    competency_level: "ADVANCED"
+    module: "Verification"
+    tools: ["verilator", "icarus_verilog"]
+    standards: ["IEEE 1800.2"]
+
+  timing_analysis:
+    name: "Static Timing Analysis"
+    description: "Analyzing timing paths in synchronous digital circuits to ensure setup and hold requirements are met."
+    prerequisites: ["rtl_design", "sequential_logic"]
+    related_concepts: ["clock_domain_crossing", "pipelining", "timing_closure"]
+    components: ["clock_signal"]
+    competency_level: "ADVANCED"
+    module: "Physical Design"
+    tools: ["opensta"]
+    standards: []
+
+  sensor_integration:
+    name: "Sensor Integration"
+    description: "Connecting and reading data from physical sensors using microcontrollers. Covers GPIO, ADC, I2C, SPI, and UART interfaces."
+    prerequisites: ["embedded_basics"]
+    related_concepts: ["gpio_programming", "adc_conversion", "i2c_protocol"]
+    components: ["esp32_dev", "ultrasonic_hcsr04"]
+    competency_level: "BEGINNER"
+    module: "Embedded Systems"
+    tools: ["wokwi", "platformio"]
+    standards: []
+
+  embedded_basics:
+    name: "Embedded Systems Basics"
+    description: "Introduction to microcontroller programming, GPIO, interrupts, and basic peripheral interfacing."
+    prerequisites: []
+    related_concepts: ["sensor_integration", "firmware_development"]
+    components: ["esp32_dev", "led_red", "push_button", "resistor"]
+    competency_level: "BEGINNER"
+    module: "Embedded Systems"
+    tools: ["wokwi", "platformio"]
+    standards: []

@@ -1,0 +1,52 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "smart-parking-no-ground",
+  "name": "Smart Parking (Missing Ground)",
+  "description": "Invalid design: no ground connection.",
+  "components": [
+    {"instance_id": "u1", "component_type": "board:esp32-devkit-v1", "parameters": {}},
+    {"instance_id": "s1", "component_type": "sensor:hc-sr04", "parameters": {}},
+    {"instance_id": "d1", "component_type": "passive:led-5mm", "parameters": {"color": "red"}},
+    {"instance_id": "r1", "component_type": "passive:resistor-tht", "parameters": {"resistance": "330"}},
+    {"instance_id": "pwr1", "component_type": "primitive:power-rail", "parameters": {"voltage": "5"}}
+  ],
+  "nets": [
+    {
+      "net_id": "n_power",
+      "connections": [
+        {"instance_id": "pwr1", "pin_id": "VCC"},
+        {"instance_id": "u1", "pin_id": "VIN"},
+        {"instance_id": "s1", "pin_id": "VCC"}
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "n_trigger",
+      "connections": [
+        {"instance_id": "u1", "pin_id": "GPIO5"},
+        {"instance_id": "s1", "pin_id": "TRIG"}
+      ]
+    },
+    {
+      "net_id": "n_echo",
+      "connections": [
+        {"instance_id": "u1", "pin_id": "GPIO18"},
+        {"instance_id": "s1", "pin_id": "ECHO"}
+      ]
+    },
+    {
+      "net_id": "n_led_drive",
+      "connections": [
+        {"instance_id": "u1", "pin_id": "GPIO19"},
+        {"instance_id": "r1", "pin_id": "PIN1"}
+      ]
+    },
+    {
+      "net_id": "n_led_anode",
+      "connections": [
+        {"instance_id": "r1", "pin_id": "PIN2"},
+        {"instance_id": "d1", "pin_id": "ANODE"}
+      ]
+    }
+  ]
+}
