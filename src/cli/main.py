@@ -230,20 +230,41 @@ def run_agent(
     model: str = typer.Option("gpt-4o-mini", "--model", "-m", help="Model name"),
     mock: bool = typer.Option(False, "--mock", help="Use offline MockModelProvider"),
     max_repair_attempts: int = typer.Option(3, "--max-repair", help="Maximum repair attempts"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show internal tool and validation traces"),
 ) -> None:
     """Run the complete AI orchestration pipeline (prompt -> proposal -> validate -> repair)."""
     typer.echo(f"Initializing orchestrator (model={model}, mock={mock})")
     
     if mock:
-        provider = MockModelProvider()
-        # Fallback empty design for mock
-        from core.models import DesignProject
-        provider.set_structured_response("smart parking", DesignProject(project_id="mock_project", name="Mock", components=[], nets=[]))
+        import sys
+        from pathlib import Path
+        sys.path.append(str(Path(__file__).parent.parent.parent))
+        from tests.unit.test_orchestrator import MockRepairProvider
+        provider = MockRepairProvider()
     else:
         provider = RESTOpenAIProvider(model_name=model)
         
     orchestrator = Orchestrator(provider, max_repair_attempts=max_repair_attempts)
     
+    if verbose:
+        def verbose_cb(event, data):
+            if event == "TOOL_CALL":
+                typer.echo(f"[tool] {data.get('tool')}(...)")
+            elif event == "VALIDATION_RESULT":
+                if isinstance(data, dict):
+                    status = data.get("status")
+                    if status == "FAIL":
+                        errors = data.get("errors", [])
+                        codes = [e.get("code") for e in errors]
+                        typer.echo(f"[validation] FAIL {codes}")
+                    else:
+                        typer.echo(f"[validation] {status}")
+            elif event == "PROPOSAL_REQUESTED":
+                typer.echo(f"[agent] repair attempt {data.get('attempt', 0)}")
+            elif event == "CLARIFICATION_REQUIRED":
+                typer.echo(f"[agent] clarification required: {data}")
+        orchestrator.verbose_callback = verbose_cb
+
     typer.echo(f"Processing request: '{prompt}'")
     
     try:
