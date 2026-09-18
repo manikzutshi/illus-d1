@@ -11,28 +11,32 @@ export const ASSET_REGISTRY: Record<string, AssetDefinition> = {
     'board:esp32-devkit-v1': {
         component_type: 'board:esp32-devkit-v1',
         visual_type: 'esp32',
-        source: 'procedural',
-        dimensions: { width: 15, height: 1.5, depth: 10 },
+        source: 'glb',
+        asset_url: '/models/esp32.glb',
+        dimensions: { width: 14, height: 1.5, depth: 10.5 },
         anchorOffsets: {}
     },
     'sensor:hc-sr04': {
         component_type: 'sensor:hc-sr04',
         visual_type: 'hcsr04',
-        source: 'procedural',
-        dimensions: { width: 4, height: 3, depth: 2 },
+        source: 'glb',
+        asset_url: '/models/hcsr04.glb',
+        dimensions: { width: 4.5, height: 3, depth: 2.5 },
         anchorOffsets: {}
     },
     'passive:resistor-tht': {
         component_type: 'passive:resistor-tht',
         visual_type: 'resistor',
-        source: 'procedural',
+        source: 'glb',
+        asset_url: '/models/resistor.glb',
         dimensions: { width: 4, height: 1, depth: 1 },
         anchorOffsets: {}
     },
     'passive:led-5mm': {
         component_type: 'passive:led-5mm',
         visual_type: 'led',
-        source: 'procedural',
+        source: 'glb',
+        asset_url: '/models/led.glb',
         dimensions: { width: 2, height: 3, depth: 1 },
         anchorOffsets: {}
     }

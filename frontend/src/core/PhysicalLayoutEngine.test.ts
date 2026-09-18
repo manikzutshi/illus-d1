@@ -35,9 +35,9 @@ describe('PhysicalLayoutEngine', () => {
         
         const r1 = layout.nodes['r1'];
         expect(r1).toBeDefined();
-        // Z values for row C (-2.5 pitches) and row D (-1.5 pitches) -> center is -2.0
-        // Our pitch is 1.0. Row C Z = -2.5. Row D Z = -1.5. 
-        expect(r1.world_anchors['PIN1'][2]).toBe(-2.5);
+        // Z values for row A (-4.5 pitches) and row D (-1.5 pitches)
+        // Our pitch is 1.0. Row A Z = -4.5. Row D Z = -1.5. 
+        expect(r1.world_anchors['PIN1'][2]).toBe(-4.5);
         expect(r1.world_anchors['PIN2'][2]).toBe(-1.5);
     });
 });

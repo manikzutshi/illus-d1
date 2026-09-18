@@ -13,6 +13,8 @@ export interface SceneNode {
         rotation: Vector3;
     };
     visual_type: string;
+    asset_source: 'procedural' | 'glb';
+    asset_url?: string;
     anchors: Record<string, Vector3>; // map of pin_id to local position relative to node transform
     world_anchors: Record<string, Vector3>; // map of pin_id to global world position
     parameters: Record<string, string>;

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text, Bounds } from '@react-three/drei';
+import { OrbitControls, Text, Bounds, useGLTF } from '@react-three/drei';
 import type { SceneGraph, SceneNode } from '../core/types';
 
 interface Scene3DProps {
@@ -12,6 +12,12 @@ interface Scene3DProps {
     showLabels?: boolean;
     showAnchors?: boolean;
 }
+
+const GLBModel: React.FC<{ url: string }> = ({ url }) => {
+    const { scene } = useGLTF(url);
+    const cloned = useMemo(() => scene.clone(), [scene]);
+    return <primitive object={cloned} />;
+};
 
 const NodeVisual: React.FC<{ node: SceneNode; selected: boolean; onSelect: () => void; showLabels: boolean; showAnchors: boolean }> = ({ node, selected, onSelect, showLabels, showAnchors }) => {
     const color = selected ? 'orange' : '#2c3e50';
@@ -24,7 +30,9 @@ const NodeVisual: React.FC<{ node: SceneNode; selected: boolean; onSelect: () =>
         </>
     );
 
-    if (node.visual_type === 'board' || node.visual_type === 'esp32') {
+    if (node.asset_source === 'glb' && node.asset_url) {
+        geometry = <GLBModel url={node.asset_url} />;
+    } else if (node.visual_type === 'board' || node.visual_type === 'esp32') {
         // ESP32 Representation
         geometry = (
             <group>
@@ -168,27 +176,9 @@ export const Scene3D: React.FC<Scene3DProps> = ({ sceneGraph, onSelect, selected
             <OrbitControls makeDefault />
 
             <Bounds fit clip observe margin={1.2}>
-                {/* Breadboard Base */}
-                <group position={[0, -0.25, 0]}>
-                    <mesh position={[0, 0, 0]} receiveShadow>
-                        <boxGeometry args={[34, 0.5, 19]} />
-                        <meshStandardMaterial color="#f8f8f8" />
-                    </mesh>
-                    
-                    {/* Center Trench */}
-                    <mesh position={[0, 0.25, 0]}>
-                        <boxGeometry args={[32, 0.1, 1]} />
-                        <meshStandardMaterial color="#333333" />
-                    </mesh>
-
-                    {/* Power lines (red/blue) */}
-                    <mesh position={[0, 0.26, -7.5]}><boxGeometry args={[32, 0.01, 0.1]} /><meshStandardMaterial color="blue" /></mesh>
-                    <mesh position={[0, 0.26, -8.5]}><boxGeometry args={[32, 0.01, 0.1]} /><meshStandardMaterial color="red" /></mesh>
-                    <mesh position={[0, 0.26, 7.5]}><boxGeometry args={[32, 0.01, 0.1]} /><meshStandardMaterial color="blue" /></mesh>
-                    <mesh position={[0, 0.26, 8.5]}><boxGeometry args={[32, 0.01, 0.1]} /><meshStandardMaterial color="red" /></mesh>
-
-                    {/* Grid indicator (approximate holes) */}
-                    <gridHelper args={[32, 32, '#e0e0e0', '#e0e0e0']} position={[0, 0.26, 0]} />
+                {/* Breadboard Base (from GLB) */}
+                <group position={[0, -0.4, 0]}>
+                    <GLBModel url="/models/breadboard.glb" />
                 </group>
 
                 {/* Nodes */}

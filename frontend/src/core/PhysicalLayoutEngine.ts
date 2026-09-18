@@ -146,12 +146,12 @@ export class PhysicalLayoutEngine {
         
         if (r_div1) {
             const startCol = 22; // near ECHO
-            const rowStart = 'C';
-            const rowEnd = 'D'; // vertical placement
+            const rowStart = 'A'; // -4.5
+            const rowEnd = 'D';   // -1.5 (span = 3 units)
             
             const w1 = this.board.holeToWorld(startCol, rowStart);
             const w2 = this.board.holeToWorld(startCol, rowEnd);
-            const world_anchors = { 'PIN1': w1, 'PIN2': w2, '1': w1, '2': w2 }; // aliases
+            const world_anchors = { 'PIN1': w1, 'PIN2': w2, '1': w1, '2': w2 };
             
             const center: Vector3 = [w1[0], 0.5, (w1[2] + w2[2]) / 2];
 
@@ -162,8 +162,8 @@ export class PhysicalLayoutEngine {
 
         if (r_div2) {
             const startCol = 22;
-            const rowStart = 'F'; // jump trench
-            const rowEnd = 'G';
+            const rowStart = 'G'; // 1.5
+            const rowEnd = 'J';   // 4.5 (span = 3 units)
             
             const w1 = this.board.holeToWorld(startCol, rowStart);
             const w2 = this.board.holeToWorld(startCol, rowEnd);
@@ -182,7 +182,7 @@ export class PhysicalLayoutEngine {
 
         if (led) {
             const startCol = 26;
-            const row = 'H';
+            const row = 'F';
             const w1 = this.board.holeToWorld(startCol, row);
             const w2 = this.board.holeToWorld(startCol + 1, row);
             const world_anchors = { 'ANODE': w1, 'CATHODE': w2, 'A': w1, 'K': w2 };
@@ -194,9 +194,9 @@ export class PhysicalLayoutEngine {
         }
 
         if (r_led) {
-            const startCol = 27; // connects to LED cathode
-            const rowStart = 'H';
-            const rowEnd = 'I';
+            const startCol = 27; // connects to LED cathode (col 27)
+            const rowStart = 'G'; // 1.5
+            const rowEnd = 'J';   // 4.5
             const w1 = this.board.holeToWorld(startCol, rowStart);
             const w2 = this.board.holeToWorld(startCol, rowEnd);
             const world_anchors = { 'PIN1': w1, 'PIN2': w2, '1': w1, '2': w2 };

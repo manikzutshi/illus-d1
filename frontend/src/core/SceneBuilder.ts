@@ -37,6 +37,8 @@ export class SceneBuilder {
                 instance_id: comp.instance_id,
                 component_type: comp.component_type,
                 visual_type: def.visual_type,
+                asset_source: def.source,
+                asset_url: def.asset_url,
                 transform: { position: phys.position, rotation: phys.rotation },
                 anchors: localAnchors,
                 world_anchors: phys.world_anchors,
@@ -76,20 +78,23 @@ export class SceneBuilder {
                 
                 if (i === 0) {
                     path.push(startPos);
-                    path.push([startPos[0], startPos[1] + 1.5 + wireHeightOffset, startPos[2]]);
+                    // Short vertical lift
+                    path.push([startPos[0], startPos[1] + 1.0 + wireHeightOffset, startPos[2]]);
                 } else {
                     const prevConn = net.connections[i-1];
                     const prevNode = layout.nodes[prevConn.instance_id];
                     const prevPos = prevNode?.world_anchors[prevConn.pin_id] || [0,0,0];
                     
-                    // Manhattan routing
-                    const h = 1.5 + wireHeightOffset;
+                    const h = 1.0 + wireHeightOffset;
+                    // Midpoint for realistic bend (horizontal/orthogonal segment)
                     path.push([startPos[0], h, prevPos[2]]);
+                    
+                    // Short drop
                     path.push([startPos[0], h, startPos[2]]);
                     path.push(startPos);
                 }
             }
-            wireHeightOffset += 0.2;
+            wireHeightOffset += 0.3;
 
             wires.push({
                 net_id: net.net_id,
