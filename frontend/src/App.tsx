@@ -9,6 +9,7 @@ const App: React.FC = () => {
     const [sceneGraph, setSceneGraph] = useState<SceneGraph | null>(null);
     const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [camView, setCamView] = useState<string>('iso');
 
     useEffect(() => {
         // Load the smart_parking_valid.json mapped to project.json via CLI
@@ -72,9 +73,13 @@ const App: React.FC = () => {
                     ))}
                 </div>
 
-                {/* 3D View */}
                 <div style={{ flex: 1, position: 'relative' }}>
-                    <Scene3D sceneGraph={sceneGraph} onSelect={handleSelect} selected={selectedInstance} />
+                    <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, display: 'flex', gap: 5 }}>
+                        <button onClick={() => setCamView('iso')}>Iso</button>
+                        <button onClick={() => setCamView('top')}>Top</button>
+                        <button onClick={() => setCamView('front')}>Front</button>
+                    </div>
+                    <Scene3D sceneGraph={sceneGraph} onSelect={handleSelect} selected={selectedInstance} camView={camView} />
                 </div>
             </div>
 

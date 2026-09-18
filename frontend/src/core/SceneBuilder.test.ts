@@ -30,7 +30,7 @@ describe('SceneBuilder', () => {
         
         // 3. Every net resolves to valid visual endpoints
         expect(graph.wires.length).toBe(1);
-        expect(graph.wires[0].path.length).toBe(2);
+        expect(graph.wires[0].path.length).toBe(5);
         
         // 4. Same DesignProject produces same layout
         const graph2 = builder.build(fixture);

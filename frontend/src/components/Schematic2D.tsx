@@ -31,9 +31,18 @@ export const Schematic2D: React.FC<Schematic2DProps> = ({ sceneGraph, selected }
             ctx.strokeStyle = wire.color;
             ctx.lineWidth = 0.2;
             wire.path.forEach((p, i) => {
-                // Map X and Z from 3D to X and Y in 2D
-                if (i === 0) ctx.moveTo(p[0], p[2]);
-                else ctx.lineTo(p[0], p[2]);
+                const x = p[0];
+                const y = p[2];
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    const prev = wire.path[i - 1];
+                    
+                    const py = prev[2];
+                    // Manhattan step in 2D (go horizontally then vertically)
+                    ctx.lineTo(x, py);
+                    ctx.lineTo(x, y);
+                }
             });
             ctx.stroke();
         });
@@ -61,11 +70,19 @@ export const Schematic2D: React.FC<Schematic2DProps> = ({ sceneGraph, selected }
             ctx.font = '0.5px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(node.instance_id, x, y);
+            
+            let label = node.instance_id;
+            if (node.parameters?.resistance) {
+                label += ` (${node.parameters.resistance})`;
+            } else if (node.component_type.includes('hc-sr04')) {
+                label += ' (Ultrasonic)';
+            }
+            
+            ctx.fillText(label, x, y);
             
             // Draw anchors (pins)
             ctx.fillStyle = 'red';
-            for (const [, pos] of Object.entries(node.anchors)) {
+            for (const [, pos] of Object.entries(node.world_anchors || node.anchors)) {
                 ctx.beginPath();
                 ctx.arc(pos[0], pos[2], 0.2, 0, Math.PI * 2);
                 ctx.fill();

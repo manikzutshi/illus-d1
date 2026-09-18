@@ -11,6 +11,8 @@ We will use **Vite + React + TypeScript** for the web application, supplemented 
 
 The Python backend CLI (`illustration-engine render web <path>`) will export the target `DesignProject` JSON directly into the frontend's static `public` directory, and launch the Vite development server. 
 
+*(Updated Phase 4.1)*: A pure-TypeScript `PhysicalLayoutEngine` and `BreadboardModel` sit between the JSON payload and the React components, computing deterministic breadboard insertion coordinates and Manhattan wire paths completely independently from the UI framework, thereby enforcing that React components remain purely visual.
+
 ## Consequences
 - **Positive**: React Three Fiber makes it exceptionally easy to map our intermediate `SceneGraph` nodes directly to reactive 3D meshes.
 - **Positive**: High separation of concerns. The backend retains absolute authority over the `DesignProject`.
