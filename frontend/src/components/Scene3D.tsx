@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Text } from '@react-three/drei';
+import { OrbitControls, Text, Bounds } from '@react-three/drei';
 import type { SceneGraph, SceneNode } from '../core/types';
 
 interface Scene3DProps {
@@ -8,11 +9,12 @@ interface Scene3DProps {
     onSelect: (id: string | null) => void;
     selected: string | null;
     camView?: string;
+    showLabels?: boolean;
+    showAnchors?: boolean;
 }
 
-const NodeVisual: React.FC<{ node: SceneNode; selected: boolean; onSelect: () => void }> = ({ node, selected, onSelect }) => {
+const NodeVisual: React.FC<{ node: SceneNode; selected: boolean; onSelect: () => void; showLabels: boolean; showAnchors: boolean }> = ({ node, selected, onSelect, showLabels, showAnchors }) => {
     const color = selected ? 'orange' : '#2c3e50';
-    
     
     // Default fallback
     let geometry = (
@@ -22,37 +24,57 @@ const NodeVisual: React.FC<{ node: SceneNode; selected: boolean; onSelect: () =>
         </>
     );
 
-    if (node.visual_type === 'board') {
+    if (node.visual_type === 'board' || node.visual_type === 'esp32') {
+        // ESP32 Representation
         geometry = (
             <group>
+                {/* PCB Base */}
                 <mesh position={[0, -0.2, 0]}>
-                    <boxGeometry args={[13.5, 0.2, 10.5]} />
-                    <meshStandardMaterial color={selected ? 'orange' : '#111'} />
+                    <boxGeometry args={[14, 0.2, 10.5]} />
+                    <meshStandardMaterial color={selected ? 'orange' : '#222'} />
                 </mesh>
-                <mesh position={[-6, 0.2, 0]}>
-                    <boxGeometry args={[1, 0.3, 3]} />
+                {/* Headers */}
+                <mesh position={[0, -0.1, -4.5]}>
+                    <boxGeometry args={[13, 0.2, 0.5]} />
+                    <meshStandardMaterial color="black" />
+                </mesh>
+                <mesh position={[0, -0.1, 4.5]}>
+                    <boxGeometry args={[13, 0.2, 0.5]} />
+                    <meshStandardMaterial color="black" />
+                </mesh>
+                {/* USB */}
+                <mesh position={[-6.5, 0.2, 0]}>
+                    <boxGeometry args={[1.5, 0.4, 3]} />
                     <meshStandardMaterial color="silver" />
                 </mesh>
+                {/* Shield */}
                 <mesh position={[0, 0.1, 0]}>
-                    <boxGeometry args={[5, 0.2, 4]} />
-                    <meshStandardMaterial color="#333" />
+                    <boxGeometry args={[5, 0.3, 4]} />
+                    <meshStandardMaterial color="#444" />
                 </mesh>
             </group>
         );
-    } else if (node.visual_type === 'sensor') {
+    } else if (node.visual_type === 'sensor' || node.visual_type === 'hcsr04') {
         geometry = (
             <group>
+                {/* PCB */}
                 <mesh position={[0, -0.1, 0]}>
-                    <boxGeometry args={[4, 0.2, 2]} />
+                    <boxGeometry args={[4.5, 0.2, 2.5]} />
                     <meshStandardMaterial color={selected ? 'orange' : '#225588'} />
                 </mesh>
-                <mesh position={[-1, 0.5, 0]} rotation={[Math.PI/2, 0, 0]}>
-                    <cylinderGeometry args={[0.7, 0.7, 1]} />
+                {/* Transducers */}
+                <mesh position={[-1.2, 0.5, 0]} rotation={[Math.PI/2, 0, 0]}>
+                    <cylinderGeometry args={[0.8, 0.8, 1]} />
                     <meshStandardMaterial color="silver" />
                 </mesh>
-                <mesh position={[1, 0.5, 0]} rotation={[Math.PI/2, 0, 0]}>
-                    <cylinderGeometry args={[0.7, 0.7, 1]} />
+                <mesh position={[1.2, 0.5, 0]} rotation={[Math.PI/2, 0, 0]}>
+                    <cylinderGeometry args={[0.8, 0.8, 1]} />
                     <meshStandardMaterial color="silver" />
+                </mesh>
+                {/* Header */}
+                <mesh position={[0, -0.1, 1.1]}>
+                    <boxGeometry args={[2, 0.2, 0.5]} />
+                    <meshStandardMaterial color="black" />
                 </mesh>
             </group>
         );
@@ -61,11 +83,11 @@ const NodeVisual: React.FC<{ node: SceneNode; selected: boolean; onSelect: () =>
             <group>
                 <mesh position={[0, 1, 0]}>
                     <cylinderGeometry args={[0.25, 0.25, 0.5]} />
-                    <meshStandardMaterial color={selected ? 'orange' : 'red'} />
+                    <meshStandardMaterial color={selected ? 'orange' : 'red'} transparent opacity={0.8} />
                 </mesh>
                 <mesh position={[0, 1.25, 0]}>
                     <sphereGeometry args={[0.25, 16, 16]} />
-                    <meshStandardMaterial color={selected ? 'orange' : 'red'} />
+                    <meshStandardMaterial color={selected ? 'orange' : 'red'} transparent opacity={0.8} />
                 </mesh>
             </group>
         );
@@ -97,82 +119,99 @@ const NodeVisual: React.FC<{ node: SceneNode; selected: boolean; onSelect: () =>
             <group onClick={(e) => { e.stopPropagation(); onSelect(); }}>
                 {geometry}
             </group>
-            <Text position={[0, 2, 0]} fontSize={0.6} color="black" outlineWidth={0.05} outlineColor="white">
-                {node.instance_id}
-            </Text>
+            
+            {showLabels && (
+                <Text position={[0, 2.5, 0]} fontSize={0.6} color="black" outlineWidth={0.05} outlineColor="white">
+                    {node.instance_id}
+                </Text>
+            )}
+
+            {showAnchors && Object.entries(node.anchors).map(([pin_id, localPos]) => (
+                <mesh key={pin_id} position={localPos}>
+                    <sphereGeometry args={[0.15]} />
+                    <meshBasicMaterial color="magenta" />
+                    <Text position={[0, 0.3, 0]} fontSize={0.3} color="magenta">{pin_id}</Text>
+                </mesh>
+            ))}
         </group>
     );
-}
+};
 
-export const Scene3D: React.FC<Scene3DProps> = ({ sceneGraph, onSelect, selected, camView = 'iso' }) => {
-    let camPos: [number, number, number] = [0, 20, 20];
-    if (camView === 'top') camPos = [0, 30, 0];
-    else if (camView === 'front') camPos = [0, 5, 30];
+const WireTube: React.FC<{ path: THREE.Vector3[]; color: string }> = ({ path, color }) => {
+    // Generate a smoothed curve from the Manhattan points
+    const curve = useMemo(() => {
+        if (path.length < 2) return null;
+        // Use CatmullRomCurve3 for smoothed tube
+        return new THREE.CatmullRomCurve3(path, false, 'catmullrom', 0.1);
+    }, [path]);
+
+    if (!curve) return null;
 
     return (
-        <Canvas key={camView} camera={{ position: camPos, fov: 50 }} onPointerMissed={() => onSelect(null)}>
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[10, 10, 5]} intensity={1} />
+        <mesh>
+            <tubeGeometry args={[curve, 64, 0.08, 8, false]} />
+            <meshStandardMaterial color={color} />
+        </mesh>
+    );
+};
+
+export const Scene3D: React.FC<Scene3DProps> = ({ sceneGraph, onSelect, selected, camView = 'iso', showLabels = true, showAnchors = false }) => {
+    
+    let camPos: [number, number, number] = [0, 25, 25];
+    if (camView === 'top') camPos = [0, 40, 0];
+    else if (camView === 'front') camPos = [0, 8, 30];
+
+    return (
+        <Canvas key={camView} camera={{ position: camPos, fov: 45 }} onPointerMissed={() => onSelect(null)}>
+            <ambientLight intensity={0.6} />
+            <directionalLight position={[10, 15, 10]} intensity={1.5} castShadow />
             <OrbitControls makeDefault />
 
-            {/* Breadboard Base */}
-            <group position={[0, -0.25, 0]}>
-                {/* Main Body */}
-                <mesh position={[0, 0, 0]}>
-                    <boxGeometry args={[32, 0.5, 17]} />
-                    <meshStandardMaterial color="#ffffff" />
-                </mesh>
-                
-                {/* Center Trench */}
-                <mesh position={[0, 0.25, 0]}>
-                    <boxGeometry args={[30, 0.1, 1]} />
-                    <meshStandardMaterial color="#333333" />
-                </mesh>
+            <Bounds fit clip observe margin={1.2}>
+                {/* Breadboard Base */}
+                <group position={[0, -0.25, 0]}>
+                    <mesh position={[0, 0, 0]} receiveShadow>
+                        <boxGeometry args={[34, 0.5, 19]} />
+                        <meshStandardMaterial color="#f8f8f8" />
+                    </mesh>
+                    
+                    {/* Center Trench */}
+                    <mesh position={[0, 0.25, 0]}>
+                        <boxGeometry args={[32, 0.1, 1]} />
+                        <meshStandardMaterial color="#333333" />
+                    </mesh>
 
-                {/* Power lines (red/blue) */}
-                <mesh position={[0, 0.25, -6.5]}><boxGeometry args={[30, 0.05, 0.1]} /><meshStandardMaterial color="blue" /></mesh>
-                <mesh position={[0, 0.25, -7.5]}><boxGeometry args={[30, 0.05, 0.1]} /><meshStandardMaterial color="red" /></mesh>
-                
-                <mesh position={[0, 0.25, 6.5]}><boxGeometry args={[30, 0.05, 0.1]} /><meshStandardMaterial color="blue" /></mesh>
-                <mesh position={[0, 0.25, 7.5]}><boxGeometry args={[30, 0.05, 0.1]} /><meshStandardMaterial color="red" /></mesh>
+                    {/* Power lines (red/blue) */}
+                    <mesh position={[0, 0.26, -7.5]}><boxGeometry args={[32, 0.01, 0.1]} /><meshStandardMaterial color="blue" /></mesh>
+                    <mesh position={[0, 0.26, -8.5]}><boxGeometry args={[32, 0.01, 0.1]} /><meshStandardMaterial color="red" /></mesh>
+                    <mesh position={[0, 0.26, 7.5]}><boxGeometry args={[32, 0.01, 0.1]} /><meshStandardMaterial color="blue" /></mesh>
+                    <mesh position={[0, 0.26, 8.5]}><boxGeometry args={[32, 0.01, 0.1]} /><meshStandardMaterial color="red" /></mesh>
 
-                {/* Grid indicator (approximate holes) */}
-                <gridHelper args={[30, 30, '#ddd', '#ddd']} position={[0, 0.26, 0]} />
-            </group>
-
-            {/* Nodes */}
-            {sceneGraph.nodes.map(node => (
-                <NodeVisual 
-                    key={node.instance_id} 
-                    node={node} 
-                    selected={selected === node.instance_id}
-                    onSelect={() => onSelect(node.instance_id)} 
-                />
-            ))}
-
-            {/* Wires */}
-            {sceneGraph.wires.map(wire => (
-                <group key={wire.net_id}>
-                    {/* Render polyline segments */}
-                    {wire.path.map((p, i) => {
-                        if (i === wire.path.length - 1) return null;
-                        const next = wire.path[i + 1];
-                        return (
-                            <line key={i}>
-                                <bufferGeometry attach="geometry">
-                                    <bufferAttribute args={[new Float32Array([...p, ...next]), 3]}
-                                        attach="attributes-position"
-                                        
-                                        
-                                        
-                                    />
-                                </bufferGeometry>
-                                <lineBasicMaterial attach="material" color={wire.color} linewidth={2} />
-                            </line>
-                        );
-                    })}
+                    {/* Grid indicator (approximate holes) */}
+                    <gridHelper args={[32, 32, '#e0e0e0', '#e0e0e0']} position={[0, 0.26, 0]} />
                 </group>
-            ))}
+
+                {/* Nodes */}
+                {sceneGraph.nodes.map(node => (
+                    <NodeVisual 
+                        key={node.instance_id} 
+                        node={node} 
+                        selected={selected === node.instance_id}
+                        onSelect={() => onSelect(node.instance_id)} 
+                        showLabels={showLabels}
+                        showAnchors={showAnchors}
+                    />
+                ))}
+
+                {/* Wires */}
+                {sceneGraph.wires.map(wire => (
+                    <WireTube 
+                        key={wire.net_id} 
+                        path={wire.path.map(p => new THREE.Vector3(...p))} 
+                        color={wire.color} 
+                    />
+                ))}
+            </Bounds>
         </Canvas>
     );
 };

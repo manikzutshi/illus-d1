@@ -30,3 +30,7 @@ Implemented via a raw HTML5 `<canvas>`. It maps the 3D X and Z coordinates into 
 
 ## 3D Renderer
 Implemented via `@react-three/fiber` and `@react-three/drei`. It renders the procedural geometry over a placeholder breadboard base with OrbitControls for panning, zooming, and rotation. Components support raycasted click events for cross-referencing instance metadata in the sidebar.
+
+
+## Asset Pipeline (Phase 4.2)
+Rendering visuals are explicitly driven by AssetDefinition metadata (see sset-pipeline.md), allowing the pipeline to elegantly fall back to safe procedural geometries rather than throwing runtime exceptions when missing GLB meshes.

@@ -10,6 +10,8 @@ const App: React.FC = () => {
     const [selectedInstance, setSelectedInstance] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [camView, setCamView] = useState<string>('iso');
+    const [showLabels, setShowLabels] = useState<boolean>(true);
+    const [showAnchors, setShowAnchors] = useState<boolean>(false);
 
     useEffect(() => {
         // Load the smart_parking_valid.json mapped to project.json via CLI
@@ -23,31 +25,33 @@ const App: React.FC = () => {
                 const builder = new SceneBuilder();
                 setSceneGraph(builder.build(data));
             })
-            .catch(err => {
-                setError(err.message);
-                console.error(err);
-            });
+            .catch(err => setError(err.message));
     }, []);
 
     const handleSelect = (instanceId: string | null) => {
         setSelectedInstance(instanceId);
     };
 
-    if (error) {
-        return <div style={{ color: 'red', padding: 20 }}>Error: {error}</div>;
-    }
+    if (error) return <div style={{ color: 'red', padding: 20 }}>Error: {error}</div>;
+    if (!project || !sceneGraph) return <div style={{ padding: 20 }}>Loading DesignProject...</div>;
 
-    if (!project || !sceneGraph) {
-        return <div style={{ padding: 20 }}>Loading DesignProject...</div>;
-    }
-
-    const selectedComponent = project.components.find(c => c.instance_id === selectedInstance);
+    const selectedComponent = sceneGraph.nodes.find(c => c.instance_id === selectedInstance);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: 'sans-serif' }}>
             {/* Header */}
-            <div style={{ padding: 10, backgroundColor: '#333', color: '#fff' }}>
+            <div style={{ padding: 10, backgroundColor: '#333', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h2 style={{ margin: 0 }}>Illustration Engine - {project.name}</h2>
+                <div style={{ display: 'flex', gap: 15 }}>
+                    <label style={{ cursor: 'pointer' }}>
+                        <input type="checkbox" checked={showLabels} onChange={e => setShowLabels(e.target.checked)} />
+                        Show Labels
+                    </label>
+                    <label style={{ cursor: 'pointer' }}>
+                        <input type="checkbox" checked={showAnchors} onChange={e => setShowAnchors(e.target.checked)} />
+                        Show Debug Anchors
+                    </label>
+                </div>
             </div>
 
             {/* Main Content */}
@@ -56,19 +60,19 @@ const App: React.FC = () => {
                 {/* Sidebar */}
                 <div style={{ width: 250, borderRight: '1px solid #ccc', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
                     <div style={{ padding: 10, fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Components</div>
-                    {project.components.map(comp => (
+                    {sceneGraph.nodes.map(node => (
                         <div 
-                            key={comp.instance_id}
-                            onClick={() => handleSelect(comp.instance_id)}
+                            key={node.instance_id}
+                            onClick={() => handleSelect(node.instance_id)}
                             style={{
                                 padding: 10,
                                 cursor: 'pointer',
-                                backgroundColor: selectedInstance === comp.instance_id ? '#e0f0ff' : 'transparent',
+                                backgroundColor: selectedInstance === node.instance_id ? '#e0f0ff' : 'transparent',
                                 borderBottom: '1px solid #eee'
                             }}
                         >
-                            <strong>{comp.instance_id}</strong>
-                            <div style={{ fontSize: '0.8em', color: '#666' }}>{comp.component_type}</div>
+                            <strong>{node.instance_id}</strong>
+                            <div style={{ fontSize: '0.8em', color: '#666' }}>{node.component_type}</div>
                         </div>
                     ))}
                 </div>
@@ -79,7 +83,14 @@ const App: React.FC = () => {
                         <button onClick={() => setCamView('top')}>Top</button>
                         <button onClick={() => setCamView('front')}>Front</button>
                     </div>
-                    <Scene3D sceneGraph={sceneGraph} onSelect={handleSelect} selected={selectedInstance} camView={camView} />
+                    <Scene3D 
+                        sceneGraph={sceneGraph} 
+                        onSelect={handleSelect} 
+                        selected={selectedInstance} 
+                        camView={camView}
+                        showLabels={showLabels}
+                        showAnchors={showAnchors}
+                    />
                 </div>
             </div>
 
@@ -87,7 +98,7 @@ const App: React.FC = () => {
             <div style={{ height: 250, borderTop: '1px solid #ccc', display: 'flex' }}>
                 <div style={{ flex: 1, borderRight: '1px solid #ccc', position: 'relative' }}>
                     <div style={{ position: 'absolute', top: 5, left: 10, fontWeight: 'bold' }}>2D Schematic</div>
-                    <Schematic2D sceneGraph={sceneGraph}  selected={selectedInstance} />
+                    <Schematic2D sceneGraph={sceneGraph} selected={selectedInstance} />
                 </div>
                 <div style={{ width: 300, padding: 10, overflowY: 'auto' }}>
                     <div style={{ fontWeight: 'bold', marginBottom: 10 }}>Selected Details</div>

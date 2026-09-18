@@ -1,64 +1,7 @@
+import { getAssetDefinition } from './assets';
 import type { DesignProject, SceneGraph, SceneNode, SceneWire, Vector3 } from './types';
 
 // Visual definitions dictating primitive size and pin anchors
-const VISUAL_DEFINITIONS: Record<string, any> = {
-    'board:esp32-devkit-v1': {
-        visual_type: 'board',
-        width: 10,
-        height: 1,
-        depth: 14,
-        anchors: {
-            'VIN': [-4, 0.5, 6],
-            '3V3': [-4, 0.5, 5],
-            'GND1': [-4, 0.5, 4],
-            'GND2': [-4, 0.5, 3],
-            'GPIO18': [4, 0.5, -3],
-            // Simplified fallback for other pins
-        }
-    },
-    'sensor:hc-sr04': {
-        visual_type: 'sensor',
-        width: 8,
-        height: 3,
-        depth: 4,
-        anchors: {
-            'VCC': [-1.5, 0, 2],
-            'TRIG': [-0.5, 0, 2],
-            'ECHO': [0.5, 0, 2],
-            'GND': [1.5, 0, 2]
-        }
-    },
-    'led:standard-5mm': {
-        visual_type: 'led',
-        width: 1,
-        height: 2,
-        depth: 1,
-        anchors: {
-            'A': [0, -1, 0],
-            'K': [0, -1, -1]
-        }
-    },
-    'resistor:axial-0.25w': {
-        visual_type: 'resistor',
-        width: 3,
-        height: 0.5,
-        depth: 0.5,
-        anchors: {
-            '1': [-1.5, 0, 0],
-            '2': [1.5, 0, 0]
-        }
-    },
-    'power:generic-5v': {
-        visual_type: 'power',
-        width: 2,
-        height: 2,
-        depth: 2,
-        anchors: {
-            'VCC': [0, 1, 0],
-            'GND': [0, -1, 0]
-        }
-    }
-};
 
 import { PhysicalLayoutEngine } from './PhysicalLayoutEngine';
 
@@ -75,11 +18,7 @@ export class SceneBuilder {
 
         // 2. Build Nodes
         project.components.forEach((comp) => {
-            const def = VISUAL_DEFINITIONS[comp.component_type] || {
-                visual_type: 'unknown',
-                width: 2, height: 2, depth: 2,
-                anchors: {}
-            };
+            const def = getAssetDefinition(comp.component_type);
 
             const phys = layout.nodes[comp.instance_id];
             
@@ -110,8 +49,19 @@ export class SceneBuilder {
         project.nets.forEach(net => {
             if (net.connections.length < 2) return;
             
-            const color = net.net_type === 'power' ? '#ff0000' : 
-                          net.net_type === 'ground' ? '#000000' : '#00aa00';
+            let color = '#00aa00'; // Default signal green
+            if (net.net_type === 'power') {
+                color = '#ff0000';
+            } else if (net.net_type === 'ground') {
+                color = '#000000';
+            } else {
+                // Heuristic based on pin names
+                const isGnd = net.connections.some(c => c.pin_id.toUpperCase().includes('GND'));
+                const isPower = net.connections.some(c => ['VCC', 'VIN', '3V3', '5V'].includes(c.pin_id.toUpperCase()));
+                if (isPower) color = '#ff0000';
+                else if (isGnd) color = '#000000';
+                else color = '#e6c300'; // Yellow for standard signal
+            }
 
             // Just route point to point sequentially with intermediate waypoints
             const path: Vector3[] = [];

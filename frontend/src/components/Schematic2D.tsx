@@ -49,43 +49,78 @@ export const Schematic2D: React.FC<Schematic2DProps> = ({ sceneGraph, selected }
 
         // Draw Nodes
         sceneGraph.nodes.forEach(node => {
-            const isSelected = selected === node.instance_id;
             const x = node.transform.position[0];
-            const y = node.transform.position[2]; // Z becomes Y in 2D schematic
+            const y = node.transform.position[2]; // Using Z as Y
 
-            ctx.fillStyle = isSelected ? '#ffcc00' : '#ffffff';
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 0.1;
-
-            let w = 4, h = 4;
-            if (node.visual_type === 'board') { w = 10; h = 14; }
-            if (node.visual_type === 'sensor') { w = 8; h = 4; }
-            if (node.visual_type === 'resistor') { w = 3; h = 1; }
-
-            ctx.fillRect(x - w/2, y - h/2, w, h);
-            ctx.strokeRect(x - w/2, y - h/2, w, h);
-
-            // Draw label
-            ctx.fillStyle = '#000';
-            ctx.font = '0.5px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            let label = node.instance_id;
-            if (node.parameters?.resistance) {
-                label += ` (${node.parameters.resistance})`;
-            } else if (node.component_type.includes('hc-sr04')) {
-                label += ' (Ultrasonic)';
-            }
-            
-            ctx.fillText(label, x, y);
-            
-            // Draw anchors (pins)
-            ctx.fillStyle = 'red';
-            for (const [, pos] of Object.entries(node.world_anchors || node.anchors)) {
+            if (node.component_type.includes('power_source') || node.visual_type === 'power') {
+                ctx.fillStyle = 'red';
                 ctx.beginPath();
-                ctx.arc(pos[0], pos[2], 0.2, 0, Math.PI * 2);
+                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.fillText('+V', x, y);
+            } else if (node.component_type.includes('ground') || node.visual_type === 'ground') {
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(x - 1.5, y);
+                ctx.lineTo(x + 1.5, y);
+                ctx.moveTo(x - 1, y + 0.5);
+                ctx.lineTo(x + 1, y + 0.5);
+                ctx.moveTo(x - 0.5, y + 1);
+                ctx.lineTo(x + 0.5, y + 1);
+                ctx.stroke();
+                ctx.fillStyle = 'black';
+                ctx.fillText('GND', x, y - 1);
+            } else {
+                let w = 5, h = 5;
+                if (node.visual_type === 'board' || node.visual_type === 'esp32') { w = 12; h = 10; }
+                if (node.visual_type === 'sensor' || node.visual_type === 'hcsr04') { w = 8; h = 4; }
+                if (node.visual_type === 'resistor') { w = 4; h = 1.5; }
+                if (node.visual_type === 'led') { w = 2.5; h = 2.5; }
+
+                ctx.fillStyle = node.instance_id === selected ? '#e0f0ff' : '#fff';
+                ctx.fillRect(x - w/2, y - h/2, w, h);
+                ctx.strokeStyle = node.instance_id === selected ? '#007bff' : '#333';
+                ctx.lineWidth = 0.3;
+                ctx.strokeRect(x - w/2, y - h/2, w, h);
+
+                // Draw label
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 0.6px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                let label = node.instance_id;
+                let subLabel = '';
+                if (node.parameters?.resistance) {
+                    subLabel = `${node.parameters.resistance}`;
+                } else if (node.component_type.includes('hc-sr04')) {
+                    subLabel = 'Ultrasonic';
+                } else if (node.component_type.includes('esp32')) {
+                    subLabel = 'ESP32';
+                }
+                
+                ctx.fillText(label, x, y - 0.4);
+                if (subLabel) {
+                    ctx.font = '0.4px sans-serif';
+                    ctx.fillStyle = '#555';
+                    ctx.fillText(subLabel, x, y + 0.4);
+                }
+                
+                // Draw anchors (pins)
+                ctx.fillStyle = 'red';
+                ctx.font = '0.3px sans-serif';
+                for (const [pin_id, pos] of Object.entries(node.world_anchors || node.anchors)) {
+                    ctx.beginPath();
+                    ctx.arc(pos[0], pos[2], 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Label the pin just outside
+                    ctx.fillStyle = '#666';
+                    ctx.fillText(pin_id, pos[0], pos[2] - 0.3);
+                    ctx.fillStyle = 'red'; // reset for next pin
+                }
             }
         });
 
