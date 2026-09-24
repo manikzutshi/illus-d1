@@ -83,7 +83,18 @@ the owner. The answers:
 | Merge | GitHub `main` initial commit `da02752` merged into `master` (README kept from this project) |
 | Tag | `v0.2.0-2d-studio` (annotated) on the merge commit, i.e. exactly the state pushed to `main` |
 | Branch / remote | local `master` → `origin/main`, `origin` = https://github.com/manikzutshi/illus-d1 |
-| Push result, final hashes | recorded in the follow-up commit below and in the session summary |
+| Documentation commit hash | `b98c45f` docs: freeze current 2D schematic studio milestone |
+| Merge commit (tagged) | `be9bac2` Merge GitHub initial commit into the milestone history (tree identical to `b98c45f`) |
+| Push | **success**: `git push origin master:main` → `da02752..be9bac2 master -> main` (fast-forward, no force); `git push origin v0.2.0-2d-studio` → new tag |
+| Upstream | local `master` tracks `origin/main` |
 
 Files intentionally left out of Git: `temp_render.py`, root `package-lock.json`; ignored:
 `node_modules/`, `scratch/`, `runs/`, `*.bak`, `.venv/`, `frontend/dist`.
+
+## 7. Working tree after the checkpoint
+
+Clean except two intentionally uncommitted, untracked files: `temp_render.py` and the empty root
+`package-lock.json` (left on disk for the owner to keep or delete). This report's final table was
+added in one follow-up documentation commit after the tag; the tag `v0.2.0-2d-studio` stays on
+`be9bac2`, the frozen milestone state.
+
