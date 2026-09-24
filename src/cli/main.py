@@ -4,14 +4,16 @@ All commands read from real registries and run deterministic validation.
 No AI API key is required.
 """
 import json
+import logging
 import sys
+import time
 from pathlib import Path
 from typing import Optional
 
 import typer
 
 from components.registry import get_default_registry
-from core.models import DesignProject
+from core.models import EngineeringDesignProject
 from curriculum.store import get_default_curriculum
 from validation.calculations import calculate_led_resistor
 from validation.engine import DesignValidator
@@ -142,7 +144,7 @@ def design_validate(design_file: str) -> None:
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
-        design = DesignProject.model_validate(data)
+        design = EngineeringDesignProject.model_validate(data)
     except Exception as e:
         typer.echo(f"Failed to parse Design IR: {e}")
         raise typer.Exit(code=1)
@@ -237,12 +239,12 @@ def run_agent(
     
     if mock:
         import sys
-        from pathlib import Path
         sys.path.append(str(Path(__file__).parent.parent.parent))
         from tests.unit.test_orchestrator import MockRepairProvider
         provider = MockRepairProvider()
     else:
-        provider = RESTOpenAIProvider(model_name=model)
+        from ai.factory import create_provider
+        provider = create_provider(model=model)
         
     orchestrator = Orchestrator(provider, max_repair_attempts=max_repair_attempts)
     
@@ -296,8 +298,129 @@ def run_agent(
         raise typer.Exit(code=1)
 
 
-if __name__ == "__main__":
-    app()
+# ── Schematic sub-commands ──────────────────────────────────────────────
+
+schematic_app = typer.Typer(help="Deterministic schematic projection of Design IR files", no_args_is_help=True)
+app.add_typer(schematic_app, name="schematic")
+
+
+def _load_design(design_file: str) -> EngineeringDesignProject:
+    path = Path(design_file)
+    if not path.exists():
+        typer.echo(f"File not found: {design_file}")
+        raise typer.Exit(code=1)
+    try:
+        return EngineeringDesignProject.model_validate(json.loads(path.read_text(encoding="utf-8")))
+    except Exception as e:
+        typer.echo(f"Failed to parse Design IR: {e}")
+        raise typer.Exit(code=1)
+
+
+@schematic_app.command("generate")
+def schematic_generate(design_file: str, out: Optional[str] = typer.Option(None, "--out", "-o", help="Write Schematic IR JSON here")) -> None:
+    """Generate the Schematic IR for a design and report layout statistics."""
+    from schematic import generate_schematic, verify_schematic
+    design = _load_design(design_file)
+    s = generate_schematic(design, get_default_registry())
+    rep = verify_schematic(s, design)
+    typer.echo(f"Schematic: {s.name}  components={len(s.components)} wires={len(s.wires)} junctions={len(s.junctions)} "
+               f"ports={len(s.power_ports)} labels={len(s.net_labels)}")
+    typer.echo(f"Layout: wire_length={s.stats.wire_length} bends={s.stats.bends} crossings={s.stats.crossings} "
+               f"({s.stats.elapsed_ms} ms)")
+    typer.echo(f"Connectivity check: {'OK' if rep.ok else 'MISMATCH'}")
+    for d in s.diagnostics:
+        typer.echo(f"  note: {d}")
+    if out:
+        Path(out).write_text(s.model_dump_json(indent=2), encoding="utf-8")
+        typer.echo(f"Wrote {out}")
+    if not rep.ok:
+        raise typer.Exit(code=1)
+
+
+@schematic_app.command("svg")
+def schematic_svg(design_file: str, out: str = typer.Option(..., "--out", "-o", help="SVG output path")) -> None:
+    """Render a design's schematic to a standalone SVG file."""
+    from schematic import generate_schematic
+    from schematic.svg import render_svg
+    s = generate_schematic(_load_design(design_file), get_default_registry())
+    Path(out).write_text(render_svg(s), encoding="utf-8")
+    typer.echo(f"Wrote {out}")
+
+
+@schematic_app.command("verify")
+def schematic_verify(design_file: str) -> None:
+    """Check that the drawn schematic's connectivity equals the engineering nets."""
+    from schematic import generate_schematic, verify_schematic
+    design = _load_design(design_file)
+    rep = verify_schematic(generate_schematic(design, get_default_registry()), design)
+    typer.echo("OK" if rep.ok else json.dumps(rep.as_dict(), indent=2))
+    if not rep.ok:
+        raise typer.Exit(code=1)
+
+
+@design_app.command("explain")
+def design_explain(design_file: str) -> None:
+    """Deterministic explanation: parts, rails, signals, checks performed, limitations."""
+    from studio import StudioService
+    state = StudioService(get_default_registry()).open_design(_load_design(design_file))
+    ex = state.explanation
+    typer.echo(f"{state.document.design.name}: {ex['summary']}")
+    typer.echo(f"Validation: {ex['status']}  ({sum(1 for c in ex['checks'] if c['outcome'] != 'NOT_APPLICABLE')} checks applied)")
+    typer.echo("Parts:")
+    for p in ex["parts"]:
+        typer.echo(f"  {p['reference']:<5} {p['name']:<36} {p['role'] or p['what_it_does']}")
+    typer.echo("Power rails:")
+    for r in ex["power_rails"]:
+        typer.echo(f"  {r['name']:<8} {', '.join(r['members'])}")
+    for issue in ex["issues"]:
+        typer.echo(f"  ! {issue['code']} {issue['message']}")
+    for lim in ex["limitations"]:
+        typer.echo(f"  - {lim}")
+
+
+@design_app.command("function")
+def design_function(design_file: str, intent_file: Optional[str] = typer.Option(None, "--intent", "-i",
+                    help="FunctionalIntent JSON (default: data/examples/intents/<name>.json if present)")) -> None:
+    """Deterministic functional check: does the design do what the intent asks?"""
+    from functional import FunctionalIntent, validate_function
+    design = _load_design(design_file)
+    path = Path(intent_file) if intent_file else Path("data/examples/intents") / Path(design_file).name
+    intent = FunctionalIntent.model_validate(json.loads(path.read_text(encoding="utf-8"))) if path.exists() else None
+    r = validate_function(design, intent, get_default_registry())
+    typer.echo(f"{r.summary}  [{r.status}]")
+    for f in r.findings:
+        typer.echo(f"  {f.code} {f.status:<13} {f.message}")
+        if f.repair_hint:
+            typer.echo(f"      hint: {f.repair_hint}")
+    for line in r.explanation or [i.statement for i in r.inferred]:
+        typer.echo(f"  - {line}")
+    if r.status == "FAIL":
+        raise typer.Exit(code=1)
+
+
+# ── Studio server ───────────────────────────────────────────────────────
+
+studio_app = typer.Typer(help="2D Schematic Studio (web workspace)", no_args_is_help=True)
+app.add_typer(studio_app, name="studio")
+
+
+@studio_app.command("serve")
+def studio_serve(
+    host: str = typer.Option("127.0.0.1", "--host", help="Interface to bind (keep 127.0.0.1 unless you know why)"),
+    port: int = typer.Option(8765, "--port", "-p"),
+) -> None:
+    """Serve the studio API and the built frontend (frontend/dist)."""
+    from studio.server import create_server
+    server = create_server(host, port)
+    typer.echo(f"Illustration Engine Studio on http://{host}:{port}  (Ctrl+C to stop)")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        typer.echo("\nStopped.")
+    finally:
+        server.server_close()
+
+
 import shutil
 import subprocess
 import os
@@ -344,3 +467,7 @@ def render_export(
     typer.echo(f"Exported {project_file} to {dest}.")
 
 app.add_typer(render_app, name='render')
+
+
+if __name__ == "__main__":
+    app()

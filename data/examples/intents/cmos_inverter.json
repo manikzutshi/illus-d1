@@ -1,0 +1,36 @@
+{
+  "signals": [
+    {
+      "id": "vin",
+      "role": "input",
+      "quantity": "logic",
+      "component_hint": null,
+      "description": ""
+    },
+    {
+      "id": "vout",
+      "role": "output",
+      "quantity": "logic",
+      "component_hint": null,
+      "description": ""
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "inv",
+      "when": {
+        "input": "vin",
+        "relation": "absent",
+        "threshold": null
+      },
+      "then": {
+        "output": "vout",
+        "effect": "on"
+      },
+      "description": "Output high when input is low"
+    }
+  ],
+  "processing": "any",
+  "required_components": [],
+  "notes": []
+}

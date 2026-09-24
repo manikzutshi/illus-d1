@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "temp-monitor-esp32",
+  "name": "Temperature Monitor",
+  "description": "ESP32 reads a DS18B20 (1-Wire, 4.7 kΩ pull-up) and shows the temperature on an I2C OLED.",
+  "curriculum_context": {
+    "module": "Embedded Systems",
+    "concept": "Sensor Integration",
+    "competency_level": "BEGINNER"
+  },
+  "components": [
+    {
+      "instance_id": "u1",
+      "component_type": "board:esp32-devkit-v1",
+      "parameters": {},
+      "metadata": {
+        "role": "controller"
+      }
+    },
+    {
+      "instance_id": "u2",
+      "component_type": "sensor:ds18b20",
+      "parameters": {},
+      "metadata": {
+        "role": "temperature sensor"
+      }
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "4.7k"
+      },
+      "metadata": {
+        "role": "1-Wire pull-up"
+      }
+    },
+    {
+      "instance_id": "ds1",
+      "component_type": "actuator:oled-i2c",
+      "parameters": {},
+      "metadata": {
+        "role": "display"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "v3v3",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "3V3"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "VCC"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "ds1",
+          "pin_id": "VCC"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "GND1"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "ds1",
+          "pin_id": "GND"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "onewire",
+      "connections": [
+        {
+          "instance_id": "u2",
+          "pin_id": "DQ"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "GPIO4"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "i2c_sda",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "GPIO21"
+        },
+        {
+          "instance_id": "ds1",
+          "pin_id": "SDA"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "i2c_scl",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "GPIO22"
+        },
+        {
+          "instance_id": "ds1",
+          "pin_id": "SCL"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": []
+}

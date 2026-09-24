@@ -1,0 +1,36 @@
+{
+  "signals": [
+    {
+      "id": "knob",
+      "role": "input",
+      "quantity": "setting",
+      "component_hint": null,
+      "description": ""
+    },
+    {
+      "id": "motor",
+      "role": "output",
+      "quantity": "motion_output",
+      "component_hint": null,
+      "description": ""
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "speed",
+      "when": {
+        "input": "knob",
+        "relation": "proportional",
+        "threshold": null
+      },
+      "then": {
+        "output": "motor",
+        "effect": "proportional"
+      },
+      "description": "Motor speed follows the knob"
+    }
+  ],
+  "processing": "any",
+  "required_components": [],
+  "notes": []
+}

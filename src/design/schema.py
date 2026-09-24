@@ -1,3 +1,5 @@
+# Legacy file - kept for reference but not used in current implementation
+# Current implementation uses EngineeringDesignProject and EngineeringComponentInstance from core.models
 from pydantic import BaseModel, Field
 from typing import Dict, List, Any, Optional
 

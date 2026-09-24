@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "night-light-bjt",
+  "name": "Automatic Night Light (transistor)",
+  "description": "LDR/resistor divider biases an NPN switch that lights an LED in the dark. No microcontroller.",
+  "curriculum_context": {
+    "module": "Analog Fundamentals",
+    "concept": "Transistor as a switch",
+    "competency_level": "BEGINNER"
+  },
+  "components": [
+    {
+      "instance_id": "bt1",
+      "component_type": "power:battery-9v",
+      "parameters": {},
+      "metadata": {
+        "role": "supply"
+      }
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "divider top"
+      }
+    },
+    {
+      "instance_id": "ldr1",
+      "component_type": "sensor:photoresistor",
+      "parameters": {},
+      "metadata": {
+        "role": "light sensor (divider bottom)"
+      }
+    },
+    {
+      "instance_id": "r2",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "4.7k"
+      },
+      "metadata": {
+        "role": "base resistor"
+      }
+    },
+    {
+      "instance_id": "q1",
+      "component_type": "semiconductor:npn-bc547",
+      "parameters": {},
+      "metadata": {
+        "role": "low-side LED switch"
+      }
+    },
+    {
+      "instance_id": "r3",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "470"
+      },
+      "metadata": {
+        "role": "LED current limit"
+      }
+    },
+    {
+      "instance_id": "d1",
+      "component_type": "passive:led-5mm",
+      "parameters": {
+        "color": "white"
+      },
+      "metadata": {
+        "role": "night light"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "vbat",
+      "connections": [
+        {
+          "instance_id": "bt1",
+          "pin_id": "POS"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "r3",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "bt1",
+          "pin_id": "NEG"
+        },
+        {
+          "instance_id": "ldr1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "E"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "sense",
+      "connections": [
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "ldr1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "base",
+      "connections": [
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "B"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "led_a",
+      "connections": [
+        {
+          "instance_id": "r3",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "ANODE"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "led_k",
+      "connections": [
+        {
+          "instance_id": "d1",
+          "pin_id": "CATHODE"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "C"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": [
+    "In darkness the LDR resistance rises, raising the base voltage above ~0.7 V.",
+    "LED current ≈ (9 V − 2 V − 0.2 V) / 470 Ω ≈ 14 mA."
+  ]
+}

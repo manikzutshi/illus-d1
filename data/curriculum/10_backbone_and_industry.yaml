@@ -1,0 +1,534 @@
+# Curriculum knowledge graph derived from Industry_Ready_VLSI_Curriculum_Blueprint.docx.
+#
+# Modules = the blueprint's 14-module core backbone + its industry layer.
+# Concepts carry `kind` and `abstraction_level` so that non-physical knowledge (RTL, CDC,
+# UVM, STA, packaging...) is represented as knowledge / engineering objects, NOT as fake
+# parts in the component registry. `components` only lists registry IDs that genuinely
+# realise the concept; `patterns` lists design patterns (data/knowledge/patterns.yaml).
+
+modules:
+  m01_industry: {number: 1, name: Industry & Ecosystem, layer: core, domains: [Semiconductor Industry & Ecosystem, Semiconductor Products & Applications]}
+  m02_physics_devices: {number: 2, name: Physics & Devices, layer: core, domains: [Semiconductor Physics, CMOS & Device Technology]}
+  m03_cmos: {number: 3, name: CMOS Logic & Modern CMOS, layer: core, domains: [CMOS & Device Technology, Digital Logic]}
+  m04_digital_arch: {number: 4, name: Digital & Computer Architecture, layer: core, domains: [Digital Logic, Computer Architecture, Microarchitecture]}
+  m05_rtl: {number: 5, name: RTL / HDL, layer: core, domains: [RTL & SystemVerilog]}
+  m06_verification: {number: 6, name: Functional Verification, layer: core, domains: [Functional Verification, SystemVerilog Verification, UVM, Formal Verification]}
+  m07_synthesis_timing: {number: 7, name: Logic Synthesis & Timing, layer: core, domains: [Logic Synthesis, Static Timing Analysis]}
+  m08_physical_design: {number: 8, name: Physical Design, layer: core, domains: [Physical Design, Signoff]}
+  m09_dft: {number: 9, name: DFT, layer: core, domains: [DFT]}
+  m10_fabrication: {number: 10, name: Fabrication, layer: core, domains: [Semiconductor Fabrication]}
+  m11_packaging_test: {number: 11, name: Packaging & Final Test, layer: core, domains: [Advanced Packaging]}
+  m12_eda: {number: 12, name: EDA Algorithms / CAD, layer: core, domains: [AI / ML for EDA]}
+  m13_reliability_power: {number: 13, name: Reliability / Power / Signoff, layer: core, domains: [Low-Power Design, Reliability, Signoff]}
+  m14_full_flow: {number: 14, name: Complete Digital VLSI Flow, layer: core, domains: [Engineering Methodology / Collaboration]}
+  i_analog: {name: Analog IC Design, layer: industry, domains: [Analog Fundamentals, Analog IC Design]}
+  i_analog_layout: {name: Analog Layout, layer: industry, domains: [Analog Layout]}
+  i_power_hv: {name: Power IC / HV, layer: industry, domains: [Mixed-Signal / High-Speed Circuits]}
+  i_memory: {name: Memory, layer: industry, domains: [Computer Architecture]}
+  i_soc: {name: SoC Architecture, layer: industry, domains: [SoC Architecture, AMBA / On-Chip Interconnect]}
+  i_interfaces: {name: High-Speed Interfaces & Chiplets, layer: industry, domains: [High-Speed Interfaces, Next-Generation Interconnect / Chiplets, UCIe / Heterogeneous Integration]}
+  i_ai_hw: {name: AI Hardware, layer: industry, domains: [AI Hardware / Accelerators]}
+  i_security_safety: {name: Hardware Security & Functional Safety, layer: industry, domains: [Hardware Security, Functional Safety]}
+  i_embedded: {name: Embedded Systems (hands-on electronics), layer: industry, domains: [Hardware Programming / Firmware Awareness]}
+
+concepts:
+  # ── Module 2: physics & devices ────────────────────────────────────────
+  pn_junction_diode:
+    name: PN Junction Diode
+    description: Rectifying junction; forward conduction above ~0.6 V, reverse blocking and breakdown.
+    module: Physics & Devices
+    domain: Semiconductor Physics
+    kind: concept
+    abstraction_level: device
+    prerequisites: []
+    components: [semiconductor:diode-1n4148, semiconductor:diode-1n4007, semiconductor:diode-1n5819, semiconductor:zener-1n4733a, passive:led-5mm]
+    patterns: [flyback_protection, led_indicator]
+    representations: [schematic, iv_curve, band_diagram]
+    competency_level: BEGINNER
+    learning_loop: {design_task: Build a reverse-polarity protection diode, debug_task: LED inserted backwards, explain: Why a diode drops ~0.7 V}
+  bjt_basics:
+    name: Bipolar Junction Transistor
+    description: Current-controlled transistor; cutoff, active and saturation regions.
+    module: Physics & Devices
+    domain: CMOS & Device Technology
+    kind: concept
+    abstraction_level: device
+    prerequisites: [pn_junction_diode]
+    components: [semiconductor:npn-bc547, semiconductor:pnp-2n3906, active:transistor-npn-2n2222]
+    patterns: [bjt_low_side_switch, common_emitter_amplifier]
+    representations: [schematic, iv_curve]
+    competency_level: BEGINNER
+  mosfet_basics:
+    name: MOSFET Operation
+    description: Threshold voltage, linear and saturation regions, body effect and channel-length modulation.
+    module: Physics & Devices
+    domain: CMOS & Device Technology
+    kind: concept
+    abstraction_level: device
+    prerequisites: [pn_junction_diode]
+    components: [primitive:nmos, primitive:pmos, semiconductor:nmos-2n7000, semiconductor:nmos-irlz44n, semiconductor:pmos-bs250]
+    patterns: [mosfet_low_side_switch, cmos_inverter]
+    representations: [schematic, iv_curve, cross_section]
+    competency_level: INTERMEDIATE
+    learning_loop: {simulate: Sweep Vgs and plot Id, debug_task: Gate left floating, explain: Why logic-level MOSFETs matter for 3.3 V drive}
+  # ── Module 3: CMOS ─────────────────────────────────────────────────────
+  cmos_logic:
+    name: Static CMOS Logic
+    description: Complementary pull-up (PMOS) and pull-down (NMOS) networks implementing Boolean functions.
+    module: CMOS Logic & Modern CMOS
+    domain: Digital Logic
+    kind: concept
+    abstraction_level: gate
+    prerequisites: [cmos_inverter, boolean_algebra]
+    components: [logic:74hc00, logic:74hc04, logic:74hc08, logic:74hc32, logic:74hc86]
+    patterns: [cmos_inverter]
+    representations: [schematic, truth_table, layout]
+    competency_level: INTERMEDIATE
+  noise_margins:
+    name: Noise Margins & VTC
+    description: Voltage transfer characteristic of an inverter; NMH/NML define tolerance to noise.
+    module: CMOS Logic & Modern CMOS
+    domain: CMOS & Device Technology
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [cmos_inverter]
+    representations: [vtc_plot]
+    competency_level: INTERMEDIATE
+  logical_effort:
+    name: Logical Effort & Transistor Sizing
+    description: Delay model d = gh + p used to size gates and buffers for minimum path delay.
+    module: CMOS Logic & Modern CMOS
+    domain: CMOS & Device Technology
+    kind: concept
+    abstraction_level: gate
+    prerequisites: [cmos_inverter]
+    components: [primitive:nmos, primitive:pmos]
+    representations: [schematic, delay_plot]
+    competency_level: ADVANCED
+    learning_loop: {design_task: Size a 3-stage buffer chain, optimize: Minimise path delay for a fan-out of 64}
+  dynamic_power:
+    name: Dynamic & Leakage Power
+    description: P = αCV²f switching power plus short-circuit and leakage components.
+    module: CMOS Logic & Modern CMOS
+    domain: Low-Power Design
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [cmos_inverter]
+    representations: [equation, waveform]
+    competency_level: INTERMEDIATE
+  # ── Module 4: digital & architecture ───────────────────────────────────
+  boolean_algebra:
+    name: Boolean Algebra & Minimisation
+    description: Boolean identities, K-maps and minimisation of combinational functions.
+    module: Digital & Computer Architecture
+    domain: Digital Logic
+    kind: concept
+    abstraction_level: gate
+    components: [primitive:gate-and, primitive:gate-or, primitive:gate-not, primitive:gate-nand, primitive:gate-nor, primitive:gate-xor]
+    representations: [truth_table, schematic]
+    competency_level: BEGINNER
+  flip_flop:
+    name: Flip-Flops & Latches
+    description: Edge-triggered storage; setup, hold and clock-to-Q.
+    module: Digital & Computer Architecture
+    domain: Digital Logic
+    kind: concept
+    abstraction_level: gate
+    prerequisites: [digital_logic_gate]
+    components: [primitive:dff, logic:74hc74]
+    representations: [schematic, waveform]
+    competency_level: BEGINNER
+  memory_basics:
+    name: Memory Hierarchy & Non-Volatile Memory
+    description: Registers, SRAM, DRAM, flash/EEPROM; capacity, latency and endurance trade-offs.
+    module: Digital & Computer Architecture
+    domain: Computer Architecture
+    kind: concept
+    abstraction_level: architecture
+    components: [memory:24lc256]
+    representations: [block_diagram]
+    competency_level: INTERMEDIATE
+  # ── Module 5-7: RTL, verification, timing (engineering objects) ────────
+  rtl_module:
+    name: RTL Module
+    description: A synthesizable SystemVerilog module with ports, parameters, combinational and sequential processes.
+    module: RTL / HDL
+    domain: RTL & SystemVerilog
+    kind: engineering_object
+    abstraction_level: rtl
+    prerequisites: [rtl_design]
+    representations: [block_diagram, source_code, waveform]
+    tools: [verilator, yosys]
+    standards: [IEEE 1800]
+    competency_level: INTERMEDIATE
+  axi_lite_interface:
+    name: AXI4-Lite Interface
+    description: AMBA memory-mapped register interface with independent address/data/response channels and valid/ready handshakes.
+    module: SoC Architecture
+    domain: AMBA / On-Chip Interconnect
+    kind: engineering_object
+    abstraction_level: architecture
+    prerequisites: [rtl_module]
+    representations: [block_diagram, waveform]
+    standards: [AMBA AXI4]
+    competency_level: ADVANCED
+    learning_loop: {design_task: Build an AXI-Lite register peripheral, debug_task: Deadlock from VALID depending on READY}
+  async_fifo:
+    name: Asynchronous FIFO
+    description: Dual-clock FIFO with Gray-coded pointers synchronised across clock domains.
+    module: RTL / HDL
+    domain: CDC / RDC
+    kind: engineering_object
+    abstraction_level: rtl
+    prerequisites: [cdc_synchronizer, flip_flop]
+    representations: [block_diagram, waveform]
+    competency_level: ADVANCED
+  cdc_synchronizer:
+    name: Clock-Domain-Crossing Synchroniser
+    description: Two-flop synchroniser reducing metastability risk for single-bit signals crossing clock domains.
+    module: RTL / HDL
+    domain: CDC / RDC
+    kind: engineering_object
+    abstraction_level: rtl
+    prerequisites: [flip_flop, timing_analysis]
+    components: [primitive:dff]
+    representations: [schematic, waveform]
+    competency_level: ADVANCED
+  uvm_testbench:
+    name: UVM Testbench
+    description: Reusable verification environment - sequences, driver, monitor, scoreboard, coverage.
+    module: Functional Verification
+    domain: UVM
+    kind: engineering_object
+    abstraction_level: verification
+    prerequisites: [verification]
+    representations: [block_diagram]
+    standards: [IEEE 1800.2]
+    competency_level: ADVANCED
+  assertions_coverage:
+    name: Assertions & Functional Coverage
+    description: SVA properties and covergroups that make intent checkable and progress measurable.
+    module: Functional Verification
+    domain: SystemVerilog Verification
+    kind: methodology
+    abstraction_level: verification
+    prerequisites: [verification]
+    representations: [waveform, source_code]
+    competency_level: ADVANCED
+  setup_hold:
+    name: Setup & Hold Timing
+    description: Data must be stable before (setup) and after (hold) the capturing clock edge.
+    module: Logic Synthesis & Timing
+    domain: Static Timing Analysis
+    kind: concept
+    abstraction_level: gate
+    prerequisites: [flip_flop]
+    components: [primitive:dff]
+    representations: [waveform, timing_report]
+    competency_level: INTERMEDIATE
+  # ── Modules 8-14: implementation, manufacturing, packaging (non-physical parts) ──
+  floorplan_placement:
+    name: Floorplanning & Placement
+    description: Partitioning die area, power planning and standard-cell placement for timing and congestion.
+    module: Physical Design
+    domain: Physical Design
+    kind: process
+    abstraction_level: implementation
+    representations: [layout]
+    competency_level: ADVANCED
+  scan_chain:
+    name: Scan Chain
+    description: Flip-flops stitched into shift registers to control and observe internal state for manufacturing test.
+    module: DFT
+    domain: DFT
+    kind: engineering_object
+    abstraction_level: gate
+    prerequisites: [flip_flop]
+    representations: [schematic, block_diagram]
+    competency_level: ADVANCED
+  cmos_process_flow:
+    name: CMOS Process Flow
+    description: Oxidation, lithography, implantation, deposition, etch and CMP forming FEOL devices and BEOL wiring.
+    module: Fabrication
+    domain: Semiconductor Fabrication
+    kind: process
+    abstraction_level: manufacturing
+    representations: [cross_section]
+    competency_level: INTERMEDIATE
+  chiplet_integration:
+    name: Chiplets & 2.5D/3D Integration
+    description: Multiple dies on an interposer or stacked with TSVs/hybrid bonding, linked by die-to-die interfaces such as UCIe.
+    module: Packaging & Final Test
+    domain: UCIe / Heterogeneous Integration
+    kind: engineering_object
+    abstraction_level: package
+    representations: [block_diagram, cross_section]
+    standards: [UCIe]
+    competency_level: ADVANCED
+  esd_latchup:
+    name: ESD & Latch-up
+    description: Electrostatic discharge protection and parasitic thyristor latch-up in CMOS.
+    module: Reliability / Power / Signoff
+    domain: Reliability
+    kind: concept
+    abstraction_level: device
+    representations: [cross_section, schematic]
+    competency_level: ADVANCED
+  systolic_array:
+    name: Systolic MAC Array
+    description: Grid of multiply-accumulate units passing operands between neighbours for matrix workloads.
+    module: AI Hardware
+    domain: AI Hardware / Accelerators
+    kind: engineering_object
+    abstraction_level: architecture
+    representations: [block_diagram, dataflow]
+    competency_level: ADVANCED
+  # ── Analog / mixed-signal / power (industry layer, schematic-representable) ──
+  ohms_law:
+    name: Ohm's Law & Power
+    description: V = I·R and P = V·I relate voltage, current, resistance and dissipated power.
+    module: Analog IC Design
+    domain: Analog Fundamentals
+    kind: concept
+    abstraction_level: circuit
+    components: [passive:resistor-tht]
+    patterns: [led_indicator, voltage_divider]
+    representations: [schematic, equation]
+    competency_level: BEGINNER
+  analog_fundamentals:
+    name: Analog Circuit Fundamentals
+    description: Linear circuits, Thevenin/Norton equivalents, RC/RL behaviour and small-signal thinking.
+    module: Analog IC Design
+    domain: Analog Fundamentals
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [ohms_law]
+    components: [passive:resistor-tht, passive:capacitor-ceramic, passive:inductor]
+    patterns: [voltage_divider, rc_lowpass]
+    representations: [schematic, waveform, bode_plot]
+    competency_level: BEGINNER
+  rc_timing:
+    name: RC Time Constant
+    description: τ = R·C sets charge/discharge time; basis of timers, debouncing and filters.
+    module: Analog IC Design
+    domain: Analog Fundamentals
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [ohms_law]
+    components: [passive:capacitor-ceramic, passive:capacitor-electrolytic, ic:timer-ne555]
+    patterns: [rc_lowpass, astable_555]
+    representations: [schematic, waveform]
+    competency_level: BEGINNER
+  transistor_switch:
+    name: Transistor as a Switch
+    description: Driving loads beyond a logic pin's capability with a BJT or MOSFET in saturation/enhancement.
+    module: Analog IC Design
+    domain: Analog Fundamentals
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [bjt_basics, mosfet_basics]
+    components: [semiconductor:npn-bc547, semiconductor:nmos-2n7000, semiconductor:nmos-irlz44n, driver:uln2003a]
+    patterns: [bjt_low_side_switch, mosfet_low_side_switch]
+    representations: [schematic]
+    competency_level: BEGINNER
+    learning_loop: {design_task: Switch a 100 mA load from a 3.3 V GPIO, debug_task: GPIO driving the load directly (E015), explain: Base-resistor calculation}
+  common_emitter_amplifier:
+    name: Common-Emitter Amplifier
+    description: Voltage-divider-biased BJT gain stage; gain ≈ −RC/RE with emitter degeneration.
+    module: Analog IC Design
+    domain: Analog IC Design
+    kind: design_pattern
+    abstraction_level: circuit
+    prerequisites: [bjt_basics, rc_timing]
+    components: [semiconductor:npn-bc547]
+    patterns: [common_emitter_amplifier]
+    representations: [schematic, waveform, bode_plot]
+    competency_level: INTERMEDIATE
+  opamp_basics:
+    name: Operational Amplifier Feedback
+    description: Negative feedback, virtual short, inverting/non-inverting gain and buffering.
+    module: Analog IC Design
+    domain: Analog IC Design
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [analog_fundamentals]
+    components: [ic:opamp-mcp6001, ic:opamp-lm358, primitive:opamp-ideal]
+    patterns: [noninverting_amplifier]
+    representations: [schematic, bode_plot]
+    competency_level: INTERMEDIATE
+  comparator_threshold:
+    name: Comparators & Thresholds
+    description: Converting an analog level to a logic decision; hysteresis prevents chatter.
+    module: Analog IC Design
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [opamp_basics]
+    components: [ic:comparator-lm393]
+    patterns: [comparator_threshold]
+    representations: [schematic, waveform]
+    competency_level: INTERMEDIATE
+  linear_regulation:
+    name: Linear Voltage Regulation
+    description: Pass-element regulators; dropout, dissipation and stability capacitors.
+    module: Power IC / HV
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    components: [ic:regulator-lm7805, ic:ldo-ams1117-3v3]
+    patterns: [linear_regulator]
+    representations: [schematic]
+    competency_level: BEGINNER
+  power_conversion:
+    name: Power Conversion (buck/boost awareness)
+    description: Switching converters trade dissipation for switching loss and EMI; inductors and fast diodes are central.
+    module: Power IC / HV
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [linear_regulation]
+    components: [passive:inductor, semiconductor:diode-1n5819]
+    representations: [schematic, waveform]
+    competency_level: ADVANCED
+  inductive_loads:
+    name: Inductive Loads & Flyback
+    description: Interrupting inductor current creates a large voltage spike; a clamp diode provides a current path.
+    module: Power IC / HV
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [transistor_switch]
+    components: [actuator:relay-5v-coil, actuator:dc-motor, semiconductor:diode-1n4007]
+    patterns: [flyback_protection]
+    representations: [schematic, waveform]
+    competency_level: INTERMEDIATE
+  pwm_motor_control:
+    name: PWM Motor Control
+    description: Average motor voltage controlled by duty cycle through a switching transistor or H-bridge.
+    module: Power IC / HV
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [transistor_switch, inductive_loads]
+    components: [semiconductor:nmos-irlz44n, driver:l293d, actuator:dc-motor]
+    patterns: [mosfet_low_side_switch, flyback_protection, h_bridge_driver]
+    representations: [schematic, waveform]
+    competency_level: INTERMEDIATE
+  h_bridge:
+    name: H-Bridge
+    description: Four switches allow current through a load in either direction.
+    module: Power IC / HV
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: design_pattern
+    abstraction_level: circuit
+    components: [driver:l293d]
+    patterns: [h_bridge_driver]
+    representations: [schematic]
+    competency_level: INTERMEDIATE
+  adc_conversion:
+    name: Analog-to-Digital Conversion
+    description: Sampling and quantisation; resolution, reference and input range.
+    module: Mixed-Signal / High-Speed Circuits
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    components: [adc:ads1115, adc:mcp3008]
+    representations: [block_diagram, waveform]
+    competency_level: INTERMEDIATE
+  dac_conversion:
+    name: Digital-to-Analog Conversion
+    description: Converting codes to voltages; resolution, settling and output range.
+    module: Mixed-Signal / High-Speed Circuits
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    components: [dac:mcp4725]
+    representations: [block_diagram, waveform]
+    competency_level: INTERMEDIATE
+  mixed_signal:
+    name: Mixed-Signal Boundaries
+    description: Where analog meets digital - references, grounding, conversion and noise coupling.
+    module: Mixed-Signal / High-Speed Circuits
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: system
+    prerequisites: [adc_conversion, dac_conversion]
+    representations: [schematic, block_diagram]
+    competency_level: ADVANCED
+  oscillators:
+    name: Oscillators & Clock Generation
+    description: Relaxation and crystal oscillators produce periodic signals and clocks.
+    module: Digital & Computer Architecture
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [rc_timing]
+    components: [ic:timer-ne555]
+    patterns: [astable_555]
+    representations: [schematic, waveform]
+    competency_level: BEGINNER
+  # ── Embedded / board-level interfacing ─────────────────────────────────
+  i2c_protocol:
+    name: I2C Bus
+    description: Two-wire open-drain bus (SDA/SCL) with addressing; needs pull-up resistors.
+    module: Embedded Systems (hands-on electronics)
+    domain: Hardware Programming / Firmware Awareness
+    kind: concept
+    abstraction_level: system
+    components: [actuator:oled-i2c, actuator:lcd-i2c, sensor:mpu6050, adc:ads1115, dac:mcp4725, memory:24lc256]
+    patterns: [i2c_bus_pullups]
+    representations: [schematic, waveform]
+    competency_level: BEGINNER
+  spi_protocol:
+    name: SPI Bus
+    description: Full-duplex clocked serial bus with chip-select per device.
+    module: Embedded Systems (hands-on electronics)
+    domain: Hardware Programming / Firmware Awareness
+    kind: concept
+    abstraction_level: system
+    components: [adc:mcp3008, logic:74hc595]
+    representations: [schematic, waveform]
+    competency_level: BEGINNER
+  level_shifting:
+    name: Logic Level Shifting
+    description: Interfacing 5 V and 3.3 V logic with dividers, MOSFET shifters or translators.
+    module: Embedded Systems (hands-on electronics)
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [ohms_law]
+    components: [interface:level-shifter-bss138-4ch, semiconductor:nmos-2n7000]
+    patterns: [divider_level_shift]
+    representations: [schematic]
+    competency_level: BEGINNER
+  sensor_interface:
+    name: Sensor Interfacing
+    description: Conditioning sensor outputs (dividers, amplifiers, pull-ups) for a converter or logic input.
+    module: Embedded Systems (hands-on electronics)
+    domain: Mixed-Signal / High-Speed Circuits
+    kind: concept
+    abstraction_level: circuit
+    prerequisites: [analog_fundamentals]
+    components: [sensor:photoresistor, sensor:thermistor, sensor:lm35]
+    patterns: [voltage_divider, noninverting_amplifier]
+    representations: [schematic]
+    competency_level: BEGINNER
+  hardware_trust:
+    name: Hardware Security & Trust Boundaries
+    description: Threat models, secure boot and side-channel awareness at SoC level.
+    module: Hardware Security & Functional Safety
+    domain: Hardware Security
+    kind: concept
+    abstraction_level: architecture
+    representations: [block_diagram]
+    competency_level: ADVANCED
+  functional_safety:
+    name: Functional Safety (ISO 26262)
+    description: Safety lifecycle, diagnostics and fault metrics for automotive electronics.
+    module: Hardware Security & Functional Safety
+    domain: Functional Safety
+    kind: methodology
+    abstraction_level: methodology
+    standards: [ISO 26262]
+    representations: [block_diagram]
+    competency_level: ADVANCED

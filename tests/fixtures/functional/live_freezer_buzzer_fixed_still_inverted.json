@@ -1,0 +1,251 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "lv8",
+    "name": "Freezer alarm (low-side buzzer, comparator not inverted)",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "p1",
+        "component_type": "power:usb-5v",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "g1",
+        "component_type": "primitive:ground-rail",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "sensor1",
+        "component_type": "sensor:lm35",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "pot1",
+        "component_type": "passive:potentiometer",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "comp1",
+        "component_type": "ic:comparator-lm393",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "r_pullup",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "r_base",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "1k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "q1",
+        "component_type": "semiconductor:npn-bc547",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "buzzer1",
+        "component_type": "actuator:buzzer-piezo",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "VCC_5V",
+        "connections": [
+          {
+            "instance_id": "p1",
+            "pin_id": "VBUS"
+          },
+          {
+            "instance_id": "comp1",
+            "pin_id": "VCC"
+          },
+          {
+            "instance_id": "sensor1",
+            "pin_id": "VS"
+          },
+          {
+            "instance_id": "pot1",
+            "pin_id": "VCC"
+          },
+          {
+            "instance_id": "r_pullup",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "buzzer1",
+            "pin_id": "VCC"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "GND_RAIL",
+        "connections": [
+          {
+            "instance_id": "g1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "p1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "sensor1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "pot1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "comp1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "E"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "NET_TEMP_SENSE",
+        "connections": [
+          {
+            "instance_id": "sensor1",
+            "pin_id": "VOUT"
+          },
+          {
+            "instance_id": "comp1",
+            "pin_id": "IN1_P"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "NET_THRESHOLD_SET",
+        "connections": [
+          {
+            "instance_id": "pot1",
+            "pin_id": "OUT"
+          },
+          {
+            "instance_id": "comp1",
+            "pin_id": "IN1_N"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "NET_COMP_OUT",
+        "connections": [
+          {
+            "instance_id": "comp1",
+            "pin_id": "OUT1"
+          },
+          {
+            "instance_id": "r_pullup",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "r_base",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "NET_BASE_DRIVE",
+        "connections": [
+          {
+            "instance_id": "r_base",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "B"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "NET_BUZZER_DRIVE",
+        "connections": [
+          {
+            "instance_id": "q1",
+            "pin_id": "C"
+          },
+          {
+            "instance_id": "buzzer1",
+            "pin_id": "GND"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "temp",
+        "role": "input",
+        "quantity": "temperature",
+        "component_hint": null
+      },
+      {
+        "id": "alarm",
+        "role": "output",
+        "quantity": "buzzer",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "temp",
+          "relation": "below",
+          "threshold": {
+            "kind": "adjustable"
+          }
+        },
+        "then": {
+          "output": "alarm",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "FAIL",
+    "codes": [
+      "F006"
+    ],
+    "absent_codes": [
+      "F010"
+    ]
+  }
+}

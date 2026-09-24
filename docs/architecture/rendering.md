@@ -34,3 +34,6 @@ Implemented via `@react-three/fiber` and `@react-three/drei`. It renders the pro
 
 ## Asset Pipeline (Phase 4.2)
 Rendering visuals are explicitly driven by AssetDefinition metadata (see sset-pipeline.md), allowing the pipeline to elegantly fall back to safe procedural geometries rather than throwing runtime exceptions when missing GLB meshes.
+
+
+> **Update (2D Schematic Studio stage):** the canvas "2D renderer" described above has been replaced by an SVG schematic studio driven by the backend Schematic IR. See `docs/decisions/ADR-006-schematic-projection-and-studio.md` and `reports/17`–`18`. The 3D breadboard pipeline described here remains as the "Physical preview" tab.

@@ -1,0 +1,247 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "s1",
+    "name": "Gas level display",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "u1",
+        "component_type": "board:esp32-devkit-v1",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "g1",
+        "component_type": "sensor:mq2",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "u2",
+        "component_type": "adc:ads1115",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "ds1",
+        "component_type": "actuator:oled-i2c",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "j1",
+        "component_type": "power:usb-5v",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "r1",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "4.7k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "r2",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "4.7k"
+        },
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "v5",
+        "connections": [
+          {
+            "instance_id": "j1",
+            "pin_id": "VBUS"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "VIN"
+          },
+          {
+            "instance_id": "g1",
+            "pin_id": "VCC"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "v3",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "3V3"
+          },
+          {
+            "instance_id": "u2",
+            "pin_id": "VDD"
+          },
+          {
+            "instance_id": "ds1",
+            "pin_id": "VCC"
+          },
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "r2",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "gnd",
+        "connections": [
+          {
+            "instance_id": "j1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GND1"
+          },
+          {
+            "instance_id": "g1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "u2",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "u2",
+            "pin_id": "ADDR"
+          },
+          {
+            "instance_id": "ds1",
+            "pin_id": "GND"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "a0",
+        "connections": [
+          {
+            "instance_id": "g1",
+            "pin_id": "A0"
+          },
+          {
+            "instance_id": "u2",
+            "pin_id": "AIN0"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "sda",
+        "connections": [
+          {
+            "instance_id": "u2",
+            "pin_id": "SDA"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GPIO21"
+          },
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN2"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "scl",
+        "connections": [
+          {
+            "instance_id": "u2",
+            "pin_id": "SCL"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GPIO22"
+          },
+          {
+            "instance_id": "r2",
+            "pin_id": "PIN2"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "dsda",
+        "connections": [
+          {
+            "instance_id": "ds1",
+            "pin_id": "SDA"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GPIO18"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "dscl",
+        "connections": [
+          {
+            "instance_id": "ds1",
+            "pin_id": "SCL"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GPIO19"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "gas",
+        "role": "input",
+        "quantity": "smoke",
+        "component_hint": null
+      },
+      {
+        "id": "screen",
+        "role": "output",
+        "quantity": "display",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "gas",
+          "relation": "changes",
+          "threshold": null
+        },
+        "then": {
+          "output": "screen",
+          "effect": "display"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "PASS"
+  }
+}

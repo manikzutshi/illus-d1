@@ -1,0 +1,289 @@
+# Discrete passives and semiconductors.
+# Values are standard datasheet headline figures (absolute-maximum / typical). Anything not
+# known with confidence is omitted: absent data is reported as UNKNOWN, never guessed.
+# Load-current keys (operating_current / max_current / max_forward_current) are only used for
+# parts that are *loads*; device ratings use specific keys (e.g. collector_current_max) so the
+# GPIO drive check (E015) does not mistake a rating for a load.
+
+components:
+  passive:inductor:
+    name: Inductor
+    short_name: L
+    aliases: [inductor, coil, choke]
+    category: PASSIVE_COMPONENT
+    object_type: PHYSICAL
+    family: inductor
+    tags: [energy storage, filter, power conversion]
+    description: Generic two-terminal inductor.
+    pins:
+      - {pin_id: PIN1, name: PIN1, direction: PASSIVE, number: "1"}
+      - {pin_id: PIN2, name: PIN2, direction: PASSIVE, number: "2"}
+    configurable_parameters: {inductance: H}
+    symbol: {name: inductor, pin_map: {PIN1: "1", PIN2: "2"}, ref_prefix: L}
+    curriculum_mapping: [analog_fundamentals, power_conversion]
+    education:
+      summary: Stores energy in a magnetic field and opposes changes in current.
+      how_it_works: V = L·dI/dt; the voltage across it is proportional to how fast its current changes.
+      typical_uses: [LC filters, buck/boost converters, EMI chokes]
+      common_mistakes: [Exceeding the saturation current, forgetting the flyback path when switching an inductor]
+
+  passive:push-button-2pin:
+    name: Push Button (2-pin)
+    short_name: Push
+    aliases: [button 2 pin, momentary switch, pushbutton]
+    category: SWITCH
+    object_type: PHYSICAL
+    family: push_button
+    tags: [user input, momentary, switch]
+    description: Two-terminal normally-open momentary push button.
+    pins:
+      - {pin_id: PIN1, name: PIN1, direction: PASSIVE, number: "1"}
+      - {pin_id: PIN2, name: PIN2, direction: PASSIVE, number: "2"}
+    electrical_properties: {contact_current_max: 50mA, contact_voltage_max: 12V}
+    roles: [INPUT]
+    interfaces: [DIGITAL]
+    symbol: {name: switch_push, pin_map: {PIN1: "1", PIN2: "2"}, ref_prefix: SW}
+    physical: {package: 6mm tactile, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [digital_logic_gate, embedded_basics]
+    education:
+      summary: Closes a circuit only while pressed.
+      how_it_works: A spring contact bridges the two terminals when pressed.
+      typical_uses: [User input with a pull-up or pull-down resistor]
+      common_mistakes: [Leaving the input floating when not pressed (no pull resistor), ignoring contact bounce]
+
+  passive:switch-slide-spst:
+    name: Slide Switch (SPST)
+    short_name: SPST
+    aliases: [slide switch, toggle switch, on off switch, spst]
+    category: SWITCH
+    object_type: PHYSICAL
+    family: switch
+    tags: [power switch, user input, latching]
+    description: Single-pole single-throw latching switch.
+    pins:
+      - {pin_id: PIN1, name: PIN1, direction: PASSIVE}
+      - {pin_id: PIN2, name: PIN2, direction: PASSIVE}
+    roles: [INPUT]
+    symbol: {name: switch_spst, pin_map: {PIN1: "1", PIN2: "2"}, ref_prefix: SW}
+    curriculum_mapping: [embedded_basics]
+    education:
+      summary: Latching on/off switch.
+      how_it_works: Mechanically connects or disconnects its two terminals and stays in that state.
+      typical_uses: [Power on/off, mode selection]
+
+  semiconductor:diode-1n4148:
+    name: 1N4148 Small-Signal Diode
+    short_name: 1N4148
+    aliases: [1n4148, signal diode, switching diode]
+    category: SEMICONDUCTOR
+    object_type: PHYSICAL
+    family: diode
+    tags: [rectifier, clamp, protection, logic]
+    description: Fast small-signal switching diode.
+    pins:
+      - {pin_id: A, name: ANODE, direction: PASSIVE, number: "1"}
+      - {pin_id: K, name: CATHODE, direction: PASSIVE, number: "2"}
+    electrical_properties: {reverse_voltage_max: 100V, forward_current_avg_max: 200mA, forward_voltage_typical: 1V at 10mA,
+                            reverse_recovery_time: 4ns}
+    symbol: {name: diode, ref_prefix: D}
+    physical: {package: DO-35, mounting: THT, breadboard_compatible: true}
+    curriculum_mapping: [pn_junction_diode]
+    education:
+      summary: Lets current flow from anode to cathode and blocks it the other way.
+      how_it_works: A PN junction conducts when forward biased beyond ~0.6-1 V.
+      typical_uses: [Signal clamping, diode logic, small flyback diode for signal relays]
+      common_mistakes: [Using it for currents above 200 mA average]
+
+  semiconductor:diode-1n4007:
+    name: 1N4007 Rectifier Diode
+    short_name: 1N4007
+    aliases: [1n4007, rectifier diode, flyback diode]
+    category: SEMICONDUCTOR
+    object_type: PHYSICAL
+    family: diode
+    tags: [rectifier, flyback, reverse polarity protection, power]
+    description: General-purpose 1 A 1000 V rectifier.
+    pins:
+      - {pin_id: A, name: ANODE, direction: PASSIVE, number: "1"}
+      - {pin_id: K, name: CATHODE, direction: PASSIVE, number: "2"}
+    electrical_properties: {reverse_voltage_max: 1000V, forward_current_avg_max: 1A, forward_voltage_typical: 1.1V at 1A}
+    symbol: {name: diode, ref_prefix: D}
+    physical: {package: DO-41, mounting: THT, breadboard_compatible: true}
+    curriculum_mapping: [pn_junction_diode, power_conversion]
+    education:
+      summary: Rugged rectifier for mains/low-frequency power and flyback protection.
+      how_it_works: Large PN junction; slow reverse recovery makes it unsuitable above a few kHz.
+      typical_uses: [Flyback diode across relay coils and motors, bridge rectifiers, reverse-polarity protection]
+      common_mistakes: [Installing a flyback diode forward-biased (shorts the supply)]
+
+  semiconductor:diode-1n5819:
+    name: 1N5819 Schottky Diode
+    short_name: 1N5819
+    aliases: [1n5819, schottky, schottky diode]
+    category: SEMICONDUCTOR
+    object_type: PHYSICAL
+    family: diode
+    tags: [low forward voltage, power, flyback, reverse polarity protection]
+    description: 1 A 40 V Schottky barrier rectifier.
+    pins:
+      - {pin_id: A, name: ANODE, direction: PASSIVE, number: "1"}
+      - {pin_id: K, name: CATHODE, direction: PASSIVE, number: "2"}
+    electrical_properties: {reverse_voltage_max: 40V, forward_current_avg_max: 1A, forward_voltage_typical: 0.6V at 1A}
+    symbol: {name: schottky, ref_prefix: D}
+    physical: {package: DO-41, mounting: THT, breadboard_compatible: true}
+    curriculum_mapping: [pn_junction_diode, power_conversion]
+    education:
+      summary: Diode with low forward drop and fast switching.
+      how_it_works: A metal-semiconductor junction has no minority-carrier storage, so it switches quickly.
+      typical_uses: [Switching-regulator catch diode, low-loss reverse-polarity protection]
+
+  semiconductor:zener-1n4733a:
+    name: 1N4733A 5.1 V Zener Diode
+    short_name: 1N4733A
+    aliases: [1n4733a, zener, zener diode, 5.1v zener]
+    category: SEMICONDUCTOR
+    object_type: PHYSICAL
+    family: zener
+    tags: [voltage reference, clamp, protection]
+    description: 5.1 V 1 W Zener diode.
+    pins:
+      - {pin_id: A, name: ANODE, direction: PASSIVE, number: "1"}
+      - {pin_id: K, name: CATHODE, direction: PASSIVE, number: "2"}
+    electrical_properties: {zener_voltage: 5.1V, power_rating: 1W}
+    symbol: {name: zener, ref_prefix: D}
+    physical: {package: DO-41, mounting: THT, breadboard_compatible: true}
+    design_constraints:
+      - {kind: series_resistor, pins: [K], severity: WARNING, note: A Zener needs a series resistor to limit its current.}
+    curriculum_mapping: [pn_junction_diode]
+    education:
+      summary: Conducts in reverse at a well-defined breakdown voltage.
+      how_it_works: Heavily doped junction breaks down at Vz; reverse-biased it clamps the voltage near Vz.
+      typical_uses: [Simple voltage references, over-voltage clamps]
+      common_mistakes: [Connecting it without a current-limiting resistor]
+
+  semiconductor:npn-bc547:
+    name: BC547 NPN Transistor
+    short_name: BC547
+    aliases: [bc547, npn small signal]
+    category: SEMICONDUCTOR
+    object_type: PHYSICAL
+    family: bjt
+    tags: [npn, switch, amplifier, small signal]
+    description: General-purpose small-signal NPN BJT.
+    pins:
+      - {pin_id: C, name: COLLECTOR, direction: PASSIVE, number: "1"}
+      - {pin_id: B, name: BASE, direction: PASSIVE, number: "2"}
+      - {pin_id: E, name: EMITTER, direction: PASSIVE, number: "3"}
+    electrical_properties: {collector_emitter_voltage_max: 45V, collector_current_max: 100mA, hfe_range: 110-800}
+    roles: [LOGIC]
+    interfaces: [ANALOG, DIGITAL]
+    symbol: {name: npn, ref_prefix: Q}
+    physical: {package: TO-92, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    design_constraints:
+      - {kind: series_resistor, pins: [B], severity: WARNING, note: Drive the base through a resistor to limit base current.}
+    curriculum_mapping: [bjt_basics, transistor_switch, common_emitter_amplifier]
+    education:
+      summary: Current-controlled switch/amplifier; a small base current controls a larger collector current.
+      how_it_works: Ic ≈ hFE·Ib in the active region; saturated when driven hard as a switch.
+      typical_uses: [Low-side switch for LEDs/buzzers, small-signal amplifiers]
+      common_mistakes: [Driving the base without a resistor, exceeding 100 mA collector current]
+
+  semiconductor:pnp-2n3906:
+    name: 2N3906 PNP Transistor
+    short_name: 2N3906
+    aliases: [2n3906, pnp, pnp transistor]
+    category: SEMICONDUCTOR
+    object_type: PHYSICAL
+    family: bjt
+    tags: [pnp, high side switch, amplifier, small signal]
+    description: General-purpose small-signal PNP BJT.
+    pins:
+      - {pin_id: E, name: EMITTER, direction: PASSIVE, number: "1"}
+      - {pin_id: B, name: BASE, direction: PASSIVE, number: "2"}
+      - {pin_id: C, name: COLLECTOR, direction: PASSIVE, number: "3"}
+    electrical_properties: {collector_emitter_voltage_max: 40V, collector_current_max: 200mA, hfe_range: 100-300}
+    roles: [LOGIC]
+    symbol: {name: pnp, ref_prefix: Q}
+    physical: {package: TO-92, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    design_constraints:
+      - {kind: series_resistor, pins: [B], severity: WARNING, note: Drive the base through a resistor.}
+    curriculum_mapping: [bjt_basics, transistor_switch]
+    education:
+      summary: PNP complement of the 2N3904; conducts when the base is pulled below the emitter.
+      how_it_works: Emitter at the higher potential; pulling base current out turns it on.
+      typical_uses: [High-side switching, push-pull stages, current mirrors]
+
+  semiconductor:nmos-2n7000:
+    name: 2N7000 N-Channel MOSFET
+    short_name: 2N7000
+    aliases: [2n7000, n-mosfet, nmos, small signal mosfet]
+    category: SEMICONDUCTOR
+    object_type: PHYSICAL
+    family: mosfet
+    tags: [n-channel, switch, level shifter, logic]
+    description: Small-signal N-channel enhancement MOSFET.
+    pins:
+      - {pin_id: S, name: SOURCE, direction: PASSIVE, number: "1"}
+      - {pin_id: G, name: GATE, direction: PASSIVE, number: "2"}
+      - {pin_id: D, name: DRAIN, direction: PASSIVE, number: "3"}
+    electrical_properties: {drain_source_voltage_max: 60V, drain_current_max: 200mA, gate_threshold_voltage: 0.8V-3V}
+    roles: [LOGIC]
+    symbol: {name: nmos, ref_prefix: Q}
+    physical: {package: TO-92, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [mosfet_basics, transistor_switch]
+    education:
+      summary: Voltage-controlled switch; the gate draws essentially no DC current.
+      how_it_works: Gate voltage above threshold forms a conducting channel between drain and source.
+      typical_uses: [Low-side switching of small loads, bidirectional level shifting]
+      common_mistakes: [Assuming full enhancement at 3.3 V gate drive (threshold up to 3 V)]
+
+  semiconductor:nmos-irlz44n:
+    name: IRLZ44N Logic-Level Power MOSFET
+    short_name: IRLZ44N
+    aliases: [irlz44n, logic level mosfet, power mosfet]
+    category: SEMICONDUCTOR
+    object_type: PHYSICAL
+    family: mosfet
+    tags: [n-channel, power switch, motor driver, pwm, logic level]
+    description: 55 V logic-level N-channel power MOSFET.
+    pins:
+      - {pin_id: G, name: GATE, direction: PASSIVE, number: "1"}
+      - {pin_id: D, name: DRAIN, direction: PASSIVE, number: "2"}
+      - {pin_id: S, name: SOURCE, direction: PASSIVE, number: "3"}
+    electrical_properties: {drain_source_voltage_max: 55V, drain_current_max: 47A, gate_threshold_voltage: 1V-2V,
+                            rds_on_at_5v: 25mOhm}
+    roles: [LOGIC, POWER]
+    interfaces: [PWM]
+    symbol: {name: nmos, ref_prefix: Q}
+    physical: {package: TO-220, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    design_constraints:
+      - {kind: series_resistor, pins: [G], severity: INFO, note: A small gate resistor (e.g. 100 Ω) limits ringing and GPIO inrush.}
+    curriculum_mapping: [mosfet_basics, transistor_switch, pwm_motor_control]
+    education:
+      summary: Low-side switch for motors, LED strips and other high-current loads driven from 3.3/5 V logic.
+      how_it_works: Low gate threshold lets a microcontroller pin fully enhance the channel.
+      typical_uses: [PWM motor control, solenoid/relay drivers]
+      common_mistakes: [No flyback diode on inductive loads, leaving the gate floating (add a pull-down)]
+
+  semiconductor:pmos-bs250:
+    name: BS250 P-Channel MOSFET
+    short_name: BS250
+    aliases: [bs250, p-mosfet, pmos]
+    category: SEMICONDUCTOR
+    object_type: PHYSICAL
+    family: mosfet
+    tags: [p-channel, high side switch, logic]
+    description: Small-signal P-channel enhancement MOSFET.
+    pins:
+      - {pin_id: S, name: SOURCE, direction: PASSIVE}
+      - {pin_id: G, name: GATE, direction: PASSIVE}
+      - {pin_id: D, name: DRAIN, direction: PASSIVE}
+    electrical_properties: {drain_source_voltage_max: 45V, drain_current_max: 230mA}
+    roles: [LOGIC]
+    symbol: {name: pmos, ref_prefix: Q}
+    physical: {package: TO-92, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [mosfet_basics, cmos_inverter]
+    education:
+      summary: Conducts when the gate is pulled below the source; complement of the 2N7000.
+      how_it_works: Negative Vgs beyond threshold forms a P-type channel.
+      typical_uses: [High-side switching, discrete CMOS inverter demonstrations]

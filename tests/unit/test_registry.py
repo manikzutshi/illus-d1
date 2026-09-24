@@ -12,7 +12,7 @@ class TestComponentRegistry:
         return get_default_registry()
 
     def test_load_default_registry(self, registry):
-        assert registry.count == 8
+        assert registry.count >= 8
 
     def test_get_known_component(self, registry):
         esp32 = registry.get("board:esp32-devkit-v1")
@@ -48,7 +48,7 @@ class TestComponentRegistry:
 
     def test_list_all(self, registry):
         all_comps = registry.list_all()
-        assert len(all_comps) == 8
+        assert len(all_comps) >= 8
 
     def test_esp32_has_gpio_pins(self, registry):
         esp32 = registry.get("board:esp32-devkit-v1")
@@ -86,3 +86,89 @@ class TestComponentRegistry:
         count = reg.load_yaml(Path("/nonexistent/file.yaml"))
         assert count == 0
         assert reg.count == 0
+
+    def test_new_components_resolve_by_id(self, registry):
+        new_ids = [
+            "passive:potentiometer",
+            "sensor:thermistor",
+            "sensor:ds18b20",
+            "sensor:mpu6050",
+            "sensor:mq2",
+            "sensor:rotary-encoder",
+            "actuator:led-rgb",
+            "actuator:dc-motor",
+            "actuator:relay-module",
+            "actuator:oled-i2c",
+            "actuator:7-segment",
+            "logic:74hc595",
+            "actuator:lcd-i2c"
+        ]
+        for c_id in new_ids:
+            comp = registry.get(c_id)
+            assert comp is not None, f"Could not resolve {c_id}"
+            # Check required pin metadata
+            assert len(comp.pins) > 0, f"Component {c_id} has no pins"
+
+    def test_search_by_semantic_metadata(self, registry):
+        # MPU6050 by role/alias/description
+        assert any(c.component_type_id == "sensor:mpu6050" for c in registry.search("imu"))
+        
+        # Displays
+        display_results = registry.search("display")
+        display_ids = [c.component_type_id for c in display_results]
+        assert "actuator:oled-i2c" in display_ids
+        assert "actuator:7-segment" in display_ids
+        
+        # RGB light
+        assert any(c.component_type_id == "actuator:led-rgb" for c in registry.search("rgb light"))
+        
+        # I2C interface search
+        i2c_results = registry.search("i2c")
+        i2c_ids = [c.component_type_id for c in i2c_results]
+        assert "sensor:mpu6050" in i2c_ids
+        assert "actuator:oled-i2c" in i2c_ids
+        assert "board:esp32-devkit-v1" in i2c_ids
+
+    def test_invalid_duplicate_ids_rejected(self, tmp_path):
+        import yaml
+        from core.models import ComponentType
+        
+        # Create a mock YAML with an invalid field (e.g. invalid enum category)
+        invalid_yaml = tmp_path / "invalid.yaml"
+        invalid_yaml.write_text('''
+components:
+  "test:duplicate-1":
+    name: "Valid Component"
+    category: SENSOR
+    object_type: PHYSICAL
+    pins:
+      - pin_id: "VCC"
+        name: "VCC"
+        direction: POWER
+  "test:invalid-1":
+    name: "Invalid Component"
+    category: FAKE_CATEGORY
+    object_type: PHYSICAL
+    pins: []
+''')
+        reg = ComponentRegistry()
+        count = reg.load_yaml(invalid_yaml)
+        # Should load the valid one, skip the invalid one
+        assert count == 1
+        assert reg.has("test:duplicate-1")
+        assert not reg.has("test:invalid-1")
+
+        # Create another yaml with same ID to test overwrite behavior
+        duplicate_yaml = tmp_path / "duplicate.yaml"
+        duplicate_yaml.write_text('''
+components:
+  "test:duplicate-1":
+    name: "Overwritten Component"
+    category: MICROCONTROLLER
+    object_type: PHYSICAL
+    pins: []
+''')
+        # Loading the same ID should be rejected now
+        count2 = reg.load_yaml(duplicate_yaml)
+        assert count2 == 0
+        assert reg.get("test:duplicate-1").name == "Valid Component"

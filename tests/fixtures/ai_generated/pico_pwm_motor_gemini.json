@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "pico-motor-pwm",
+  "name": "Raspberry Pi Pico DC Motor PWM Speed Controller",
+  "description": "Speed control of a 6V DC motor using PWM from a Raspberry Pi Pico and a 4xAA battery pack via an IRLZ44N logic-level MOSFET with flyback diode protection.",
+  "curriculum_context": {
+    "module": "Actuators and Power Electronics",
+    "concept": "PWM Motor Speed Control",
+    "competency_level": "INTERMEDIATE"
+  },
+  "components": [
+    {
+      "instance_id": "mcu",
+      "component_type": "board:raspberry-pi-pico",
+      "parameters": {},
+      "metadata": {
+        "role": "Microcontroller generating PWM speed control signal"
+      }
+    },
+    {
+      "instance_id": "bat",
+      "component_type": "power:battery-4xaa",
+      "parameters": {},
+      "metadata": {
+        "role": "6V DC motor power source (4xAA battery pack)"
+      }
+    },
+    {
+      "instance_id": "motor",
+      "component_type": "actuator:dc-motor",
+      "parameters": {},
+      "metadata": {
+        "role": "6V DC motor load"
+      }
+    },
+    {
+      "instance_id": "q1",
+      "component_type": "semiconductor:nmos-irlz44n",
+      "parameters": {},
+      "metadata": {
+        "role": "Low-side power MOSFET switching the motor current"
+      }
+    },
+    {
+      "instance_id": "rg1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "100"
+      },
+      "metadata": {
+        "rationale": "Limits gate surge current from Pico GPIO",
+        "role": "Gate series resistor (100 ohm)"
+      }
+    },
+    {
+      "instance_id": "rpd1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "Gate pull-down resistor (10k)",
+        "rationale": "Keeps MOSFET off during boot/reset"
+      }
+    },
+    {
+      "instance_id": "d1",
+      "component_type": "semiconductor:diode-1n4007",
+      "parameters": {},
+      "metadata": {
+        "role": "Flyback diode across motor to clamp inductive voltage spikes"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "net_pwm",
+      "connections": [
+        {
+          "instance_id": "mcu",
+          "pin_id": "GP0"
+        },
+        {
+          "instance_id": "rg1",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_gate",
+      "connections": [
+        {
+          "instance_id": "rg1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "rpd1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "G"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_vbat",
+      "connections": [
+        {
+          "instance_id": "bat",
+          "pin_id": "POS"
+        },
+        {
+          "instance_id": "motor",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "K"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "net_drain",
+      "connections": [
+        {
+          "instance_id": "motor",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "D"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "A"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_gnd",
+      "connections": [
+        {
+          "instance_id": "q1",
+          "pin_id": "S"
+        },
+        {
+          "instance_id": "rpd1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "bat",
+          "pin_id": "NEG"
+        },
+        {
+          "instance_id": "mcu",
+          "pin_id": "GND1"
+        }
+      ],
+      "net_type": "ground"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": [
+    "Motor supply voltage is 6V from a 4xAA battery pack.",
+    "Pico GPIO outputs 3.3V PWM signals.",
+    "IRLZ44N logic-level MOSFET is used for low-side PWM switching.",
+    "1N4007 diode is placed across the motor for flyback protection.",
+    "Grounds of the battery pack and Raspberry Pi Pico are tied together."
+  ]
+}

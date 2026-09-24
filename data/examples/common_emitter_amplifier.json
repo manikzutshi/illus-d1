@@ -1,0 +1,260 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "ce-amplifier",
+  "name": "Common-Emitter Amplifier",
+  "description": "Voltage-divider-biased BC547 stage with emitter degeneration, bypass and coupling capacitors.",
+  "curriculum_context": {
+    "module": "Analog IC Design",
+    "concept": "Common-emitter amplifier",
+    "competency_level": "INTERMEDIATE"
+  },
+  "components": [
+    {
+      "instance_id": "bt1",
+      "component_type": "power:battery-9v",
+      "parameters": {},
+      "metadata": {
+        "role": "supply"
+      }
+    },
+    {
+      "instance_id": "j1",
+      "component_type": "connector:header-1x2",
+      "parameters": {},
+      "metadata": {
+        "role": "signal input"
+      }
+    },
+    {
+      "instance_id": "c1",
+      "component_type": "passive:capacitor-electrolytic",
+      "parameters": {
+        "capacitance": "10u",
+        "max_voltage": "16"
+      },
+      "metadata": {
+        "role": "input coupling"
+      }
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "47k"
+      },
+      "metadata": {
+        "role": "bias top"
+      }
+    },
+    {
+      "instance_id": "r2",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "bias bottom"
+      }
+    },
+    {
+      "instance_id": "q1",
+      "component_type": "semiconductor:npn-bc547",
+      "parameters": {},
+      "metadata": {
+        "role": "gain stage"
+      }
+    },
+    {
+      "instance_id": "r3",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "4.7k"
+      },
+      "metadata": {
+        "role": "collector load"
+      }
+    },
+    {
+      "instance_id": "r4",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "1k"
+      },
+      "metadata": {
+        "role": "emitter degeneration"
+      }
+    },
+    {
+      "instance_id": "c2",
+      "component_type": "passive:capacitor-electrolytic",
+      "parameters": {
+        "capacitance": "100u",
+        "max_voltage": "16"
+      },
+      "metadata": {
+        "role": "emitter bypass"
+      }
+    },
+    {
+      "instance_id": "c3",
+      "component_type": "passive:capacitor-electrolytic",
+      "parameters": {
+        "capacitance": "10u",
+        "max_voltage": "16"
+      },
+      "metadata": {
+        "role": "output coupling"
+      }
+    },
+    {
+      "instance_id": "j2",
+      "component_type": "connector:header-1x2",
+      "parameters": {},
+      "metadata": {
+        "role": "signal output"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "vcc",
+      "connections": [
+        {
+          "instance_id": "bt1",
+          "pin_id": "POS"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "r3",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "bt1",
+          "pin_id": "NEG"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "r4",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "c2",
+          "pin_id": "CATHODE"
+        },
+        {
+          "instance_id": "j1",
+          "pin_id": "P2"
+        },
+        {
+          "instance_id": "j2",
+          "pin_id": "P2"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "vin",
+      "connections": [
+        {
+          "instance_id": "j1",
+          "pin_id": "P1"
+        },
+        {
+          "instance_id": "c1",
+          "pin_id": "CATHODE"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "base",
+      "connections": [
+        {
+          "instance_id": "c1",
+          "pin_id": "ANODE"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "B"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "collector",
+      "connections": [
+        {
+          "instance_id": "q1",
+          "pin_id": "C"
+        },
+        {
+          "instance_id": "r3",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "c3",
+          "pin_id": "ANODE"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "emitter",
+      "connections": [
+        {
+          "instance_id": "q1",
+          "pin_id": "E"
+        },
+        {
+          "instance_id": "r4",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "c2",
+          "pin_id": "ANODE"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "vout",
+      "connections": [
+        {
+          "instance_id": "c3",
+          "pin_id": "CATHODE"
+        },
+        {
+          "instance_id": "j2",
+          "pin_id": "P1"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": [
+    "Vb ≈ 9·10k/57k ≈ 1.58 V, Ve ≈ 0.88 V, Ic ≈ 0.88 mA, Vc ≈ 4.9 V."
+  ]
+}

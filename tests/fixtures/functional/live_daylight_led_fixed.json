@@ -1,0 +1,208 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "lv3",
+    "name": "Daylight LED",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "batt1",
+        "component_type": "power:battery-9v",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "ldr1",
+        "component_type": "sensor:photoresistor",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "r_div",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "r_base",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "1k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "q1",
+        "component_type": "semiconductor:npn-bc547",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "r_led",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "360"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "led1",
+        "component_type": "passive:led-5mm",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "gnd1",
+        "component_type": "primitive:ground-rail",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "net_vcc",
+        "connections": [
+          {
+            "instance_id": "batt1",
+            "pin_id": "POS"
+          },
+          {
+            "instance_id": "ldr1",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "r_led",
+            "pin_id": "PIN2"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_gnd",
+        "connections": [
+          {
+            "instance_id": "batt1",
+            "pin_id": "NEG"
+          },
+          {
+            "instance_id": "r_div",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "E"
+          },
+          {
+            "instance_id": "gnd1",
+            "pin_id": "GND"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_divider",
+        "connections": [
+          {
+            "instance_id": "ldr1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "r_div",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "r_base",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_base",
+        "connections": [
+          {
+            "instance_id": "r_base",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "B"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_collector",
+        "connections": [
+          {
+            "instance_id": "q1",
+            "pin_id": "C"
+          },
+          {
+            "instance_id": "led1",
+            "pin_id": "CATHODE"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_led_series",
+        "connections": [
+          {
+            "instance_id": "led1",
+            "pin_id": "ANODE"
+          },
+          {
+            "instance_id": "r_led",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "light_sensor",
+        "role": "input",
+        "quantity": "light",
+        "component_hint": null
+      },
+      {
+        "id": "led",
+        "role": "output",
+        "quantity": "LED",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "light_sensor",
+          "relation": "above",
+          "threshold": {
+            "kind": "unspecified"
+          }
+        },
+        "then": {
+          "output": "led",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "WARN",
+    "codes": [
+      "F102"
+    ]
+  }
+}

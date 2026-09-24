@@ -1,0 +1,36 @@
+{
+  "signals": [
+    {
+      "id": "knob",
+      "role": "input",
+      "quantity": "setting",
+      "component_hint": null,
+      "description": ""
+    },
+    {
+      "id": "log",
+      "role": "output",
+      "quantity": "storage",
+      "component_hint": null,
+      "description": ""
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "record",
+      "when": {
+        "input": "knob",
+        "relation": "changes",
+        "threshold": null
+      },
+      "then": {
+        "output": "log",
+        "effect": "display"
+      },
+      "description": "Store knob readings in the EEPROM"
+    }
+  ],
+  "processing": "any",
+  "required_components": [],
+  "notes": []
+}

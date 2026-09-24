@@ -1,0 +1,115 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "g1",
+    "name": "Alarm unless both inputs high",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "a",
+        "component_type": "primitive:logic-input",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "b",
+        "component_type": "primitive:logic-input",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "u1",
+        "component_type": "primitive:gate-nand",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "y",
+        "component_type": "primitive:logic-output",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "na",
+        "connections": [
+          {
+            "instance_id": "a",
+            "pin_id": "OUT"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "A"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "nb",
+        "connections": [
+          {
+            "instance_id": "b",
+            "pin_id": "OUT"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "B"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "ny",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "Y"
+          },
+          {
+            "instance_id": "y",
+            "pin_id": "IN"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "in_a",
+        "role": "input",
+        "quantity": "logic",
+        "component_hint": null
+      },
+      {
+        "id": "out",
+        "role": "output",
+        "quantity": "logic output",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "in_a",
+          "relation": "absent",
+          "threshold": null
+        },
+        "then": {
+          "output": "out",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "PASS"
+  }
+}

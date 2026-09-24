@@ -1,0 +1,29 @@
+{
+  "signals": [
+    {
+      "id": "relay",
+      "role": "output",
+      "quantity": "switching",
+      "component_hint": null,
+      "description": ""
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "cmd",
+      "when": {
+        "input": null,
+        "relation": "always",
+        "threshold": null
+      },
+      "then": {
+        "output": "relay",
+        "effect": "on"
+      },
+      "description": "Firmware switches the relay"
+    }
+  ],
+  "processing": "any",
+  "required_components": [],
+  "notes": []
+}

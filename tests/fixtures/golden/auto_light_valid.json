@@ -1,0 +1,151 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "auto_light_001",
+  "name": "Auto Night Light",
+  "description": "",
+  "curriculum_context": null,
+  "components": [
+    {
+      "instance_id": "u1",
+      "component_type": "board:esp32-devkit-v1",
+      "parameters": {},
+      "layout": null,
+      "metadata": {}
+    },
+    {
+      "instance_id": "ldr1",
+      "component_type": "sensor:photoresistor",
+      "parameters": {},
+      "layout": null,
+      "metadata": {}
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10000"
+      },
+      "layout": null,
+      "metadata": {}
+    },
+    {
+      "instance_id": "led1",
+      "component_type": "passive:led-5mm",
+      "parameters": {
+        "color": "white"
+      },
+      "layout": null,
+      "metadata": {}
+    },
+    {
+      "instance_id": "r2",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "220"
+      },
+      "layout": null,
+      "metadata": {}
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "vcc",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "3V3"
+        },
+        {
+          "instance_id": "ldr1",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "GND1"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "led1",
+          "pin_id": "CATHODE"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "ldr_sense",
+      "connections": [
+        {
+          "instance_id": "ldr1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "GPIO32"
+        }
+      ],
+      "net_type": null
+    },
+    {
+      "net_id": "led_ctrl",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "GPIO25"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": null
+    },
+    {
+      "net_id": "led_anode",
+      "connections": [
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "led1",
+          "pin_id": "ANODE"
+        }
+      ],
+      "net_type": null
+    }
+  ],
+  "logic": [
+    {
+      "rule_id": "r_dark",
+      "conditions": [
+        {
+          "input_instance": "ldr1",
+          "condition": "<",
+          "value": "LIGHT_THRESHOLD"
+        }
+      ],
+      "operator": "AND",
+      "actions": [
+        {
+          "output_instance": "led1",
+          "state": "HIGH"
+        }
+      ]
+    }
+  ],
+  "simulation": null,
+  "metadata": {}
+}

@@ -1,0 +1,135 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "cmos-inverter",
+  "name": "CMOS Inverter (transistor level)",
+  "description": "Complementary PMOS/NMOS pair between VDD and ground; the fundamental CMOS logic gate.",
+  "curriculum_context": {
+    "module": "CMOS Logic & Modern CMOS",
+    "concept": "CMOS Inverter",
+    "competency_level": "INTERMEDIATE"
+  },
+  "components": [
+    {
+      "instance_id": "v1",
+      "component_type": "primitive:dc-source",
+      "parameters": {
+        "voltage": "1.8"
+      },
+      "metadata": {
+        "role": "VDD"
+      }
+    },
+    {
+      "instance_id": "m1",
+      "component_type": "primitive:pmos",
+      "parameters": {
+        "width": "2u",
+        "length": "180n"
+      },
+      "metadata": {
+        "role": "pull-up"
+      }
+    },
+    {
+      "instance_id": "m2",
+      "component_type": "primitive:nmos",
+      "parameters": {
+        "width": "1u",
+        "length": "180n"
+      },
+      "metadata": {
+        "role": "pull-down"
+      }
+    },
+    {
+      "instance_id": "in1",
+      "component_type": "primitive:logic-input",
+      "parameters": {
+        "state": "0"
+      },
+      "metadata": {
+        "role": "input stimulus"
+      }
+    },
+    {
+      "instance_id": "out1",
+      "component_type": "primitive:logic-output",
+      "parameters": {},
+      "metadata": {
+        "role": "output probe"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "vdd",
+      "connections": [
+        {
+          "instance_id": "v1",
+          "pin_id": "POS"
+        },
+        {
+          "instance_id": "m1",
+          "pin_id": "S"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "v1",
+          "pin_id": "NEG"
+        },
+        {
+          "instance_id": "m2",
+          "pin_id": "S"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "vin",
+      "connections": [
+        {
+          "instance_id": "in1",
+          "pin_id": "OUT"
+        },
+        {
+          "instance_id": "m1",
+          "pin_id": "G"
+        },
+        {
+          "instance_id": "m2",
+          "pin_id": "G"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "vout",
+      "connections": [
+        {
+          "instance_id": "m1",
+          "pin_id": "D"
+        },
+        {
+          "instance_id": "m2",
+          "pin_id": "D"
+        },
+        {
+          "instance_id": "out1",
+          "pin_id": "IN"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": [
+    "PMOS sized 2x NMOS width to roughly balance rise/fall (hole mobility ~½ electron mobility)."
+  ]
+}

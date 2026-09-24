@@ -1,0 +1,270 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "l1",
+    "name": "Dark detector (MCP6001 + PNP high side)",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "j1",
+        "component_type": "power:usb-5v",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "ldr",
+        "component_type": "sensor:photoresistor",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "rt",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "ra",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "rb",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "u1",
+        "component_type": "ic:opamp-mcp6001",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "r1",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "4.7k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "q1",
+        "component_type": "semiconductor:pnp-2n3906",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "r2",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "220"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "d1",
+        "component_type": "passive:led-5mm",
+        "parameters": {
+          "color": "white"
+        },
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "v5",
+        "connections": [
+          {
+            "instance_id": "j1",
+            "pin_id": "VBUS"
+          },
+          {
+            "instance_id": "rt",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "ra",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "VDD"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "E"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "gnd",
+        "connections": [
+          {
+            "instance_id": "j1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "ldr",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "rb",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "VSS"
+          },
+          {
+            "instance_id": "d1",
+            "pin_id": "CATHODE"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "sense",
+        "connections": [
+          {
+            "instance_id": "rt",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "ldr",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "VIN_P"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "ref",
+        "connections": [
+          {
+            "instance_id": "ra",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "rb",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "VIN_N"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "o",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "VOUT"
+          },
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "b",
+        "connections": [
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "B"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "c",
+        "connections": [
+          {
+            "instance_id": "q1",
+            "pin_id": "C"
+          },
+          {
+            "instance_id": "r2",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "a",
+        "connections": [
+          {
+            "instance_id": "r2",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "d1",
+            "pin_id": "ANODE"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "light",
+        "role": "input",
+        "quantity": "light",
+        "component_hint": null
+      },
+      {
+        "id": "lamp",
+        "role": "output",
+        "quantity": "LED",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "light",
+          "relation": "below",
+          "threshold": {
+            "kind": "fixed"
+          }
+        },
+        "then": {
+          "output": "lamp",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "FAIL",
+    "codes": [
+      "F006"
+    ]
+  }
+}

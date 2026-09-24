@@ -1,0 +1,135 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "half-adder",
+  "name": "Half Adder (gate level)",
+  "description": "Sum = A XOR B, Carry = A AND B using ideal gates.",
+  "curriculum_context": {
+    "module": "Digital & Computer Architecture",
+    "concept": "Digital Logic Gate",
+    "competency_level": "BEGINNER"
+  },
+  "components": [
+    {
+      "instance_id": "a",
+      "component_type": "primitive:logic-input",
+      "parameters": {
+        "state": "0"
+      },
+      "metadata": {
+        "role": "input A"
+      }
+    },
+    {
+      "instance_id": "b",
+      "component_type": "primitive:logic-input",
+      "parameters": {
+        "state": "1"
+      },
+      "metadata": {
+        "role": "input B"
+      }
+    },
+    {
+      "instance_id": "u1",
+      "component_type": "primitive:gate-xor",
+      "parameters": {},
+      "metadata": {
+        "role": "sum"
+      }
+    },
+    {
+      "instance_id": "u2",
+      "component_type": "primitive:gate-and",
+      "parameters": {},
+      "metadata": {
+        "role": "carry"
+      }
+    },
+    {
+      "instance_id": "s",
+      "component_type": "primitive:logic-output",
+      "parameters": {},
+      "metadata": {
+        "role": "sum output"
+      }
+    },
+    {
+      "instance_id": "co",
+      "component_type": "primitive:logic-output",
+      "parameters": {},
+      "metadata": {
+        "role": "carry output"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "na",
+      "connections": [
+        {
+          "instance_id": "a",
+          "pin_id": "OUT"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "A"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "A"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "nb",
+      "connections": [
+        {
+          "instance_id": "b",
+          "pin_id": "OUT"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "B"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "B"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "sum",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "Y"
+        },
+        {
+          "instance_id": "s",
+          "pin_id": "IN"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "carry",
+      "connections": [
+        {
+          "instance_id": "u2",
+          "pin_id": "Y"
+        },
+        {
+          "instance_id": "co",
+          "pin_id": "IN"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": []
+}

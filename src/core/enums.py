@@ -22,6 +22,17 @@ class ComponentCategory(str, Enum):
     POWER_SOURCE = "POWER_SOURCE"
     GROUND_NODE = "GROUND_NODE"
     ROUTING = "ROUTING"
+    # Added in the 2D Schematic Studio stage. None of these are special-cased by
+    # legacy validator rules; behaviour comes from pin metadata instead.
+    SEMICONDUCTOR = "SEMICONDUCTOR"            # discrete diodes, BJTs, MOSFETs
+    INTEGRATED_CIRCUIT = "INTEGRATED_CIRCUIT"  # op-amps, timers, logic ICs, ADC/DAC
+    POWER_MANAGEMENT = "POWER_MANAGEMENT"      # regulators, converters
+    SWITCH = "SWITCH"
+    DISPLAY = "DISPLAY"
+    ACTUATOR = "ACTUATOR"
+    MEMORY = "MEMORY"
+    INTERFACE = "INTERFACE"                    # transceivers, level shifters
+    LOGIC = "LOGIC"                            # idealised logic primitives
 
 class ValidationStatus(str, Enum):
     PASS = "PASS"

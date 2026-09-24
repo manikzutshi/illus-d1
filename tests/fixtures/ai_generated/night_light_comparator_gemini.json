@@ -1,0 +1,273 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "automatic_night_light_9v",
+  "name": "Automatic Night Light (9V, No Microcontroller)",
+  "description": "",
+  "curriculum_context": null,
+  "components": [
+    {
+      "instance_id": "bat1",
+      "component_type": "power:battery-9v",
+      "parameters": {},
+      "metadata": {
+        "role": "9V DC power source"
+      }
+    },
+    {
+      "instance_id": "gnd1",
+      "component_type": "primitive:ground-rail",
+      "parameters": {},
+      "metadata": {
+        "role": "Circuit ground reference"
+      }
+    },
+    {
+      "instance_id": "ldr1",
+      "component_type": "sensor:photoresistor",
+      "parameters": {},
+      "metadata": {
+        "role": "Ambient light sensor (LDR)"
+      }
+    },
+    {
+      "instance_id": "r_top",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "Divider top resistor",
+        "rationale": "Forms voltage divider with LDR"
+      }
+    },
+    {
+      "instance_id": "rv1",
+      "component_type": "passive:potentiometer",
+      "parameters": {},
+      "metadata": {
+        "role": "Threshold adjustment potentiometer",
+        "rationale": "Adjustable reference voltage for comparator threshold"
+      }
+    },
+    {
+      "instance_id": "comp1",
+      "component_type": "ic:comparator-lm393",
+      "parameters": {},
+      "metadata": {
+        "role": "Compares light sensor voltage to threshold reference"
+      }
+    },
+    {
+      "instance_id": "r_pullup",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "Comparator output pull-up resistor",
+        "rationale": "Pull-up resistor for LM393 open-collector output"
+      }
+    },
+    {
+      "instance_id": "q1",
+      "component_type": "active:transistor-npn-2n2222",
+      "parameters": {},
+      "metadata": {
+        "role": "Low-side driver switch for LED"
+      }
+    },
+    {
+      "instance_id": "r_base",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "1k"
+      },
+      "metadata": {
+        "role": "Transistor base resistor",
+        "rationale": "Limits base current for 2N2222 transistor"
+      }
+    },
+    {
+      "instance_id": "led1",
+      "component_type": "passive:led-5mm",
+      "parameters": {},
+      "metadata": {
+        "role": "Night light indicator LED"
+      }
+    },
+    {
+      "instance_id": "r_led",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "330"
+      },
+      "metadata": {
+        "rationale": "Calculated 330 ohm resistor for 20mA LED current at 9V supply",
+        "role": "LED current-limiting resistor"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "net_vcc",
+      "connections": [
+        {
+          "instance_id": "bat1",
+          "pin_id": "POS"
+        },
+        {
+          "instance_id": "r_top",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "VCC"
+        },
+        {
+          "instance_id": "comp1",
+          "pin_id": "VCC"
+        },
+        {
+          "instance_id": "r_pullup",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "led1",
+          "pin_id": "ANODE"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "net_gnd",
+      "connections": [
+        {
+          "instance_id": "bat1",
+          "pin_id": "NEG"
+        },
+        {
+          "instance_id": "gnd1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "ldr1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "comp1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "E"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "net_sensor_div",
+      "connections": [
+        {
+          "instance_id": "r_top",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "ldr1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "comp1",
+          "pin_id": "IN1_P"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_ref_div",
+      "connections": [
+        {
+          "instance_id": "rv1",
+          "pin_id": "OUT"
+        },
+        {
+          "instance_id": "comp1",
+          "pin_id": "IN1_N"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_comp_out",
+      "connections": [
+        {
+          "instance_id": "comp1",
+          "pin_id": "OUT1"
+        },
+        {
+          "instance_id": "r_pullup",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "r_base",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_base",
+      "connections": [
+        {
+          "instance_id": "r_base",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "B"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_collector",
+      "connections": [
+        {
+          "instance_id": "q1",
+          "pin_id": "C"
+        },
+        {
+          "instance_id": "r_led",
+          "pin_id": "PIN2"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_led_series",
+      "connections": [
+        {
+          "instance_id": "led1",
+          "pin_id": "CATHODE"
+        },
+        {
+          "instance_id": "r_led",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": [
+    "9V battery powers the automatic night light circuit directly",
+    "LDR voltage divider sets threshold for darkness detection",
+    "LM393 comparator compares LDR divider voltage with reference potentiometer voltage",
+    "Comparator open-collector output drives NPN transistor to switch LED on in darkness"
+  ]
+}

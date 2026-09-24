@@ -1,0 +1,240 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "lv9",
+    "name": "Button motor (Uno + IRLZ44N)",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "u1",
+        "component_type": "board:arduino-uno-r3",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "bat1",
+        "component_type": "power:battery-4xaa",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "m1",
+        "component_type": "actuator:dc-motor",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "btn1",
+        "component_type": "passive:push-button-2pin",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "q1",
+        "component_type": "semiconductor:nmos-irlz44n",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "rg1",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "100"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "rpd1",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "d1",
+        "component_type": "semiconductor:diode-1n4007",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "net_btn_signal",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "D2"
+          },
+          {
+            "instance_id": "btn1",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_btn_gnd",
+        "connections": [
+          {
+            "instance_id": "btn1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GND1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_ctrl",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "D3"
+          },
+          {
+            "instance_id": "rg1",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_gate",
+        "connections": [
+          {
+            "instance_id": "rg1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "rpd1",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "G"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_motor_pos",
+        "connections": [
+          {
+            "instance_id": "bat1",
+            "pin_id": "POS"
+          },
+          {
+            "instance_id": "m1",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "d1",
+            "pin_id": "K"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_motor_low",
+        "connections": [
+          {
+            "instance_id": "m1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "D"
+          },
+          {
+            "instance_id": "d1",
+            "pin_id": "A"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_gnd",
+        "connections": [
+          {
+            "instance_id": "q1",
+            "pin_id": "S"
+          },
+          {
+            "instance_id": "rpd1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GND2"
+          },
+          {
+            "instance_id": "bat1",
+            "pin_id": "NEG"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [
+      {
+        "rule_id": "motor_run_rule",
+        "conditions": [
+          {
+            "input_instance": "btn1",
+            "condition": "==",
+            "value": "LOW"
+          }
+        ],
+        "operator": "AND",
+        "actions": [
+          {
+            "output_instance": "q1",
+            "state": "HIGH"
+          }
+        ]
+      }
+    ],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "btn",
+        "role": "input",
+        "quantity": "press",
+        "component_hint": null
+      },
+      {
+        "id": "motor",
+        "role": "output",
+        "quantity": "motor",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "motor_run",
+        "when": {
+          "input": "btn",
+          "relation": "pressed",
+          "threshold": null
+        },
+        "then": {
+          "output": "motor",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": [
+      "6V DC motor",
+      "4xAA battery pack"
+    ]
+  },
+  "expect": {
+    "status": "PASS"
+  }
+}

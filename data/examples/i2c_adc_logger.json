@@ -1,0 +1,203 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "i2c-adc-logger",
+  "name": "I2C ADC + EEPROM Logger",
+  "description": "Arduino samples a potentiometer with an ADS1115 and stores readings in a 24LC256 EEPROM on a shared I2C bus.",
+  "curriculum_context": {
+    "module": "Mixed-Signal / High-Speed Circuits",
+    "concept": "ADC interfacing",
+    "competency_level": "INTERMEDIATE"
+  },
+  "components": [
+    {
+      "instance_id": "u1",
+      "component_type": "board:arduino-uno-r3",
+      "parameters": {},
+      "metadata": {
+        "role": "controller"
+      }
+    },
+    {
+      "instance_id": "u2",
+      "component_type": "adc:ads1115",
+      "parameters": {},
+      "metadata": {
+        "role": "16-bit ADC"
+      }
+    },
+    {
+      "instance_id": "u3",
+      "component_type": "memory:24lc256",
+      "parameters": {},
+      "metadata": {
+        "role": "storage"
+      }
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "4.7k"
+      },
+      "metadata": {
+        "role": "SDA pull-up"
+      }
+    },
+    {
+      "instance_id": "r2",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "4.7k"
+      },
+      "metadata": {
+        "role": "SCL pull-up"
+      }
+    },
+    {
+      "instance_id": "rv1",
+      "component_type": "passive:potentiometer",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "analog input"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "v5",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "5V"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "VDD"
+        },
+        {
+          "instance_id": "u3",
+          "pin_id": "VCC"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "VCC"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "GND1"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "ADDR"
+        },
+        {
+          "instance_id": "u3",
+          "pin_id": "VSS"
+        },
+        {
+          "instance_id": "u3",
+          "pin_id": "A0"
+        },
+        {
+          "instance_id": "u3",
+          "pin_id": "A1"
+        },
+        {
+          "instance_id": "u3",
+          "pin_id": "A2"
+        },
+        {
+          "instance_id": "u3",
+          "pin_id": "WP"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "GND"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "sda",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "A4"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "SDA"
+        },
+        {
+          "instance_id": "u3",
+          "pin_id": "SDA"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "scl",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "A5"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "SCL"
+        },
+        {
+          "instance_id": "u3",
+          "pin_id": "SCL"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN2"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "ain0",
+      "connections": [
+        {
+          "instance_id": "rv1",
+          "pin_id": "OUT"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "AIN0"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": []
+}

@@ -1,0 +1,29 @@
+{
+  "signals": [
+    {
+      "id": "led",
+      "role": "output",
+      "quantity": "light_emission",
+      "component_hint": null,
+      "description": ""
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "blink",
+      "when": {
+        "input": null,
+        "relation": "periodic",
+        "threshold": null
+      },
+      "then": {
+        "output": "led",
+        "effect": "pulse"
+      },
+      "description": "LED blinks on its own"
+    }
+  ],
+  "processing": "any",
+  "required_components": [],
+  "notes": []
+}

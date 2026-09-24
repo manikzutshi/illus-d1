@@ -1,0 +1,36 @@
+{
+  "signals": [
+    {
+      "id": "in",
+      "role": "input",
+      "quantity": "setting",
+      "component_hint": null,
+      "description": ""
+    },
+    {
+      "id": "out",
+      "role": "output",
+      "quantity": "signal",
+      "component_hint": null,
+      "description": ""
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "gain",
+      "when": {
+        "input": "in",
+        "relation": "proportional",
+        "threshold": null
+      },
+      "then": {
+        "output": "out",
+        "effect": "proportional"
+      },
+      "description": "Output follows the input (gain 2)"
+    }
+  ],
+  "processing": "any",
+  "required_components": [],
+  "notes": []
+}

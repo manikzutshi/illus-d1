@@ -1,0 +1,217 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "r1",
+    "name": "Button relay",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "u1",
+        "component_type": "board:arduino-uno-r3",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "sw1",
+        "component_type": "passive:push-button-2pin",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "rpd",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "k1",
+        "component_type": "actuator:relay-5v-coil",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "d1",
+        "component_type": "semiconductor:diode-1n4007",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "rb",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "1k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "q1",
+        "component_type": "active:transistor-npn-2n2222",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "v5",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "5V"
+          },
+          {
+            "instance_id": "sw1",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "k1",
+            "pin_id": "COIL1"
+          },
+          {
+            "instance_id": "d1",
+            "pin_id": "K"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "gnd",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "GND1"
+          },
+          {
+            "instance_id": "rpd",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "E"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "btn",
+        "connections": [
+          {
+            "instance_id": "sw1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "rpd",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "D2"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "drv",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "D7"
+          },
+          {
+            "instance_id": "rb",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "base",
+        "connections": [
+          {
+            "instance_id": "rb",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "B"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "coil",
+        "connections": [
+          {
+            "instance_id": "q1",
+            "pin_id": "C"
+          },
+          {
+            "instance_id": "k1",
+            "pin_id": "COIL2"
+          },
+          {
+            "instance_id": "d1",
+            "pin_id": "A"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [
+      {
+        "rule_id": "r1",
+        "conditions": [
+          {
+            "input_instance": "sw1",
+            "condition": "==",
+            "value": "HIGH"
+          }
+        ],
+        "operator": "AND",
+        "actions": [
+          {
+            "output_instance": "k1",
+            "state": "ON"
+          }
+        ]
+      }
+    ],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "btn",
+        "role": "input",
+        "quantity": "push button",
+        "component_hint": null
+      },
+      {
+        "id": "load",
+        "role": "output",
+        "quantity": "relay",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "btn",
+          "relation": "pressed",
+          "threshold": null
+        },
+        "then": {
+          "output": "load",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "PASS"
+  }
+}

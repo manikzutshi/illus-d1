@@ -1,0 +1,36 @@
+{
+  "signals": [
+    {
+      "id": "a",
+      "role": "input",
+      "quantity": "logic",
+      "component_hint": null,
+      "description": ""
+    },
+    {
+      "id": "sum",
+      "role": "output",
+      "quantity": "logic",
+      "component_hint": null,
+      "description": ""
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "s",
+      "when": {
+        "input": "a",
+        "relation": "changes",
+        "threshold": null
+      },
+      "then": {
+        "output": "sum",
+        "effect": "display"
+      },
+      "description": "Sum output responds to input A"
+    }
+  ],
+  "processing": "any",
+  "required_components": [],
+  "notes": []
+}

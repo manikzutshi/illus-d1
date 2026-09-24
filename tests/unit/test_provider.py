@@ -2,7 +2,7 @@
 import pytest
 
 from ai.provider import MockModelProvider, ModelProvider
-from core.models import DesignProject, ComponentInstance
+from core.models import EngineeringDesignProject, EngineeringComponentInstance
 
 
 class TestMockModelProvider:
@@ -29,17 +29,17 @@ class TestMockModelProvider:
 
     def test_structured_generate_with_match(self):
         provider = MockModelProvider()
-        design = DesignProject(
-            project_id="test", name="Test", components=[], nets=[]
+        design = EngineeringDesignProject(
+            project_id="test", name="Test", components=[EngineeringComponentInstance(instance_id="test", component_type="test:test")], nets=[]
         )
         provider.set_structured_response("parking", design)
-        result = provider.structured_generate([{"role": "user", "content": "smart parking"}], DesignProject)
+        result = provider.structured_generate([{"role": "user", "content": "smart parking"}], EngineeringDesignProject)
         assert result.project_id == "test"
 
     def test_structured_generate_no_match_raises(self):
         provider = MockModelProvider()
         with pytest.raises(ValueError, match="No configured structured response"):
-            provider.structured_generate([{"role": "user", "content": "unknown prompt"}], DesignProject)
+            provider.structured_generate([{"role": "user", "content": "unknown prompt"}], EngineeringDesignProject)
 
     def test_tool_call_returns_empty(self):
         provider = MockModelProvider()

@@ -12,7 +12,10 @@ class TestCurriculumStore:
         return get_default_curriculum()
 
     def test_load_default(self, store):
-        assert store.count == 8
+        assert store.count >= 8
+        for cid in ("cmos_inverter", "digital_logic_gate", "fsm_design", "rtl_design", "verification",
+                    "timing_analysis", "sensor_integration", "embedded_basics"):
+            assert store.get(cid) is not None
 
     def test_get_known_concept(self, store):
         concept = store.get("cmos_inverter")
@@ -42,7 +45,7 @@ class TestCurriculumStore:
 
     def test_list_all(self, store):
         all_concepts = store.list_all()
-        assert len(all_concepts) == 8
+        assert len(all_concepts) == store.count
 
     def test_load_nonexistent_file(self):
         s = CurriculumStore()

@@ -1,0 +1,26 @@
+# Controlled vocabulary for functional intent. Canonical quantity -> synonyms.
+# The AI may use any wording; functional/intent.py maps it here deterministically.
+# Unmapped wording is reported as NOT CHECKABLE instead of being guessed.
+
+inputs:
+  temperature: [temp, heat, hot, cold, warm, thermal, degrees, overheating]
+  light: [brightness, dark, darkness, ambient light, daylight, illumination, lux, night, day]
+  motion: [movement, presence, occupancy, intruder, pir, motion detection]
+  distance: [proximity, range, level, water level, obstacle, parking, ultrasonic]
+  humidity: [moisture, relative humidity]
+  gas: [smoke, co2, air quality, fumes]
+  acceleration: [tilt, vibration, orientation, shock, imu]
+  rotation: [encoder, knob rotation, angle]
+  press: [button, push button, switch, user input, keypress, pushbutton, touch]
+  setting: [potentiometer, knob, adjustment, setpoint, dial, speed setting, trimmer]
+  logic: [logic level, digital input, bit, boolean]
+  signal: [analog signal, audio, input signal, voltage, waveform]
+outputs:
+  light_emission: [led, lamp, light, indicator, glow, illuminate, night light]
+  sound_emission: [buzzer, alarm, beep, beeper, sound, siren, tone]
+  motion_output: [motor, fan, servo, rotate, spin, actuator motion]
+  display: [screen, oled, lcd, show, readout, seven segment, 7-segment]
+  switching: [relay, switch load, mains, appliance, contact]
+  logic: [logic output, digital output, probe, bit output]
+  signal: [output signal, amplified signal, audio out, analog output]
+  storage: [memory, eeprom, log, logging, store, record, data logger]

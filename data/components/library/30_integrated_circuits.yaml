@@ -1,0 +1,572 @@
+# Integrated circuits: analog, power management, logic, drivers, mixed-signal, memory, interface.
+# Pin numbers follow the standard DIP / TO / SOT packages named in `physical.package`.
+# Signal-pin max_voltage is omitted where the limit depends on the chosen supply (e.g. VCC+0.5 V):
+# the validator then reports "not checkable" instead of assuming a number.
+
+components:
+  ic:opamp-mcp6001:
+    name: MCP6001 Rail-to-Rail Op-Amp
+    short_name: MCP6001
+    aliases: [mcp6001, op-amp, opamp, operational amplifier, rail to rail opamp]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: opamp
+    tags: [amplifier, analog, single supply, rail-to-rail, low voltage]
+    description: Single 1 MHz rail-to-rail input/output op-amp for 1.8-6 V single supplies.
+    pins:
+      - {pin_id: VOUT, name: VOUT, direction: OUTPUT, number: "1"}
+      - {pin_id: VSS, name: VSS, direction: GROUND, number: "2", max_voltage: 0.0}
+      - {pin_id: VIN_P, name: "VIN+", direction: INPUT, number: "3"}
+      - {pin_id: VIN_N, name: "VIN-", direction: INPUT, number: "4"}
+      - {pin_id: VDD, name: VDD, direction: POWER, supply: sink, number: "5", max_voltage: 7.0}
+    electrical_properties: {operating_voltage: 1.8V-6.0V, gain_bandwidth: 1MHz, supply_current_typical: 100uA}
+    interfaces: [ANALOG]
+    symbol: {name: opamp, pin_map: {VIN_P: "+", VIN_N: "-", VOUT: OUT, VDD: "V+", VSS: "V-"}, ref_prefix: U}
+    physical: {package: SOT-23-5, mounting: SMD, breadboard_compatible: false}
+    design_constraints:
+      - {kind: decoupling_capacitor, pins: [VDD], value: 100nF, severity: INFO, note: Place 100 nF from VDD to VSS close to the pin.}
+    curriculum_mapping: [opamp_basics, analog_fundamentals, sensor_interface]
+    education:
+      summary: Amplifies the difference between its inputs; with feedback it forms precise gain stages.
+      how_it_works: Negative feedback forces V+ ≈ V-; the feedback network sets the gain.
+      typical_uses: [Non-inverting/inverting amplifiers, buffers, active filters, sensor front-ends]
+      common_mistakes: [Leaving an unused input floating, expecting gain beyond the gain-bandwidth product]
+
+  ic:opamp-lm358:
+    name: LM358 Dual Op-Amp
+    short_name: LM358
+    aliases: [lm358, dual op-amp, dual opamp]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: opamp
+    tags: [amplifier, analog, single supply, dual]
+    description: Dual general-purpose op-amp, 3-32 V single supply (input range includes ground).
+    pins:
+      - {pin_id: OUT1, name: OUT1, direction: OUTPUT, number: "1"}
+      - {pin_id: IN1_N, name: "IN1-", direction: INPUT, number: "2"}
+      - {pin_id: IN1_P, name: "IN1+", direction: INPUT, number: "3"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "4", max_voltage: 0.0}
+      - {pin_id: IN2_P, name: "IN2+", direction: INPUT, number: "5"}
+      - {pin_id: IN2_N, name: "IN2-", direction: INPUT, number: "6"}
+      - {pin_id: OUT2, name: OUT2, direction: OUTPUT, number: "7"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "8", max_voltage: 32.0}
+    electrical_properties: {operating_voltage: 3V-32V, gain_bandwidth: 1MHz}
+    interfaces: [ANALOG]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-8, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [opamp_basics, analog_fundamentals]
+    education:
+      summary: Classic low-cost dual op-amp; output does not swing to VCC.
+      common_mistakes: [Expecting rail-to-rail output (it tops out ~1.5 V below VCC)]
+
+  ic:comparator-lm393:
+    name: LM393 Dual Comparator
+    short_name: LM393
+    aliases: [lm393, comparator, dual comparator]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: comparator
+    tags: [comparator, threshold, analog to digital, open collector]
+    description: Dual voltage comparator with open-collector outputs, 2-36 V supply.
+    pins:
+      - {pin_id: OUT1, name: OUT1, direction: OUTPUT, number: "1"}
+      - {pin_id: IN1_N, name: "IN1-", direction: INPUT, number: "2"}
+      - {pin_id: IN1_P, name: "IN1+", direction: INPUT, number: "3"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "4", max_voltage: 0.0}
+      - {pin_id: IN2_P, name: "IN2+", direction: INPUT, number: "5"}
+      - {pin_id: IN2_N, name: "IN2-", direction: INPUT, number: "6"}
+      - {pin_id: OUT2, name: OUT2, direction: OUTPUT, number: "7"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "8", max_voltage: 36.0}
+    electrical_properties: {operating_voltage: 2V-36V, output_type: open-collector}
+    interfaces: [ANALOG, DIGITAL]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-8, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    design_constraints:
+      - {kind: pullup_required, pins: [OUT1, OUT2], value: 10k, severity: WARNING, note: Open-collector outputs need a pull-up resistor (on used outputs).}
+    curriculum_mapping: [comparator_threshold, analog_fundamentals]
+    education:
+      summary: Outputs a logic level telling which input is higher.
+      how_it_works: Open-collector output transistor pulls low when IN- > IN+; a pull-up provides the high level.
+      typical_uses: [Light/dark detectors, threshold alarms, zero-cross detection]
+      common_mistakes: [Forgetting the output pull-up, no hysteresis on slow or noisy inputs]
+
+  ic:timer-ne555:
+    name: NE555 Timer
+    short_name: NE555
+    aliases: [ne555, "555", 555 timer, timer]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: timer
+    tags: [oscillator, astable, monostable, pwm, blinker]
+    description: Classic bipolar timer, 4.5-16 V supply, output sinks/sources up to 200 mA.
+    pins:
+      - {pin_id: GND, name: GND, direction: GROUND, number: "1", max_voltage: 0.0}
+      - {pin_id: TRIG, name: TRIG, direction: INPUT, number: "2"}
+      - {pin_id: OUT, name: OUT, direction: OUTPUT, number: "3"}
+      - {pin_id: RESET, name: RESET, direction: INPUT, number: "4"}
+      - {pin_id: CTRL, name: CTRL, direction: PASSIVE, number: "5"}
+      - {pin_id: THRES, name: THRES, direction: INPUT, number: "6"}
+      - {pin_id: DISCH, name: DISCH, direction: PASSIVE, number: "7"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "8", max_voltage: 18.0}
+    electrical_properties: {operating_voltage: 4.5V-16V, output_current_capability: 200mA}
+    interfaces: [DIGITAL, PWM]
+    symbol: {name: ic_box, ref_prefix: U,
+             box_sides: {TRIG: left, THRES: left, DISCH: left, CTRL: left, RESET: right, OUT: right}}
+    physical: {package: DIP-8, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    design_constraints:
+      - {kind: decoupling_capacitor, pins: [VCC], value: 100nF, severity: INFO, note: Decouple VCC; add 10 nF on CTRL if it is unused.}
+    curriculum_mapping: [rc_timing, oscillators]
+    education:
+      summary: Builds oscillators and one-shot timers from a resistor-capacitor network.
+      how_it_works: Two comparators at 1/3 and 2/3 VCC flip an internal latch as the timing capacitor charges and discharges.
+      typical_uses: [LED blinkers, tone generators, PWM, debouncing]
+      common_mistakes: [Leaving RESET floating (tie it to VCC)]
+
+  ic:regulator-lm7805:
+    name: LM7805 5 V Linear Regulator
+    short_name: LM7805
+    aliases: [lm7805, "7805", 5v regulator, linear regulator]
+    category: POWER_MANAGEMENT
+    object_type: PHYSICAL
+    family: linear_regulator
+    tags: [power supply, voltage regulator, 5v]
+    description: Fixed 5 V positive regulator, up to 1.5 A, input 7-35 V (about 2 V dropout).
+    pins:
+      - {pin_id: VIN, name: VIN, direction: POWER, supply: sink, number: "1", max_voltage: 35.0}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "2", max_voltage: 0.0}
+      - {pin_id: VOUT, name: VOUT, direction: POWER, supply: source, nominal_voltage: 5.0, number: "3", max_voltage: 5.2}
+    electrical_properties: {input_voltage_range: 7V-35V, output_voltage: 5V, output_current_capability: 1.5A, dropout_voltage: 2V}
+    roles: [POWER]
+    symbol: {name: regulator, ref_prefix: U}
+    physical: {package: TO-220, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    design_constraints:
+      - {kind: decoupling_capacitor, pins: [VIN], value: 330nF, severity: WARNING, note: Input capacitor (0.33 µF) is required when far from the supply filter.}
+      - {kind: decoupling_capacitor, pins: [VOUT], value: 100nF, severity: INFO, note: Output capacitor (0.1 µF) improves transient response.}
+    curriculum_mapping: [linear_regulation, power_conversion]
+    education:
+      summary: Drops a higher DC voltage to a steady 5 V.
+      how_it_works: A pass transistor dissipates (Vin − 5 V)·I as heat to hold the output constant.
+      typical_uses: [5 V rails from 9-12 V adapters or batteries]
+      common_mistakes: ["Ignoring heat: 12 V to 5 V at 1 A dissipates 7 W and needs a heatsink"]
+
+  ic:ldo-ams1117-3v3:
+    name: AMS1117-3.3 LDO Regulator
+    short_name: AMS1117-3.3
+    aliases: [ams1117, ams1117-3.3, 3.3v regulator, ldo]
+    category: POWER_MANAGEMENT
+    object_type: PHYSICAL
+    family: linear_regulator
+    tags: [power supply, voltage regulator, 3.3v, ldo]
+    description: 3.3 V 1 A low-dropout regulator (input up to 15 V, ~1.1 V dropout at 1 A).
+    pins:
+      - {pin_id: GND, name: GND, direction: GROUND, number: "1", max_voltage: 0.0}
+      - {pin_id: VOUT, name: VOUT, direction: POWER, supply: source, nominal_voltage: 3.3, number: "2", max_voltage: 3.4}
+      - {pin_id: VIN, name: VIN, direction: POWER, supply: sink, number: "3", max_voltage: 15.0}
+    electrical_properties: {input_voltage_range: 4.5V-15V, output_voltage: 3.3V, output_current_capability: 1A}
+    roles: [POWER]
+    symbol: {name: regulator, ref_prefix: U}
+    physical: {package: SOT-223, mounting: SMD, breadboard_compatible: false}
+    design_constraints:
+      - {kind: decoupling_capacitor, pins: [VOUT], value: 10uF, severity: WARNING, note: Needs an output capacitor (≥10 µF tantalum/electrolytic) for stability.}
+    curriculum_mapping: [linear_regulation, power_conversion]
+    education:
+      summary: Produces 3.3 V from a 5 V (or higher) rail with low dropout.
+      common_mistakes: [Omitting the output capacitor (it can oscillate)]
+
+  logic:74hc00:
+    name: 74HC00 Quad 2-Input NAND
+    short_name: 74HC00
+    aliases: [74hc00, "7400", quad nand]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: logic_ic
+    tags: [cmos logic, nand, combinational, 74hc]
+    description: Four 2-input NAND gates, 2-6 V CMOS.
+    pins:
+      - {pin_id: 1A, name: 1A, direction: INPUT, number: "1"}
+      - {pin_id: 1B, name: 1B, direction: INPUT, number: "2"}
+      - {pin_id: 1Y, name: 1Y, direction: OUTPUT, number: "3"}
+      - {pin_id: 2A, name: 2A, direction: INPUT, number: "4"}
+      - {pin_id: 2B, name: 2B, direction: INPUT, number: "5"}
+      - {pin_id: 2Y, name: 2Y, direction: OUTPUT, number: "6"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "7", max_voltage: 0.0}
+      - {pin_id: 3Y, name: 3Y, direction: OUTPUT, number: "8"}
+      - {pin_id: 3A, name: 3A, direction: INPUT, number: "9"}
+      - {pin_id: 3B, name: 3B, direction: INPUT, number: "10"}
+      - {pin_id: 4Y, name: 4Y, direction: OUTPUT, number: "11"}
+      - {pin_id: 4A, name: 4A, direction: INPUT, number: "12"}
+      - {pin_id: 4B, name: 4B, direction: INPUT, number: "13"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "14", max_voltage: 7.0}
+    electrical_properties: {operating_voltage: 2V-6V, output_current_capability: 5.2mA at 4.5V}
+    interfaces: [DIGITAL]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-14, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    design_constraints:
+      - {kind: decoupling_capacitor, pins: [VCC], value: 100nF, severity: INFO, note: Decouple each logic IC with 100 nF.}
+    curriculum_mapping: [digital_logic_gate, cmos_logic]
+    education:
+      summary: NAND is a universal gate - any logic function can be built from it.
+      common_mistakes: [Leaving unused CMOS inputs floating (tie them to VCC or GND)]
+
+  logic:74hc04:
+    name: 74HC04 Hex Inverter
+    short_name: 74HC04
+    aliases: [74hc04, "7404", hex inverter, inverter ic]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: logic_ic
+    tags: [cmos logic, inverter, not, 74hc]
+    description: Six CMOS inverters, 2-6 V.
+    pins:
+      - {pin_id: 1A, name: 1A, direction: INPUT, number: "1"}
+      - {pin_id: 1Y, name: 1Y, direction: OUTPUT, number: "2"}
+      - {pin_id: 2A, name: 2A, direction: INPUT, number: "3"}
+      - {pin_id: 2Y, name: 2Y, direction: OUTPUT, number: "4"}
+      - {pin_id: 3A, name: 3A, direction: INPUT, number: "5"}
+      - {pin_id: 3Y, name: 3Y, direction: OUTPUT, number: "6"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "7", max_voltage: 0.0}
+      - {pin_id: 4Y, name: 4Y, direction: OUTPUT, number: "8"}
+      - {pin_id: 4A, name: 4A, direction: INPUT, number: "9"}
+      - {pin_id: 5Y, name: 5Y, direction: OUTPUT, number: "10"}
+      - {pin_id: 5A, name: 5A, direction: INPUT, number: "11"}
+      - {pin_id: 6Y, name: 6Y, direction: OUTPUT, number: "12"}
+      - {pin_id: 6A, name: 6A, direction: INPUT, number: "13"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "14", max_voltage: 7.0}
+    electrical_properties: {operating_voltage: 2V-6V}
+    interfaces: [DIGITAL]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-14, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [digital_logic_gate, cmos_inverter, cmos_logic]
+
+  logic:74hc08:
+    name: 74HC08 Quad 2-Input AND
+    short_name: 74HC08
+    aliases: [74hc08, "7408", quad and]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: logic_ic
+    tags: [cmos logic, and, combinational, 74hc]
+    description: Four 2-input AND gates, 2-6 V CMOS.
+    pins:
+      - {pin_id: 1A, name: 1A, direction: INPUT, number: "1"}
+      - {pin_id: 1B, name: 1B, direction: INPUT, number: "2"}
+      - {pin_id: 1Y, name: 1Y, direction: OUTPUT, number: "3"}
+      - {pin_id: 2A, name: 2A, direction: INPUT, number: "4"}
+      - {pin_id: 2B, name: 2B, direction: INPUT, number: "5"}
+      - {pin_id: 2Y, name: 2Y, direction: OUTPUT, number: "6"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "7", max_voltage: 0.0}
+      - {pin_id: 3Y, name: 3Y, direction: OUTPUT, number: "8"}
+      - {pin_id: 3A, name: 3A, direction: INPUT, number: "9"}
+      - {pin_id: 3B, name: 3B, direction: INPUT, number: "10"}
+      - {pin_id: 4Y, name: 4Y, direction: OUTPUT, number: "11"}
+      - {pin_id: 4A, name: 4A, direction: INPUT, number: "12"}
+      - {pin_id: 4B, name: 4B, direction: INPUT, number: "13"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "14", max_voltage: 7.0}
+    electrical_properties: {operating_voltage: 2V-6V}
+    interfaces: [DIGITAL]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-14, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [digital_logic_gate, cmos_logic]
+
+  logic:74hc32:
+    name: 74HC32 Quad 2-Input OR
+    short_name: 74HC32
+    aliases: [74hc32, "7432", quad or]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: logic_ic
+    tags: [cmos logic, or, combinational, 74hc]
+    description: Four 2-input OR gates, 2-6 V CMOS.
+    pins:
+      - {pin_id: 1A, name: 1A, direction: INPUT, number: "1"}
+      - {pin_id: 1B, name: 1B, direction: INPUT, number: "2"}
+      - {pin_id: 1Y, name: 1Y, direction: OUTPUT, number: "3"}
+      - {pin_id: 2A, name: 2A, direction: INPUT, number: "4"}
+      - {pin_id: 2B, name: 2B, direction: INPUT, number: "5"}
+      - {pin_id: 2Y, name: 2Y, direction: OUTPUT, number: "6"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "7", max_voltage: 0.0}
+      - {pin_id: 3Y, name: 3Y, direction: OUTPUT, number: "8"}
+      - {pin_id: 3A, name: 3A, direction: INPUT, number: "9"}
+      - {pin_id: 3B, name: 3B, direction: INPUT, number: "10"}
+      - {pin_id: 4Y, name: 4Y, direction: OUTPUT, number: "11"}
+      - {pin_id: 4A, name: 4A, direction: INPUT, number: "12"}
+      - {pin_id: 4B, name: 4B, direction: INPUT, number: "13"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "14", max_voltage: 7.0}
+    electrical_properties: {operating_voltage: 2V-6V}
+    interfaces: [DIGITAL]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-14, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [digital_logic_gate, cmos_logic]
+
+  logic:74hc86:
+    name: 74HC86 Quad 2-Input XOR
+    short_name: 74HC86
+    aliases: [74hc86, "7486", quad xor]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: logic_ic
+    tags: [cmos logic, xor, adder, combinational, 74hc]
+    description: Four 2-input XOR gates, 2-6 V CMOS.
+    pins:
+      - {pin_id: 1A, name: 1A, direction: INPUT, number: "1"}
+      - {pin_id: 1B, name: 1B, direction: INPUT, number: "2"}
+      - {pin_id: 1Y, name: 1Y, direction: OUTPUT, number: "3"}
+      - {pin_id: 2A, name: 2A, direction: INPUT, number: "4"}
+      - {pin_id: 2B, name: 2B, direction: INPUT, number: "5"}
+      - {pin_id: 2Y, name: 2Y, direction: OUTPUT, number: "6"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "7", max_voltage: 0.0}
+      - {pin_id: 3Y, name: 3Y, direction: OUTPUT, number: "8"}
+      - {pin_id: 3A, name: 3A, direction: INPUT, number: "9"}
+      - {pin_id: 3B, name: 3B, direction: INPUT, number: "10"}
+      - {pin_id: 4Y, name: 4Y, direction: OUTPUT, number: "11"}
+      - {pin_id: 4A, name: 4A, direction: INPUT, number: "12"}
+      - {pin_id: 4B, name: 4B, direction: INPUT, number: "13"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "14", max_voltage: 7.0}
+    electrical_properties: {operating_voltage: 2V-6V}
+    interfaces: [DIGITAL]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-14, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [digital_logic_gate, cmos_logic]
+
+  logic:74hc74:
+    name: 74HC74 Dual D Flip-Flop
+    short_name: 74HC74
+    aliases: [74hc74, "7474", d flip flop ic, dual flip flop]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: logic_ic
+    tags: [cmos logic, flip-flop, sequential, register, 74hc]
+    description: Two positive-edge D flip-flops with active-low preset and clear.
+    pins:
+      - {pin_id: 1CLR_N, name: 1CLR, direction: INPUT, number: "1"}
+      - {pin_id: 1D, name: 1D, direction: INPUT, number: "2"}
+      - {pin_id: 1CLK, name: 1CLK, direction: INPUT, number: "3"}
+      - {pin_id: 1PRE_N, name: 1PRE, direction: INPUT, number: "4"}
+      - {pin_id: 1Q, name: 1Q, direction: OUTPUT, number: "5"}
+      - {pin_id: 1Q_N, name: 1Q', direction: OUTPUT, number: "6"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "7", max_voltage: 0.0}
+      - {pin_id: 2Q_N, name: 2Q', direction: OUTPUT, number: "8"}
+      - {pin_id: 2Q, name: 2Q, direction: OUTPUT, number: "9"}
+      - {pin_id: 2PRE_N, name: 2PRE, direction: INPUT, number: "10"}
+      - {pin_id: 2CLK, name: 2CLK, direction: INPUT, number: "11"}
+      - {pin_id: 2D, name: 2D, direction: INPUT, number: "12"}
+      - {pin_id: 2CLR_N, name: 2CLR, direction: INPUT, number: "13"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "14", max_voltage: 7.0}
+    electrical_properties: {operating_voltage: 2V-6V}
+    interfaces: [DIGITAL]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-14, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [flip_flop, fsm_design, cmos_logic]
+    education:
+      common_mistakes: [Leaving PRE/CLR floating (tie inactive-high to VCC)]
+
+  driver:l293d:
+    name: L293D Dual H-Bridge Driver
+    short_name: L293D
+    aliases: [l293d, h-bridge, motor driver, dual h bridge]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: motor_driver
+    tags: [motor driver, h-bridge, bidirectional motor, integrated clamp diodes, pwm]
+    description: Quadruple half-H driver, 600 mA per channel, motor supply 4.5-36 V, internal clamp diodes.
+    pins:
+      - {pin_id: EN12, name: "1,2EN", direction: INPUT, number: "1"}
+      - {pin_id: 1A, name: 1A, direction: INPUT, number: "2"}
+      - {pin_id: 1Y, name: 1Y, direction: OUTPUT, number: "3"}
+      - {pin_id: GND1, name: GND, direction: GROUND, number: "4", max_voltage: 0.0}
+      - {pin_id: GND2, name: GND, direction: GROUND, number: "5", max_voltage: 0.0}
+      - {pin_id: 2Y, name: 2Y, direction: OUTPUT, number: "6"}
+      - {pin_id: 2A, name: 2A, direction: INPUT, number: "7"}
+      - {pin_id: VCC2, name: VCC2, direction: POWER, supply: sink, number: "8", max_voltage: 36.0}
+      - {pin_id: EN34, name: "3,4EN", direction: INPUT, number: "9"}
+      - {pin_id: 3A, name: 3A, direction: INPUT, number: "10"}
+      - {pin_id: 3Y, name: 3Y, direction: OUTPUT, number: "11"}
+      - {pin_id: GND3, name: GND, direction: GROUND, number: "12", max_voltage: 0.0}
+      - {pin_id: GND4, name: GND, direction: GROUND, number: "13", max_voltage: 0.0}
+      - {pin_id: 4Y, name: 4Y, direction: OUTPUT, number: "14"}
+      - {pin_id: 4A, name: 4A, direction: INPUT, number: "15"}
+      - {pin_id: VCC1, name: VCC1, direction: POWER, supply: sink, number: "16", max_voltage: 7.0}
+    electrical_properties: {logic_supply_range: 4.5V-7V, motor_supply_range: 4.5V-36V, output_current_capability: 600mA per channel}
+    interfaces: [DIGITAL, PWM]
+    roles: [ACTUATOR]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-16, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [pwm_motor_control, h_bridge]
+    education:
+      summary: Drives DC motors forwards and backwards from logic signals.
+      how_it_works: Two half-bridges per motor; EN gates the outputs and can carry a PWM signal for speed.
+      common_mistakes: [Tying VCC2 (motor supply) to the logic 3.3 V rail, not sharing ground with the controller]
+
+  driver:uln2003a:
+    name: ULN2003A Darlington Array
+    short_name: ULN2003A
+    aliases: [uln2003, uln2003a, darlington array, stepper driver]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: low_side_driver
+    tags: [relay driver, stepper driver, low side switch, integrated clamp diodes]
+    description: Seven 500 mA / 50 V Darlington low-side drivers with clamp diodes to COM.
+    pins:
+      - {pin_id: IN1, name: IN1, direction: INPUT, number: "1"}
+      - {pin_id: IN2, name: IN2, direction: INPUT, number: "2"}
+      - {pin_id: IN3, name: IN3, direction: INPUT, number: "3"}
+      - {pin_id: IN4, name: IN4, direction: INPUT, number: "4"}
+      - {pin_id: IN5, name: IN5, direction: INPUT, number: "5"}
+      - {pin_id: IN6, name: IN6, direction: INPUT, number: "6"}
+      - {pin_id: IN7, name: IN7, direction: INPUT, number: "7"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "8", max_voltage: 0.0}
+      - {pin_id: COM, name: COM, direction: PASSIVE, number: "9"}
+      - {pin_id: OUT7, name: OUT7, direction: PASSIVE, number: "10"}
+      - {pin_id: OUT6, name: OUT6, direction: PASSIVE, number: "11"}
+      - {pin_id: OUT5, name: OUT5, direction: PASSIVE, number: "12"}
+      - {pin_id: OUT4, name: OUT4, direction: PASSIVE, number: "13"}
+      - {pin_id: OUT3, name: OUT3, direction: PASSIVE, number: "14"}
+      - {pin_id: OUT2, name: OUT2, direction: PASSIVE, number: "15"}
+      - {pin_id: OUT1, name: OUT1, direction: PASSIVE, number: "16"}
+    electrical_properties: {output_voltage_max: 50V, output_current_capability: 500mA per channel}
+    interfaces: [DIGITAL]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-16, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [transistor_switch]
+    education:
+      common_mistakes: [Not connecting COM to the load supply when driving inductive loads (clamp diodes then do nothing)]
+
+  adc:ads1115:
+    name: ADS1115 16-bit I2C ADC
+    short_name: ADS1115
+    aliases: [ads1115, 16 bit adc, i2c adc, adc]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: adc
+    tags: [adc, analog to digital, i2c, mixed signal, precision measurement]
+    description: 4-channel 16-bit delta-sigma ADC with PGA, 2.0-5.5 V, I2C.
+    pins:
+      - {pin_id: ADDR, name: ADDR, direction: INPUT, number: "1"}
+      - {pin_id: ALERT, name: ALERT/RDY, direction: OUTPUT, number: "2"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "3", max_voltage: 0.0}
+      - {pin_id: AIN0, name: AIN0, direction: INPUT, number: "4"}
+      - {pin_id: AIN1, name: AIN1, direction: INPUT, number: "5"}
+      - {pin_id: AIN2, name: AIN2, direction: INPUT, number: "6"}
+      - {pin_id: AIN3, name: AIN3, direction: INPUT, number: "7"}
+      - {pin_id: VDD, name: VDD, direction: POWER, supply: sink, number: "8", max_voltage: 7.0}
+      - {pin_id: SDA, name: SDA, direction: BIDIRECTIONAL, electrical_type: I2C, number: "9", max_voltage: 5.5}
+      - {pin_id: SCL, name: SCL, direction: INPUT, electrical_type: I2C, number: "10", max_voltage: 5.5}
+    electrical_properties: {operating_voltage: 2.0V-5.5V, resolution: 16 bit, interface: I2C}
+    interfaces: [I2C, ANALOG]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: MSOP-10, mounting: SMD, breadboard_compatible: false}
+    design_constraints:
+      - {kind: pullup_required, pins: [SDA, SCL], value: 4.7k, severity: WARNING, note: I2C lines are open-drain and need pull-ups (often present on breakout boards).}
+    curriculum_mapping: [adc_conversion, i2c_protocol, mixed_signal]
+
+  adc:mcp3008:
+    name: MCP3008 10-bit SPI ADC
+    short_name: MCP3008
+    aliases: [mcp3008, spi adc, 8 channel adc]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: adc
+    tags: [adc, analog to digital, spi, mixed signal]
+    description: 8-channel 10-bit SAR ADC, 2.7-5.5 V, SPI.
+    pins:
+      - {pin_id: CH0, name: CH0, direction: INPUT, number: "1"}
+      - {pin_id: CH1, name: CH1, direction: INPUT, number: "2"}
+      - {pin_id: CH2, name: CH2, direction: INPUT, number: "3"}
+      - {pin_id: CH3, name: CH3, direction: INPUT, number: "4"}
+      - {pin_id: CH4, name: CH4, direction: INPUT, number: "5"}
+      - {pin_id: CH5, name: CH5, direction: INPUT, number: "6"}
+      - {pin_id: CH6, name: CH6, direction: INPUT, number: "7"}
+      - {pin_id: CH7, name: CH7, direction: INPUT, number: "8"}
+      - {pin_id: DGND, name: DGND, direction: GROUND, number: "9", max_voltage: 0.0}
+      - {pin_id: CS, name: CS/SHDN, direction: INPUT, number: "10"}
+      - {pin_id: DIN, name: DIN, direction: INPUT, number: "11"}
+      - {pin_id: DOUT, name: DOUT, direction: OUTPUT, number: "12"}
+      - {pin_id: CLK, name: CLK, direction: INPUT, number: "13"}
+      - {pin_id: AGND, name: AGND, direction: GROUND, number: "14", max_voltage: 0.0}
+      - {pin_id: VREF, name: VREF, direction: PASSIVE, number: "15"}
+      - {pin_id: VDD, name: VDD, direction: POWER, supply: sink, number: "16", max_voltage: 7.0}
+    electrical_properties: {operating_voltage: 2.7V-5.5V, resolution: 10 bit, interface: SPI}
+    interfaces: [SPI, ANALOG]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-16, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [adc_conversion, spi_protocol, mixed_signal]
+
+  dac:mcp4725:
+    name: MCP4725 12-bit I2C DAC
+    short_name: MCP4725
+    aliases: [mcp4725, dac, i2c dac, digital to analog]
+    category: INTEGRATED_CIRCUIT
+    object_type: PHYSICAL
+    family: dac
+    tags: [dac, digital to analog, i2c, mixed signal]
+    description: Single-channel 12-bit DAC with EEPROM, 2.7-5.5 V, I2C.
+    pins:
+      - {pin_id: VOUT, name: VOUT, direction: OUTPUT, number: "1"}
+      - {pin_id: VSS, name: VSS, direction: GROUND, number: "2", max_voltage: 0.0}
+      - {pin_id: VDD, name: VDD, direction: POWER, supply: sink, number: "3", max_voltage: 6.5}
+      - {pin_id: SDA, name: SDA, direction: BIDIRECTIONAL, electrical_type: I2C, number: "4"}
+      - {pin_id: SCL, name: SCL, direction: INPUT, electrical_type: I2C, number: "5"}
+      - {pin_id: A0, name: A0, direction: INPUT, number: "6"}
+    electrical_properties: {operating_voltage: 2.7V-5.5V, resolution: 12 bit, interface: I2C}
+    interfaces: [I2C, ANALOG]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: SOT-23-6, mounting: SMD, breadboard_compatible: false}
+    design_constraints:
+      - {kind: pullup_required, pins: [SDA, SCL], value: 4.7k, severity: WARNING, note: I2C lines need pull-ups.}
+    curriculum_mapping: [dac_conversion, i2c_protocol, mixed_signal]
+
+  memory:24lc256:
+    name: 24LC256 I2C EEPROM (256 Kbit)
+    short_name: 24LC256
+    aliases: [24lc256, eeprom, i2c eeprom, memory]
+    category: MEMORY
+    object_type: PHYSICAL
+    family: eeprom
+    tags: [non-volatile memory, i2c, storage]
+    description: 32 KB serial EEPROM, 2.5-5.5 V, 400 kHz I2C.
+    pins:
+      - {pin_id: A0, name: A0, direction: INPUT, number: "1"}
+      - {pin_id: A1, name: A1, direction: INPUT, number: "2"}
+      - {pin_id: A2, name: A2, direction: INPUT, number: "3"}
+      - {pin_id: VSS, name: VSS, direction: GROUND, number: "4", max_voltage: 0.0}
+      - {pin_id: SDA, name: SDA, direction: BIDIRECTIONAL, electrical_type: I2C, number: "5"}
+      - {pin_id: SCL, name: SCL, direction: INPUT, electrical_type: I2C, number: "6"}
+      - {pin_id: WP, name: WP, direction: INPUT, number: "7"}
+      - {pin_id: VCC, name: VCC, direction: POWER, supply: sink, number: "8", max_voltage: 6.5}
+    electrical_properties: {operating_voltage: 2.5V-5.5V, capacity: 256 Kbit, interface: I2C}
+    interfaces: [I2C]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: DIP-8, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    design_constraints:
+      - {kind: pullup_required, pins: [SDA, SCL], value: 4.7k, severity: WARNING, note: I2C lines need pull-ups.}
+    curriculum_mapping: [memory_basics, i2c_protocol]
+
+  interface:level-shifter-bss138-4ch:
+    name: BSS138 4-Channel Bidirectional Level Shifter
+    short_name: BSS138 x4
+    aliases: [level shifter, logic level converter, bss138, voltage translator]
+    category: INTERFACE
+    object_type: PHYSICAL
+    family: level_shifter
+    tags: [level shifting, 3.3v to 5v, i2c compatible, bidirectional]
+    description: Four MOSFET-based bidirectional level-shifting channels (module). LV must be the lower rail.
+    pins:
+      - {pin_id: LV, name: LV, direction: POWER, supply: sink}
+      - {pin_id: HV, name: HV, direction: POWER, supply: sink}
+      - {pin_id: GND, name: GND, direction: GROUND, max_voltage: 0.0}
+      - {pin_id: LV1, name: LV1, direction: BIDIRECTIONAL}
+      - {pin_id: LV2, name: LV2, direction: BIDIRECTIONAL}
+      - {pin_id: LV3, name: LV3, direction: BIDIRECTIONAL}
+      - {pin_id: LV4, name: LV4, direction: BIDIRECTIONAL}
+      - {pin_id: HV1, name: HV1, direction: BIDIRECTIONAL}
+      - {pin_id: HV2, name: HV2, direction: BIDIRECTIONAL}
+      - {pin_id: HV3, name: HV3, direction: BIDIRECTIONAL}
+      - {pin_id: HV4, name: HV4, direction: BIDIRECTIONAL}
+    interfaces: [DIGITAL, I2C]
+    symbol: {name: ic_box, ref_prefix: U,
+             box_sides: {LV1: left, LV2: left, LV3: left, LV4: left, HV1: right, HV2: right, HV3: right, HV4: right}}
+    physical: {package: module, mounting: module, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [level_shifting]
+    education:
+      summary: Safely connects 3.3 V and 5 V logic in both directions.
+      how_it_works: Each channel is a BSS138 MOSFET with pull-ups to LV and HV; either side pulling low turns the MOSFET on.

@@ -1,0 +1,210 @@
+# Development boards, sensors, actuators and connectors.
+
+components:
+  board:arduino-uno-r3:
+    name: Arduino Uno R3
+    short_name: Arduino Uno
+    aliases: [arduino, arduino uno, uno, atmega328p board]
+    category: MICROCONTROLLER
+    object_type: PHYSICAL
+    family: mcu_board
+    tags: [microcontroller, 5v logic, avr, prototyping]
+    description: ATmega328P board, 5 V logic, 14 digital I/O (6 PWM), 6 analog inputs.
+    pins:
+      - {pin_id: VIN, name: VIN, direction: POWER, supply: sink, max_voltage: 20.0, description: 7-12 V recommended input to the on-board regulator}
+      - {pin_id: 5V, name: 5V, direction: POWER, supply: source, nominal_voltage: 5.0, max_voltage: 5.5}
+      - {pin_id: 3V3, name: 3V3, direction: POWER, supply: source, nominal_voltage: 3.3, max_voltage: 3.3, description: 50 mA max}
+      - {pin_id: GND1, name: GND, direction: GROUND, max_voltage: 0.0}
+      - {pin_id: GND2, name: GND, direction: GROUND, max_voltage: 0.0}
+      - {pin_id: GND3, name: GND, direction: GROUND, max_voltage: 0.0}
+      - {pin_id: D0, name: D0/RX, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D1, name: D1/TX, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D2, name: D2, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D3, name: D3~, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D4, name: D4, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D5, name: D5~, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D6, name: D6~, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D7, name: D7, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D8, name: D8, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D9, name: D9~, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D10, name: D10~, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D11, name: D11~, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D12, name: D12, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: D13, name: D13, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: A0, name: A0, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: A1, name: A1, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: A2, name: A2, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: A3, name: A3, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: A4, name: A4/SDA, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+      - {pin_id: A5, name: A5/SCL, direction: BIDIRECTIONAL, electrical_type: 5V_LOGIC, max_voltage: 5.5}
+    electrical_properties: {operating_voltage: 5V, gpio_max_current: 20mA, gpio_abs_max_current: 40mA, adc_resolution: 10 bit}
+    interfaces: [DIGITAL, ANALOG, PWM, I2C, SPI, UART]
+    roles: [LOGIC, POWER]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: Arduino Uno board, mounting: module, breadboard_compatible: false, body_mm: [68.6, 53.4, 15]}
+    curriculum_mapping: [embedded_basics, sensor_integration]
+    education:
+      summary: Beginner-friendly 5 V microcontroller board.
+      common_mistakes: [Drawing more than 20 mA from a pin, feeding 5 V signals from it into 3.3 V-only parts]
+
+  board:raspberry-pi-pico:
+    name: Raspberry Pi Pico
+    short_name: RPi Pico
+    aliases: [pico, raspberry pi pico, rp2040]
+    category: MICROCONTROLLER
+    object_type: PHYSICAL
+    family: mcu_board
+    tags: [microcontroller, 3.3v logic, rp2040, pio]
+    description: RP2040 board, dual Cortex-M0+, 3.3 V logic (GPIO not 5 V tolerant), 3 ADC inputs.
+    pins:
+      - {pin_id: VSYS, name: VSYS, direction: POWER, supply: sink, max_voltage: 5.5, description: 1.8-5.5 V system input}
+      - {pin_id: VBUS, name: VBUS, direction: POWER, max_voltage: 5.5, description: USB 5 V when USB is connected}
+      - {pin_id: 3V3, name: 3V3(OUT), direction: POWER, supply: source, nominal_voltage: 3.3, max_voltage: 3.3, description: 300 mA max recommended}
+      - {pin_id: GND1, name: GND, direction: GROUND, max_voltage: 0.0}
+      - {pin_id: GND2, name: GND, direction: GROUND, max_voltage: 0.0}
+      - {pin_id: GND3, name: GND, direction: GROUND, max_voltage: 0.0}
+      - {pin_id: GP0, name: GP0, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP1, name: GP1, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP2, name: GP2, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP3, name: GP3, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP4, name: GP4, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP5, name: GP5, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP6, name: GP6, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP7, name: GP7, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP8, name: GP8, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP9, name: GP9, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP10, name: GP10, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP11, name: GP11, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP12, name: GP12, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP13, name: GP13, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP14, name: GP14, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP15, name: GP15, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP16, name: GP16, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP17, name: GP17, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP18, name: GP18, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP19, name: GP19, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP20, name: GP20, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP21, name: GP21, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP22, name: GP22, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP26, name: GP26/ADC0, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP27, name: GP27/ADC1, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+      - {pin_id: GP28, name: GP28/ADC2, direction: BIDIRECTIONAL, electrical_type: 3.3V_LOGIC, max_voltage: 3.6}
+    electrical_properties: {operating_voltage: 3.3V, gpio_max_current: 12mA, adc_resolution: 12 bit}
+    interfaces: [DIGITAL, ANALOG, PWM, I2C, SPI, UART]
+    roles: [LOGIC, POWER]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: Pico module, mounting: module, breadboard_compatible: true, pin_pitch_mm: 2.54, body_mm: [51, 21, 4]}
+    curriculum_mapping: [embedded_basics, sensor_integration]
+
+  sensor:lm35:
+    name: LM35 Analog Temperature Sensor
+    short_name: LM35
+    aliases: [lm35, analog temperature sensor, temperature sensor]
+    category: SENSOR
+    object_type: PHYSICAL
+    family: temperature_sensor
+    tags: [temperature, analog output, linear]
+    description: Precision centigrade sensor, 10 mV/°C output, 4-30 V supply.
+    pins:
+      - {pin_id: VS, name: +VS, direction: POWER, supply: sink, number: "1", max_voltage: 35.0}
+      - {pin_id: VOUT, name: VOUT, direction: OUTPUT, electrical_type: ANALOG, number: "2"}
+      - {pin_id: GND, name: GND, direction: GROUND, number: "3", max_voltage: 0.0}
+    electrical_properties: {operating_voltage: 4V-30V, scale_factor: 10mV per degC, accuracy: 0.5degC at 25degC}
+    interfaces: [ANALOG]
+    roles: [SENSOR]
+    symbol: {name: ic_box, ref_prefix: U}
+    physical: {package: TO-92, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+    curriculum_mapping: [sensor_integration, adc_conversion]
+    education:
+      summary: Outputs a voltage proportional to temperature (0 mV + 10 mV per °C).
+      common_mistakes: [Powering it from 3.3 V (minimum is 4 V)]
+
+  actuator:relay-5v-coil:
+    name: 5 V Relay (bare coil, SPDT)
+    short_name: Relay 5V
+    aliases: [relay, 5v relay, srd-05vdc, spdt relay]
+    category: ACTUATOR
+    object_type: PHYSICAL
+    family: relay
+    tags: [relay, inductive load, mains switching, isolation]
+    description: SPDT relay with a 5 V coil (≈70 Ω, ≈71 mA). Needs a transistor driver and flyback diode.
+    pins:
+      - {pin_id: COIL1, name: COIL1, direction: PASSIVE}
+      - {pin_id: COIL2, name: COIL2, direction: PASSIVE}
+      - {pin_id: COM, name: COM, direction: PASSIVE}
+      - {pin_id: "NO", name: "NO", direction: PASSIVE}
+      - {pin_id: NC, name: NC, direction: PASSIVE}
+    electrical_properties: {coil_voltage: 5V, coil_current: 71mA, contact_rating: 10A 250VAC}
+    roles: [ACTUATOR]
+    requires_driver: true
+    symbol: {name: ic_box, ref_prefix: K, box_sides: {COIL1: left, COIL2: left, COM: right, "NO": right, NC: right}}
+    physical: {package: relay, mounting: THT}
+    design_constraints:
+      - {kind: flyback_diode, pins: [COIL1, COIL2], severity: ERROR, note: The coil is inductive; a reverse diode across it prevents a destructive voltage spike when it switches off.}
+    curriculum_mapping: [transistor_switch, inductive_loads]
+    education:
+      summary: Electrically isolated switch operated by an electromagnet.
+      common_mistakes: [Driving the coil straight from a GPIO pin, omitting the flyback diode]
+
+  connector:header-1x2:
+    name: Pin Header 1×2
+    short_name: 1x2 header
+    aliases: [header, pin header, 2 pin header, connector]
+    category: CONNECTOR
+    object_type: PHYSICAL
+    family: header
+    tags: [connector, off-board]
+    description: 2-pin 2.54 mm header.
+    pins:
+      - {pin_id: P1, name: "1", direction: PASSIVE, number: "1"}
+      - {pin_id: P2, name: "2", direction: PASSIVE, number: "2"}
+    symbol: {name: ic_box, ref_prefix: J, box_sides: {P1: left, P2: left}}
+    physical: {package: 1x2 2.54mm, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+
+  connector:header-1x3:
+    name: Pin Header 1×3
+    short_name: 1x3 header
+    aliases: [3 pin header, connector]
+    category: CONNECTOR
+    object_type: PHYSICAL
+    family: header
+    tags: [connector, off-board]
+    description: 3-pin 2.54 mm header.
+    pins:
+      - {pin_id: P1, name: "1", direction: PASSIVE, number: "1"}
+      - {pin_id: P2, name: "2", direction: PASSIVE, number: "2"}
+      - {pin_id: P3, name: "3", direction: PASSIVE, number: "3"}
+    symbol: {name: ic_box, ref_prefix: J, box_sides: {P1: left, P2: left, P3: left}}
+    physical: {package: 1x3 2.54mm, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+
+  connector:header-1x4:
+    name: Pin Header 1×4
+    short_name: 1x4 header
+    aliases: [4 pin header, connector, i2c header]
+    category: CONNECTOR
+    object_type: PHYSICAL
+    family: header
+    tags: [connector, off-board]
+    description: 4-pin 2.54 mm header.
+    pins:
+      - {pin_id: P1, name: "1", direction: PASSIVE, number: "1"}
+      - {pin_id: P2, name: "2", direction: PASSIVE, number: "2"}
+      - {pin_id: P3, name: "3", direction: PASSIVE, number: "3"}
+      - {pin_id: P4, name: "4", direction: PASSIVE, number: "4"}
+    symbol: {name: ic_box, ref_prefix: J, box_sides: {P1: left, P2: left, P3: left, P4: left}}
+    physical: {package: 1x4 2.54mm, mounting: THT, breadboard_compatible: true, pin_pitch_mm: 2.54}
+
+  connector:screw-terminal-2:
+    name: Screw Terminal 2-pin
+    short_name: Terminal
+    aliases: [screw terminal, terminal block, power input]
+    category: CONNECTOR
+    object_type: PHYSICAL
+    family: terminal
+    tags: [connector, power input, wiring]
+    description: 2-position 5.08 mm screw terminal.
+    pins:
+      - {pin_id: P1, name: "1", direction: PASSIVE, number: "1"}
+      - {pin_id: P2, name: "2", direction: PASSIVE, number: "2"}
+    symbol: {name: ic_box, ref_prefix: J, box_sides: {P1: left, P2: left}}
+    physical: {package: 2x 5.08mm terminal, mounting: THT, breadboard_compatible: false, pin_pitch_mm: 5.08}

@@ -1,330 +1,1481 @@
-# Component Registry — Phase 2.5
-# Machine-readable component type definitions with voltage metadata.
-# Sensor decision (ADR-004): HC-SR04 is the canonical Phase-1 ultrasonic sensor.
-
 components:
-  "board:esp32-devkit-v1":
-    name: "ESP32-DevKitC V1"
-    aliases: ["esp32", "esp32-devkit"]
+  board:esp32-devkit-v1:
+    name: ESP32-DevKitC V1
+    aliases:
+    - esp32
+    - esp32-devkit
     category: MICROCONTROLLER
     object_type: PHYSICAL
-    description: "ESP32-DevKitC V1 (30-pin) development board"
+    description: ESP32-DevKitC V1 (30-pin) development board
     pins:
-      - pin_id: "VIN"
-        name: "VIN"
-        direction: POWER
-        electrical_type: "5V"
-        max_voltage: 12.0
-        description: "5V input (regulated down to 3.3V on-board)"
-      - pin_id: "3V3"
-        name: "3V3"
-        direction: POWER
-        electrical_type: "3.3V"
-        max_voltage: 3.3
-        description: "3.3V regulated output"
-      - pin_id: "GND1"
-        name: "GND1"
-        direction: GROUND
-        max_voltage: 0.0
-      - pin_id: "GND2"
-        name: "GND2"
-        direction: GROUND
-        max_voltage: 0.0
-      - pin_id: "GND3"
-        name: "GND3"
-        direction: GROUND
-        max_voltage: 0.0
-      - pin_id: "GPIO2"
-        name: "GPIO2"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO4"
-        name: "GPIO4"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO5"
-        name: "GPIO5"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO12"
-        name: "GPIO12"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO13"
-        name: "GPIO13"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO14"
-        name: "GPIO14"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO15"
-        name: "GPIO15"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO16"
-        name: "GPIO16"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO17"
-        name: "GPIO17"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO18"
-        name: "GPIO18"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO19"
-        name: "GPIO19"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO21"
-        name: "GPIO21"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO22"
-        name: "GPIO22"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO23"
-        name: "GPIO23"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO25"
-        name: "GPIO25"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO26"
-        name: "GPIO26"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO27"
-        name: "GPIO27"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO32"
-        name: "GPIO32"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "GPIO33"
-        name: "GPIO33"
-        direction: BIDIRECTIONAL
-        electrical_type: "3.3V_LOGIC"
-        max_voltage: 3.6
-      - pin_id: "EN"
-        name: "EN"
-        direction: INPUT
-        max_voltage: 3.6
-        description: "active-high enable"
+    - pin_id: VIN
+      name: VIN
+      direction: POWER
+      electrical_type: 5V
+      max_voltage: 12.0
+      description: 5V input (regulated down to 3.3V on-board)
+      supply: sink
+    - pin_id: 3V3
+      name: 3V3
+      direction: POWER
+      electrical_type: 3.3V
+      max_voltage: 3.3
+      description: 3.3V regulated output
+      supply: source
+      nominal_voltage: 3.3
+    - pin_id: GND1
+      name: GND1
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: GND2
+      name: GND2
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: GND3
+      name: GND3
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: GPIO2
+      name: GPIO2
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO4
+      name: GPIO4
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO5
+      name: GPIO5
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO12
+      name: GPIO12
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO13
+      name: GPIO13
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO14
+      name: GPIO14
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO15
+      name: GPIO15
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO16
+      name: GPIO16
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO17
+      name: GPIO17
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO18
+      name: GPIO18
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO19
+      name: GPIO19
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO21
+      name: GPIO21
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO22
+      name: GPIO22
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO23
+      name: GPIO23
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO25
+      name: GPIO25
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO26
+      name: GPIO26
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO27
+      name: GPIO27
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO32
+      name: GPIO32
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: GPIO33
+      name: GPIO33
+      direction: BIDIRECTIONAL
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.6
+    - pin_id: EN
+      name: EN
+      direction: INPUT
+      max_voltage: 3.6
+      description: active-high enable
     electrical_properties:
-      operating_voltage: "3.3V"
-      input_voltage_max: "12V"
-      gpio_max_current: "40mA"
-      gpio_abs_max_voltage: "3.6V"
-      wifi: "802.11 b/g/n"
-      bluetooth: "BLE 4.2"
+      operating_voltage: 3.3V
+      input_voltage_max: 12V
+      gpio_max_current: 40mA
+      gpio_abs_max_voltage: 3.6V
+      wifi: 802.11 b/g/n
+      bluetooth: BLE 4.2
     configurable_parameters: {}
     curriculum_mapping: []
     competency_level: BEGINNER
-    provenance: "community"
-    license: "unknown"
-    validation_status: "proposed"
-
-  "sensor:hc-sr04":
-    name: "HC-SR04 Ultrasonic Distance Sensor"
-    aliases: ["hc-sr04", "ultrasonic"]
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    - ANALOG
+    - I2C
+    - SPI
+    - UART
+    - PWM
+    roles:
+    - LOGIC
+    - POWER
+    requires_driver: false
+    family: mcu_board
+    symbol:
+      name: ic_box
+      ref_prefix: U
+    short_name: ESP32-DevKitC
+    education:
+      summary: Wi-Fi/Bluetooth microcontroller board with 3.3 V logic.
+      common_mistakes:
+      - Feeding 5 V signals into GPIO pins (3.6 V max)
+      - Drawing more than 40 mA from a pin
+  sensor:hc-sr04:
+    name: HC-SR04 Ultrasonic Distance Sensor
+    aliases:
+    - hc-sr04
+    - ultrasonic
     category: SENSOR
     object_type: PHYSICAL
-    description: "HC-SR04 Ultrasonic Distance Sensor. ECHO pin outputs 5V logic — requires level shifting when connecting to 3.3V microcontrollers."
+    description: HC-SR04 Ultrasonic Distance Sensor. ECHO pin outputs 5V logic — requires level shifting
+      when connecting to 3.3V microcontrollers.
     pins:
-      - pin_id: "VCC"
-        name: "VCC"
-        direction: POWER
-        electrical_type: "5V"
-        max_voltage: 5.0
-        description: "5V power input"
-      - pin_id: "TRIG"
-        name: "TRIG"
-        direction: INPUT
-        electrical_type: "5V_TOLERANT"
-        max_voltage: 5.0
-        description: "Trigger input. Accepts 3.3V logic high."
-      - pin_id: "ECHO"
-        name: "ECHO"
-        direction: OUTPUT
-        electrical_type: "5V"
-        max_voltage: 5.0
-        min_voltage: 4.8
-        description: "Echo output. Outputs 5V pulse proportional to distance. REQUIRES level shifting for 3.3V MCUs."
-      - pin_id: "GND"
-        name: "GND"
-        direction: GROUND
-        max_voltage: 0.0
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      electrical_type: 5V
+      max_voltage: 5.0
+      description: 5V power input
+    - pin_id: TRIG
+      name: TRIG
+      direction: INPUT
+      electrical_type: 5V_TOLERANT
+      max_voltage: 5.0
+      description: Trigger input. Accepts 3.3V logic high.
+    - pin_id: ECHO
+      name: ECHO
+      direction: OUTPUT
+      electrical_type: 5V
+      max_voltage: 5.0
+      min_voltage: 4.8
+      description: Echo output. Outputs 5V pulse proportional to distance. REQUIRES level shifting for
+        3.3V MCUs.
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
     electrical_properties:
-      operating_voltage: "5V"
-      measuring_range: "2cm-400cm"
-      trigger_pulse: "10us"
-      echo_output_voltage: "5V"
+      operating_voltage: 5V
+      measuring_range: 2cm-400cm
+      trigger_pulse: 10us
+      echo_output_voltage: 5V
     configurable_parameters: {}
     curriculum_mapping: []
     competency_level: BEGINNER
-    provenance: "community"
-    license: "unknown"
-    validation_status: "proposed"
-
-  "passive:led-5mm":
-    name: "Generic 5mm LED"
-    aliases: ["led", "5mm-led"]
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    roles:
+    - SENSOR
+    requires_driver: false
+    recommended_control_interface: DIGITAL
+    family: ultrasonic_sensor
+    symbol:
+      name: ic_box
+      ref_prefix: U
+    short_name: HC-SR04
+    education:
+      summary: Measures distance by timing an ultrasonic echo (2-400 cm).
+      common_mistakes:
+      - Connecting the 5 V ECHO output straight to a 3.3 V microcontroller
+  passive:led-5mm:
+    name: Generic 5mm LED
+    aliases:
+    - led
+    - 5mm-led
     category: PASSIVE_COMPONENT
     object_type: PHYSICAL
-    description: "Generic 5mm through-hole LED"
+    description: Generic 5mm through-hole LED
     pins:
-      - pin_id: "ANODE"
-        name: "ANODE"
-        direction: PASSIVE
-      - pin_id: "CATHODE"
-        name: "CATHODE"
-        direction: PASSIVE
+    - pin_id: ANODE
+      name: ANODE
+      direction: PASSIVE
+    - pin_id: CATHODE
+      name: CATHODE
+      direction: PASSIVE
     electrical_properties:
-      forward_voltage_typical: "2.0V"
-      forward_voltage_max: "2.4V"
-      max_forward_current: "20mA"
-      recommended_current: "10mA"
+      forward_voltage_typical: 2.0V
+      forward_voltage_max: 2.4V
+      max_forward_current: 20mA
+      recommended_current: 10mA
     configurable_parameters:
-      color: "enum"
+      color: enum
     curriculum_mapping: []
     competency_level: BEGINNER
-    provenance: "community"
-    license: "unknown"
-    validation_status: "proposed"
-
-  "passive:resistor-tht":
-    name: "Generic Resistor THT"
-    aliases: ["resistor"]
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    - PWM
+    roles:
+    - ACTUATOR
+    - DISPLAY
+    requires_driver: false
+    recommended_control_interface: DIGITAL
+    symbol:
+      name: led
+      pin_map:
+        ANODE: A
+        CATHODE: K
+      ref_prefix: D
+    family: led
+    short_name: LED
+    design_constraints:
+    - kind: series_resistor
+      pins:
+      - ANODE
+      - CATHODE
+      severity: ERROR
+      note: An LED needs a current-limiting resistor.
+    education:
+      summary: Emits light when current flows from anode to cathode.
+      how_it_works: Forward-biased junction with ~2 V drop (red) to ~3 V (blue/white); brightness follows
+        current.
+      typical_uses:
+      - Indicators
+      - Status lights
+      common_mistakes:
+      - No series resistor
+      - Reversed polarity (long leg is the anode)
+  passive:resistor-tht:
+    name: Generic Resistor THT
+    aliases:
+    - resistor
     category: PASSIVE_COMPONENT
     object_type: PHYSICAL
-    description: "Generic through-hole resistor"
+    description: Generic through-hole resistor
     pins:
-      - pin_id: "PIN1"
-        name: "PIN1"
-        direction: PASSIVE
-      - pin_id: "PIN2"
-        name: "PIN2"
-        direction: PASSIVE
+    - pin_id: PIN1
+      name: PIN1
+      direction: PASSIVE
+    - pin_id: PIN2
+      name: PIN2
+      direction: PASSIVE
     electrical_properties:
-      power_rating: "0.25W"
+      power_rating: 0.25W
     configurable_parameters:
-      resistance: "ohm"
+      resistance: ohm
     curriculum_mapping: []
     competency_level: BEGINNER
-    provenance: "community"
-    license: "unknown"
-    validation_status: "proposed"
-
-  "passive:push-button-tactile":
-    name: "Tactile Push Button"
-    aliases: ["button", "push-button"]
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces: []
+    roles:
+    - POWER
+    - LOGIC
+    requires_driver: false
+    symbol:
+      name: resistor
+      pin_map:
+        PIN1: '1'
+        PIN2: '2'
+      ref_prefix: R
+    family: resistor
+    short_name: R
+    education:
+      summary: Limits current and divides voltage (V = I·R).
+      typical_uses:
+      - LED current limiting
+      - Pull-up/pull-down
+      - Voltage dividers
+      - Transistor base drive
+      common_mistakes:
+      - Ignoring power rating (P = I²R)
+  passive:push-button-tactile:
+    name: Tactile Push Button
+    aliases:
+    - button
+    - push-button
     category: PASSIVE_COMPONENT
     object_type: PHYSICAL
-    description: "Tactile push button (4-pin, 2 connected pairs)"
+    description: Tactile push button (4-pin, 2 connected pairs)
     pins:
-      - pin_id: "PIN1A"
-        name: "PIN1A"
-        direction: PASSIVE
-      - pin_id: "PIN1B"
-        name: "PIN1B"
-        direction: PASSIVE
-      - pin_id: "PIN2A"
-        name: "PIN2A"
-        direction: PASSIVE
-      - pin_id: "PIN2B"
-        name: "PIN2B"
-        direction: PASSIVE
+    - pin_id: PIN1A
+      name: PIN1A
+      direction: PASSIVE
+    - pin_id: PIN1B
+      name: PIN1B
+      direction: PASSIVE
+    - pin_id: PIN2A
+      name: PIN2A
+      direction: PASSIVE
+    - pin_id: PIN2B
+      name: PIN2B
+      direction: PASSIVE
     electrical_properties:
-      max_voltage: "12V"
-      max_current: "50mA"
+      contact_current_max: 50mA
+      contact_voltage_max: 12V
     configurable_parameters: {}
     curriculum_mapping: []
     competency_level: BEGINNER
-    provenance: "community"
-    license: "unknown"
-    validation_status: "proposed"
-
-  "primitive:power-rail":
-    name: "Power Rail"
-    aliases: ["power", "vcc"]
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    roles:
+    - INPUT
+    requires_driver: false
+    symbol:
+      name: switch_push_4pin
+      pin_map:
+        PIN1A: 1A
+        PIN1B: 1B
+        PIN2A: 2A
+        PIN2B: 2B
+      ref_prefix: SW
+    family: push_button
+    short_name: Push
+  primitive:power-rail:
+    name: Power Rail
+    aliases:
+    - power
+    - vcc
     category: POWER_SOURCE
     object_type: CIRCUIT_PRIMITIVE
-    description: "Represents a power source rail"
+    description: Represents a power source rail
     pins:
-      - pin_id: "VCC"
-        name: "VCC"
-        direction: POWER
-        max_voltage: 5.0
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 5.0
+      supply: source
     electrical_properties:
-      voltage: "5V"
+      voltage: 5V
     configurable_parameters:
-      voltage: "V"
+      voltage: V
     curriculum_mapping: []
     competency_level: BEGINNER
-    provenance: "community"
-    license: "unknown"
-    validation_status: "proposed"
-
-  "primitive:ground-rail":
-    name: "Ground Rail"
-    aliases: ["ground", "gnd"]
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces: []
+    roles:
+    - POWER
+    requires_driver: false
+    symbol:
+      name: power_flag
+      pin_map:
+        VCC: '1'
+    family: supply_rail
+    short_name: VCC
+  primitive:ground-rail:
+    name: Ground Rail
+    aliases:
+    - ground
+    - gnd
     category: GROUND_NODE
     object_type: CIRCUIT_PRIMITIVE
-    description: "Represents a ground node"
+    description: Represents a ground node
     pins:
-      - pin_id: "GND"
-        name: "GND"
-        direction: GROUND
-        max_voltage: 0.0
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
     electrical_properties: {}
     configurable_parameters: {}
     curriculum_mapping: []
     competency_level: BEGINNER
-    provenance: "community"
-    license: "unknown"
-    validation_status: "proposed"
-
-  "routing:jumper-wire":
-    name: "Jumper Wire"
-    aliases: ["wire", "jumper"]
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces: []
+    roles:
+    - POWER
+    requires_driver: false
+    symbol:
+      name: ground_flag
+      pin_map:
+        GND: '1'
+    family: ground_reference
+    short_name: GND
+  routing:jumper-wire:
+    name: Jumper Wire
+    aliases:
+    - wire
+    - jumper
     category: ROUTING
     object_type: CIRCUIT_PRIMITIVE
-    description: "Represents a jumper wire connection"
+    description: Represents a jumper wire connection
     pins:
-      - pin_id: "PIN1"
-        name: "PIN1"
-        direction: PASSIVE
-      - pin_id: "PIN2"
-        name: "PIN2"
-        direction: PASSIVE
+    - pin_id: PIN1
+      name: PIN1
+      direction: PASSIVE
+    - pin_id: PIN2
+      name: PIN2
+      direction: PASSIVE
     electrical_properties: {}
     configurable_parameters: {}
     curriculum_mapping: []
     competency_level: BEGINNER
-    provenance: "community"
-    license: "unknown"
-    validation_status: "proposed"
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces: []
+    roles: []
+    requires_driver: false
+    symbol:
+      name: jumper
+      pin_map:
+        PIN1: '1'
+        PIN2: '2'
+      ref_prefix: JP
+    family: jumper
+    short_name: Jumper
+  passive:capacitor-ceramic:
+    name: Ceramic Capacitor
+    aliases:
+    - capacitor
+    - ceramic-cap
+    category: PASSIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Generic ceramic capacitor (non-polarized)
+    pins:
+    - pin_id: PIN1
+      name: PIN1
+      direction: PASSIVE
+    - pin_id: PIN2
+      name: PIN2
+      direction: PASSIVE
+    electrical_properties: {}
+    configurable_parameters:
+      capacitance: F
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces: []
+    roles:
+    - POWER
+    requires_driver: false
+    symbol:
+      name: capacitor
+      pin_map:
+        PIN1: '1'
+        PIN2: '2'
+      ref_prefix: C
+    family: capacitor
+    short_name: C
+    education:
+      summary: Stores charge; blocks DC and passes AC.
+      typical_uses:
+      - Supply decoupling (100 nF)
+      - Timing (RC)
+      - Filtering
+  passive:capacitor-electrolytic:
+    name: Electrolytic Capacitor
+    aliases:
+    - capacitor
+    - electrolytic-cap
+    category: PASSIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Polarized electrolytic capacitor
+    pins:
+    - pin_id: ANODE
+      name: ANODE
+      direction: PASSIVE
+    - pin_id: CATHODE
+      name: CATHODE
+      direction: PASSIVE
+    electrical_properties: {}
+    configurable_parameters:
+      capacitance: F
+      max_voltage: V
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces: []
+    roles:
+    - POWER
+    requires_driver: false
+    symbol:
+      name: capacitor_polarized
+      pin_map:
+        ANODE: +
+        CATHODE: '-'
+      ref_prefix: C
+    family: capacitor
+    short_name: C
+    education:
+      summary: High-capacitance polarised capacitor.
+      common_mistakes:
+      - Reversed polarity
+      - Voltage rating below the circuit voltage
+  sensor:photoresistor:
+    name: Photoresistor (LDR)
+    aliases:
+    - ldr
+    - light-sensor
+    - photoresistor
+    category: SENSOR
+    object_type: PHYSICAL
+    description: Light Dependent Resistor
+    pins:
+    - pin_id: PIN1
+      name: PIN1
+      direction: PASSIVE
+    - pin_id: PIN2
+      name: PIN2
+      direction: PASSIVE
+    electrical_properties: {}
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - ANALOG
+    roles:
+    - SENSOR
+    requires_driver: false
+    recommended_control_interface: ANALOG
+    symbol:
+      name: photoresistor
+      pin_map:
+        PIN1: '1'
+        PIN2: '2'
+      ref_prefix: R
+    family: photoresistor
+    short_name: LDR
+    education:
+      summary: Resistance falls as light increases.
+      typical_uses:
+      - Light/dark detection in a voltage divider
+  sensor:dht11:
+    name: DHT11 Temperature & Humidity Sensor
+    aliases:
+    - dht11
+    - temperature-sensor
+    - humidity-sensor
+    category: SENSOR
+    object_type: PHYSICAL
+    description: Digital temperature and humidity sensor
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 5.5
+    - pin_id: DATA
+      name: DATA
+      direction: BIDIRECTIONAL
+      electrical_type: DIGITAL
+      max_voltage: 5.5
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    electrical_properties:
+      operating_voltage: 3.3V-5V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    roles:
+    - SENSOR
+    requires_driver: false
+    recommended_control_interface: DIGITAL
+    family: temp_humidity_sensor
+    symbol:
+      name: ic_box
+      ref_prefix: U
+    short_name: DHT11
+    design_constraints:
+    - kind: pullup_required
+      pins:
+      - DATA
+      value: 10k
+      severity: WARNING
+      note: Bare DHT11 sensors need a pull-up on DATA (many breakout boards include one).
+  sensor:hc-sr501:
+    name: HC-SR501 PIR Motion Sensor
+    aliases:
+    - pir
+    - motion-sensor
+    category: SENSOR
+    object_type: PHYSICAL
+    description: Passive Infrared motion sensor
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 12.0
+    - pin_id: OUT
+      name: OUT
+      direction: OUTPUT
+      electrical_type: 3.3V_LOGIC
+      max_voltage: 3.3
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    electrical_properties:
+      operating_voltage: 4.5V-20V
+      output_voltage: 3.3V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    roles:
+    - SENSOR
+    requires_driver: false
+    recommended_control_interface: DIGITAL
+    family: pir_sensor
+    symbol:
+      name: ic_box
+      ref_prefix: U
+    short_name: HC-SR501
+  actuator:buzzer-piezo:
+    name: Piezo Buzzer
+    aliases:
+    - buzzer
+    - piezo
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Active piezo buzzer
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: PASSIVE
+      description: Positive terminal
+    - pin_id: GND
+      name: GND
+      direction: PASSIVE
+      description: Negative terminal
+    electrical_properties:
+      operating_voltage: 3.3V-5V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    - PWM
+    roles:
+    - ACTUATOR
+    requires_driver: false
+    recommended_control_interface: DIGITAL
+    symbol:
+      name: buzzer
+      pin_map:
+        VCC: +
+        GND: '-'
+      ref_prefix: BZ
+    family: buzzer
+    short_name: Buzzer
+  actuator:servo-sg90:
+    name: SG90 Micro Servo Motor
+    aliases:
+    - servo
+    - sg90
+    - motor
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Standard 9g micro servo motor
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 6.0
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: PWM
+      name: PWM
+      direction: INPUT
+      electrical_type: 5V_TOLERANT
+      max_voltage: 5.0
+    electrical_properties:
+      operating_voltage: 4.8V-6.0V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - PWM
+    roles:
+    - ACTUATOR
+    requires_driver: false
+    recommended_control_interface: PWM
+    family: servo
+    symbol:
+      name: ic_box
+      ref_prefix: M
+    short_name: SG90
+  active:transistor-npn-2n2222:
+    name: 2N2222 NPN Transistor
+    aliases:
+    - npn
+    - transistor
+    - 2n2222
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Standard NPN bipolar junction transistor
+    pins:
+    - pin_id: C
+      name: COLLECTOR
+      direction: PASSIVE
+    - pin_id: B
+      name: BASE
+      direction: PASSIVE
+    - pin_id: E
+      name: EMITTER
+      direction: PASSIVE
+    electrical_properties:
+      collector_emitter_voltage_max: 40V
+      collector_current_max: 600mA
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: INTERMEDIATE
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - ANALOG
+    - DIGITAL
+    roles:
+    - LOGIC
+    requires_driver: false
+    symbol:
+      name: npn
+      ref_prefix: Q
+    family: bjt
+    short_name: 2N2222
+    design_constraints:
+    - kind: series_resistor
+      pins:
+      - B
+      severity: WARNING
+      note: Drive the base through a resistor.
+  passive:potentiometer:
+    name: Potentiometer
+    aliases:
+    - pot
+    - variable-resistor
+    category: PASSIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Variable resistor/voltage divider
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: PASSIVE
+    - pin_id: OUT
+      name: WIPER
+      direction: PASSIVE
+    - pin_id: GND
+      name: GND
+      direction: PASSIVE
+    electrical_properties: {}
+    configurable_parameters:
+      resistance: ohm
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - ANALOG
+    roles:
+    - INPUT
+    requires_driver: false
+    symbol:
+      name: potentiometer
+      pin_map:
+        VCC: '1'
+        OUT: '2'
+        GND: '3'
+      ref_prefix: RV
+    family: potentiometer
+    short_name: Pot
+  sensor:thermistor:
+    name: Thermistor
+    aliases:
+    - temperature-dependent resistor
+    - ntc
+    - ptc
+    category: SENSOR
+    object_type: PHYSICAL
+    description: Temperature dependent resistor. Set parameter type=NTC (resistance falls as temperature
+      rises) or PTC.
+    pins:
+    - pin_id: PIN1
+      name: PIN1
+      direction: PASSIVE
+    - pin_id: PIN2
+      name: PIN2
+      direction: PASSIVE
+    electrical_properties: {}
+    configurable_parameters:
+      type: enum
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - ANALOG
+    roles:
+    - SENSOR
+    requires_driver: false
+    symbol:
+      name: thermistor
+      pin_map:
+        PIN1: '1'
+        PIN2: '2'
+      ref_prefix: TH
+    family: thermistor
+    short_name: NTC
+  sensor:ds18b20:
+    name: DS18B20 Temperature Sensor
+    aliases:
+    - ds18b20
+    - 1-wire temperature sensor
+    category: SENSOR
+    object_type: PHYSICAL
+    description: 1-Wire digital temperature sensor
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 5.5
+    - pin_id: DQ
+      name: DATA
+      direction: BIDIRECTIONAL
+      electrical_type: DIGITAL
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    electrical_properties:
+      operating_voltage: 3.0V-5.5V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: INTERMEDIATE
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    roles:
+    - SENSOR
+    requires_driver: false
+    recommended_control_interface: DIGITAL
+    family: temperature_sensor
+    symbol:
+      name: ic_box
+      ref_prefix: U
+    short_name: DS18B20
+    design_constraints:
+    - kind: pullup_required
+      pins:
+      - DQ
+      value: 4.7k
+      severity: WARNING
+      note: The 1-Wire bus is open-drain and needs a 4.7 kΩ pull-up to VCC.
+  sensor:mpu6050:
+    name: MPU6050 IMU
+    aliases:
+    - mpu6050
+    - imu
+    - accelerometer
+    - gyroscope
+    category: SENSOR
+    object_type: PHYSICAL
+    description: 3-axis accelerometer and gyroscope (I2C)
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 5.0
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: SCL
+      name: SCL
+      direction: INPUT
+      electrical_type: I2C
+    - pin_id: SDA
+      name: SDA
+      direction: BIDIRECTIONAL
+      electrical_type: I2C
+    - pin_id: XDA
+      name: XDA
+      direction: BIDIRECTIONAL
+    - pin_id: XCL
+      name: XCL
+      direction: OUTPUT
+    - pin_id: ADD
+      name: ADD
+      direction: INPUT
+    - pin_id: INT
+      name: INT
+      direction: OUTPUT
+    electrical_properties:
+      operating_voltage: 3.3V-5V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: INTERMEDIATE
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - I2C
+    roles:
+    - SENSOR
+    requires_driver: false
+    recommended_control_interface: I2C
+    family: imu
+    symbol:
+      name: ic_box
+      ref_prefix: U
+    short_name: MPU6050
+  sensor:mq2:
+    name: MQ-2 Gas Sensor
+    aliases:
+    - mq-2
+    - mq2
+    - gas sensor
+    - smoke sensor
+    category: SENSOR
+    object_type: PHYSICAL
+    description: Gas and smoke sensor module
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 5.0
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: A0
+      name: ANALOG OUT
+      direction: OUTPUT
+      electrical_type: ANALOG
+    - pin_id: D0
+      name: DIGITAL OUT
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    electrical_properties:
+      operating_voltage: 5V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - ANALOG
+    - DIGITAL
+    roles:
+    - SENSOR
+    requires_driver: false
+    family: gas_sensor
+    symbol:
+      name: ic_box
+      ref_prefix: U
+    short_name: MQ-2
+  sensor:rotary-encoder:
+    name: Rotary Encoder
+    aliases:
+    - rotary encoder
+    - encoder
+    category: SENSOR
+    object_type: PHYSICAL
+    description: Mechanical rotary encoder with push button
+    pins:
+    - pin_id: CLK
+      name: CLK
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: DT
+      name: DT
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: SW
+      name: SW
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 5.0
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    electrical_properties:
+      operating_voltage: 3.3V-5V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: INTERMEDIATE
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    roles:
+    - INPUT
+    - SENSOR
+    requires_driver: false
+    family: rotary_encoder
+    symbol:
+      name: ic_box
+      ref_prefix: U
+    short_name: Encoder
+  actuator:led-rgb:
+    name: RGB LED
+    aliases:
+    - rgb led
+    - rgb light
+    - color led
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Common cathode RGB LED
+    pins:
+    - pin_id: R
+      name: RED
+      direction: PASSIVE
+    - pin_id: G
+      name: GREEN
+      direction: PASSIVE
+    - pin_id: B
+      name: BLUE
+      direction: PASSIVE
+    - pin_id: COM
+      name: COMMON
+      direction: PASSIVE
+    electrical_properties:
+      max_forward_current: 20mA
+      recommended_current: 10mA
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - PWM
+    - DIGITAL
+    roles:
+    - ACTUATOR
+    - DISPLAY
+    requires_driver: false
+    family: rgb_led
+    symbol:
+      name: ic_box
+      ref_prefix: D
+    short_name: RGB LED
+  actuator:dc-motor:
+    name: DC Motor
+    aliases:
+    - dc motor
+    - motor
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Generic DC motor
+    pins:
+    - pin_id: PIN1
+      name: PIN1
+      direction: PASSIVE
+    - pin_id: PIN2
+      name: PIN2
+      direction: PASSIVE
+    electrical_properties:
+      operating_voltage: 3V-6V
+      max_current: 500mA
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: BEGINNER
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - ANALOG
+    - PWM
+    roles:
+    - ACTUATOR
+    requires_driver: true
+    symbol:
+      name: motor
+      pin_map:
+        PIN1: '1'
+        PIN2: '2'
+      ref_prefix: M
+    family: motor
+    short_name: DC motor
+    design_constraints:
+    - kind: flyback_diode
+      pins:
+      - PIN1
+      - PIN2
+      severity: WARNING
+      note: Motors are inductive; switch them with a transistor/driver and clamp with a diode unless the
+        driver has clamp diodes.
+  actuator:relay-module:
+    name: Relay Module
+    aliases:
+    - relay
+    - relay module
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: 1-channel relay module
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 5.0
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: IN
+      name: IN
+      direction: INPUT
+      electrical_type: DIGITAL
+    - pin_id: 'NO'
+      name: NORMALLY OPEN
+      direction: PASSIVE
+    - pin_id: NC
+      name: NORMALLY CLOSED
+      direction: PASSIVE
+    - pin_id: COM
+      name: COMMON
+      direction: PASSIVE
+    electrical_properties:
+      operating_voltage: 5V
+      max_current: 10A
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: INTERMEDIATE
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    roles:
+    - ACTUATOR
+    - LOGIC
+    requires_driver: false
+    recommended_control_interface: DIGITAL
+    family: relay_module
+    symbol:
+      name: ic_box
+      ref_prefix: K
+    short_name: Relay
+  actuator:oled-i2c:
+    name: OLED Display I2C
+    aliases:
+    - oled
+    - display
+    - small oled i2c display
+    - i2c oled
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Small OLED display using I2C
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 5.0
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: SCL
+      name: SCL
+      direction: INPUT
+      electrical_type: I2C
+    - pin_id: SDA
+      name: SDA
+      direction: BIDIRECTIONAL
+      electrical_type: I2C
+    electrical_properties:
+      operating_voltage: 3.3V-5V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: INTERMEDIATE
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - I2C
+    roles:
+    - DISPLAY
+    - ACTUATOR
+    requires_driver: false
+    recommended_control_interface: I2C
+    family: oled_display
+    symbol:
+      name: ic_box
+      ref_prefix: DS
+    short_name: OLED I2C
+  actuator:7-segment:
+    name: 7-Segment Display
+    aliases:
+    - 7-segment display
+    - 7-segment
+    - display
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: Single digit 7-segment display
+    pins:
+    - pin_id: A
+      name: A
+      direction: PASSIVE
+    - pin_id: B
+      name: B
+      direction: PASSIVE
+    - pin_id: C
+      name: C
+      direction: PASSIVE
+    - pin_id: D
+      name: D
+      direction: PASSIVE
+    - pin_id: E
+      name: E
+      direction: PASSIVE
+    - pin_id: F
+      name: F
+      direction: PASSIVE
+    - pin_id: G
+      name: G
+      direction: PASSIVE
+    - pin_id: DP
+      name: DP
+      direction: PASSIVE
+    - pin_id: COM1
+      name: COM1
+      direction: PASSIVE
+    - pin_id: COM2
+      name: COM2
+      direction: PASSIVE
+    electrical_properties:
+      max_forward_current: 20mA
+      recommended_current: 10mA
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: INTERMEDIATE
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    roles:
+    - DISPLAY
+    - ACTUATOR
+    requires_driver: false
+    family: seven_segment
+    symbol:
+      name: ic_box
+      ref_prefix: DS
+    short_name: 7-Seg
+  logic:74hc595:
+    name: 74HC595 Shift Register
+    aliases:
+    - 74hc595
+    - shift register
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: 8-bit serial-in, serial or parallel-out shift register
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 6.0
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: SER
+      name: DATA
+      direction: INPUT
+      electrical_type: DIGITAL
+    - pin_id: OE
+      name: OUTPUT ENABLE
+      direction: INPUT
+      electrical_type: DIGITAL
+    - pin_id: RCLK
+      name: LATCH
+      direction: INPUT
+      electrical_type: DIGITAL
+    - pin_id: SRCLK
+      name: CLOCK
+      direction: INPUT
+      electrical_type: DIGITAL
+    - pin_id: SRCLR
+      name: CLEAR
+      direction: INPUT
+      electrical_type: DIGITAL
+    - pin_id: QA
+      name: QA
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: QB
+      name: QB
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: QC
+      name: QC
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: QD
+      name: QD
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: QE
+      name: QE
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: QF
+      name: QF
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: QG
+      name: QG
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: QH
+      name: QH
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    - pin_id: QH_PRIME
+      name: QH_PRIME
+      direction: OUTPUT
+      electrical_type: DIGITAL
+    electrical_properties:
+      operating_voltage: 2.0V-6.0V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: ADVANCED
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - DIGITAL
+    - SPI
+    roles:
+    - LOGIC
+    requires_driver: false
+    family: shift_register
+    symbol:
+      name: ic_box
+      ref_prefix: U
+    short_name: 74HC595
+  actuator:lcd-i2c:
+    name: I2C LCD Module
+    aliases:
+    - lcd
+    - i2c lcd
+    - display
+    - lcd1602
+    category: ACTIVE_COMPONENT
+    object_type: PHYSICAL
+    description: 16x2 or 20x4 LCD with I2C backpack
+    pins:
+    - pin_id: VCC
+      name: VCC
+      direction: POWER
+      max_voltage: 5.0
+    - pin_id: GND
+      name: GND
+      direction: GROUND
+      max_voltage: 0.0
+    - pin_id: SDA
+      name: SDA
+      direction: BIDIRECTIONAL
+      electrical_type: I2C
+    - pin_id: SCL
+      name: SCL
+      direction: INPUT
+      electrical_type: I2C
+    electrical_properties:
+      operating_voltage: 5V
+    configurable_parameters: {}
+    curriculum_mapping: []
+    competency_level: INTERMEDIATE
+    provenance: community
+    license: unknown
+    validation_status: proposed
+    interfaces:
+    - I2C
+    roles:
+    - DISPLAY
+    - ACTUATOR
+    requires_driver: false
+    recommended_control_interface: I2C
+    family: lcd_display
+    symbol:
+      name: ic_box
+      ref_prefix: DS
+    short_name: LCD1602 I2C

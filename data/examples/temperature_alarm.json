@@ -1,0 +1,218 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "temp-alarm",
+  "name": "Adjustable Temperature Alarm",
+  "description": "LM35 compared against a potentiometer threshold by an LM393; a BC547 switches the buzzer on above the threshold.",
+  "components": [
+    {
+      "instance_id": "bt1",
+      "component_type": "power:usb-5v",
+      "parameters": {},
+      "metadata": {
+        "role": "5 V supply"
+      }
+    },
+    {
+      "instance_id": "u1",
+      "component_type": "sensor:lm35",
+      "parameters": {},
+      "metadata": {
+        "role": "temperature sensor"
+      }
+    },
+    {
+      "instance_id": "rv1",
+      "component_type": "passive:potentiometer",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "threshold setting"
+      }
+    },
+    {
+      "instance_id": "u2",
+      "component_type": "ic:comparator-lm393",
+      "parameters": {},
+      "metadata": {
+        "role": "comparator"
+      }
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "open-collector pull-up"
+      }
+    },
+    {
+      "instance_id": "r2",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "1k"
+      },
+      "metadata": {
+        "role": "base resistor"
+      }
+    },
+    {
+      "instance_id": "q1",
+      "component_type": "semiconductor:npn-bc547",
+      "parameters": {},
+      "metadata": {
+        "role": "buzzer driver"
+      }
+    },
+    {
+      "instance_id": "bz1",
+      "component_type": "actuator:buzzer-piezo",
+      "parameters": {},
+      "metadata": {
+        "role": "alarm"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "v5",
+      "connections": [
+        {
+          "instance_id": "bt1",
+          "pin_id": "VBUS"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "VS"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "VCC"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "VCC"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "bz1",
+          "pin_id": "VCC"
+        }
+      ],
+      "net_type": null
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "bt1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "E"
+        }
+      ],
+      "net_type": null
+    },
+    {
+      "net_id": "temp",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "VOUT"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "IN1_P"
+        }
+      ],
+      "net_type": null
+    },
+    {
+      "net_id": "ref",
+      "connections": [
+        {
+          "instance_id": "rv1",
+          "pin_id": "OUT"
+        },
+        {
+          "instance_id": "u2",
+          "pin_id": "IN1_N"
+        }
+      ],
+      "net_type": null
+    },
+    {
+      "net_id": "cmp",
+      "connections": [
+        {
+          "instance_id": "u2",
+          "pin_id": "OUT1"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": null
+    },
+    {
+      "net_id": "base",
+      "connections": [
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "B"
+        }
+      ],
+      "net_type": null
+    },
+    {
+      "net_id": "coll",
+      "connections": [
+        {
+          "instance_id": "q1",
+          "pin_id": "C"
+        },
+        {
+          "instance_id": "bz1",
+          "pin_id": "GND"
+        }
+      ],
+      "net_type": null
+    }
+  ],
+  "logic": [],
+  "metadata": {},
+  "assumptions": [],
+  "curriculum_context": {
+    "module": "Analog IC Design",
+    "concept": "Comparators & Thresholds",
+    "competency_level": "INTERMEDIATE"
+  }
+}

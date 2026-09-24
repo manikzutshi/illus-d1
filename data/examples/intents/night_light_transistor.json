@@ -1,0 +1,38 @@
+{
+  "signals": [
+    {
+      "id": "light",
+      "role": "input",
+      "quantity": "light",
+      "component_hint": null,
+      "description": ""
+    },
+    {
+      "id": "lamp",
+      "role": "output",
+      "quantity": "light_emission",
+      "component_hint": null,
+      "description": ""
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "dark_on",
+      "when": {
+        "input": "light",
+        "relation": "below",
+        "threshold": {
+          "kind": "unspecified"
+        }
+      },
+      "then": {
+        "output": "lamp",
+        "effect": "on"
+      },
+      "description": "LED on when it is dark"
+    }
+  ],
+  "processing": "analog",
+  "required_components": [],
+  "notes": []
+}

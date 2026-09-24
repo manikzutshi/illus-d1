@@ -1,0 +1,327 @@
+# Reusable design patterns (functional building blocks).
+# members: "role.PIN" refers to a part of the pattern; "port:NAME" is bound to a pin of the
+# surrounding design when the pattern is instantiated. Component types are registry IDs.
+
+patterns:
+  led_indicator:
+    name: LED indicator
+    purpose: Light an LED from a logic output or supply with a current-limiting resistor.
+    category: indicator
+    concepts: [ohms_law, pn_junction_diode, embedded_basics]
+    ports:
+      - {name: DRIVE, kind: signal, description: GPIO or supply that turns the LED on}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: r, component_type: passive:resistor-tht, parameters: {resistance: "330"}, purpose: LED current limit}
+      - {role: led, component_type: passive:led-5mm, parameters: {color: red}, purpose: indicator}
+    nets:
+      - {name: drive, members: ["port:DRIVE", r.PIN1]}
+      - {name: anode, members: [r.PIN2, led.ANODE]}
+      - {name: gnd, members: [led.CATHODE, "port:GND"]}
+    calculations: [led_resistor]
+    design_notes: ["R = (V_drive − V_f) / I_led; 330 Ω from 3.3 V gives ~4 mA for a red LED."]
+
+  voltage_divider:
+    name: Voltage divider
+    purpose: Produce a fraction of a voltage (sensing, biasing, level reduction).
+    category: bias
+    concepts: [ohms_law, analog_fundamentals]
+    ports:
+      - {name: IN, kind: signal}
+      - {name: OUT, kind: signal}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: rtop, component_type: passive:resistor-tht, parameters: {resistance: 10k}}
+      - {role: rbot, component_type: passive:resistor-tht, parameters: {resistance: 10k}}
+    nets:
+      - {name: in, members: ["port:IN", rtop.PIN1]}
+      - {name: out, members: [rtop.PIN2, rbot.PIN1, "port:OUT"]}
+      - {name: gnd, members: [rbot.PIN2, "port:GND"]}
+    calculations: [voltage_divider]
+
+  divider_level_shift:
+    name: 5 V → 3.3 V divider level shifter
+    purpose: Safely read a unidirectional 5 V logic output with a 3.3 V input.
+    category: interface
+    concepts: [level_shifting]
+    ports:
+      - {name: HV_IN, kind: signal, description: 5 V logic output}
+      - {name: LV_OUT, kind: signal, description: 3.3 V logic input}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: rtop, component_type: passive:resistor-tht, parameters: {resistance: 1k}}
+      - {role: rbot, component_type: passive:resistor-tht, parameters: {resistance: 2k}}
+    nets:
+      - {name: hv, members: ["port:HV_IN", rtop.PIN1]}
+      - {name: lv, members: [rtop.PIN2, rbot.PIN1, "port:LV_OUT"]}
+      - {name: gnd, members: [rbot.PIN2, "port:GND"]}
+    calculations: [voltage_divider]
+    design_notes: ["5 V × 2k/3k = 3.33 V. Unidirectional only; use a BSS138 shifter for bidirectional/I2C lines."]
+
+  button_pulldown:
+    name: Push button with pull-down
+    purpose: Clean logic-high-when-pressed input.
+    category: input
+    concepts: [embedded_basics]
+    ports:
+      - {name: VCC, kind: supply}
+      - {name: OUT, kind: signal}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: sw, component_type: passive:push-button-2pin}
+      - {role: r, component_type: passive:resistor-tht, parameters: {resistance: 10k}, purpose: pull-down}
+    nets:
+      - {name: vcc, members: ["port:VCC", sw.PIN1]}
+      - {name: out, members: [sw.PIN2, r.PIN1, "port:OUT"]}
+      - {name: gnd, members: [r.PIN2, "port:GND"]}
+
+  bjt_low_side_switch:
+    name: NPN low-side switch
+    purpose: Switch a load of up to ~100 mA from a logic pin.
+    category: switching
+    concepts: [transistor_switch, bjt_basics]
+    ports:
+      - {name: CTRL, kind: signal}
+      - {name: LOAD_LOW, kind: signal, description: low side of the load}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: rb, component_type: passive:resistor-tht, parameters: {resistance: 1k}, purpose: base resistor}
+      - {role: q, component_type: semiconductor:npn-bc547, alternatives: [active:transistor-npn-2n2222]}
+    nets:
+      - {name: ctrl, members: ["port:CTRL", rb.PIN1]}
+      - {name: base, members: [rb.PIN2, q.B]}
+      - {name: load, members: [q.C, "port:LOAD_LOW"]}
+      - {name: gnd, members: [q.E, "port:GND"]}
+    calculations: [bjt_base_resistor]
+
+  mosfet_low_side_switch:
+    name: Logic-level MOSFET low-side switch
+    purpose: Switch or PWM a high-current load from a logic pin.
+    category: switching
+    concepts: [transistor_switch, mosfet_basics, pwm_motor_control]
+    ports:
+      - {name: CTRL, kind: signal}
+      - {name: LOAD_LOW, kind: signal}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: rg, component_type: passive:resistor-tht, parameters: {resistance: "100"}, purpose: gate resistor}
+      - {role: rpd, component_type: passive:resistor-tht, parameters: {resistance: 10k}, purpose: gate pull-down}
+      - {role: q, component_type: semiconductor:nmos-irlz44n, alternatives: [semiconductor:nmos-2n7000]}
+    nets:
+      - {name: ctrl, members: ["port:CTRL", rg.PIN1]}
+      - {name: gate, members: [rg.PIN2, rpd.PIN1, q.G]}
+      - {name: load, members: [q.D, "port:LOAD_LOW"]}
+      - {name: gnd, members: [q.S, rpd.PIN2, "port:GND"]}
+    design_notes: ["The pull-down keeps the MOSFET off while the controller boots."]
+
+  flyback_protection:
+    name: Flyback diode
+    purpose: Clamp the turn-off spike of an inductive load (relay coil, motor, solenoid).
+    category: protection
+    concepts: [inductive_loads]
+    ports:
+      - {name: SUPPLY, kind: supply, description: high side of the inductive load}
+      - {name: LOW, kind: signal, description: switched low side of the load}
+    parts:
+      - {role: d, component_type: semiconductor:diode-1n4007, alternatives: [semiconductor:diode-1n5819, semiconductor:diode-1n4148]}
+    nets:
+      - {name: k, members: [d.K, "port:SUPPLY"]}
+      - {name: a, members: [d.A, "port:LOW"]}
+    design_notes: ["Cathode to the positive supply; the diode is reverse-biased in normal operation."]
+
+  i2c_bus_pullups:
+    name: I2C bus pull-ups
+    purpose: Pull the open-drain SDA/SCL lines high.
+    category: interface
+    concepts: [i2c_protocol]
+    ports:
+      - {name: VCC, kind: supply}
+      - {name: SDA, kind: signal}
+      - {name: SCL, kind: signal}
+    parts:
+      - {role: rsda, component_type: passive:resistor-tht, parameters: {resistance: 4.7k}}
+      - {role: rscl, component_type: passive:resistor-tht, parameters: {resistance: 4.7k}}
+    nets:
+      - {name: vcc, members: ["port:VCC", rsda.PIN1, rscl.PIN1]}
+      - {name: sda, members: [rsda.PIN2, "port:SDA"]}
+      - {name: scl, members: [rscl.PIN2, "port:SCL"]}
+
+  rc_lowpass:
+    name: RC low-pass filter
+    purpose: Attenuate frequencies above fc = 1/(2πRC).
+    category: filter
+    concepts: [rc_timing, analog_fundamentals]
+    ports:
+      - {name: IN, kind: signal}
+      - {name: OUT, kind: signal}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: r, component_type: passive:resistor-tht, parameters: {resistance: 10k}}
+      - {role: c, component_type: passive:capacitor-ceramic, parameters: {capacitance: 100n}}
+    nets:
+      - {name: in, members: ["port:IN", r.PIN1]}
+      - {name: out, members: [r.PIN2, c.PIN1, "port:OUT"]}
+      - {name: gnd, members: [c.PIN2, "port:GND"]}
+    calculations: [rc_time_constant]
+
+  noninverting_amplifier:
+    name: Non-inverting op-amp amplifier
+    purpose: Voltage gain G = 1 + Rf/Rg with high input impedance.
+    category: amplification
+    concepts: [opamp_basics]
+    ports:
+      - {name: IN, kind: signal}
+      - {name: OUT, kind: signal}
+      - {name: VCC, kind: supply}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: u, component_type: ic:opamp-mcp6001}
+      - {role: rf, component_type: passive:resistor-tht, parameters: {resistance: 10k}}
+      - {role: rg, component_type: passive:resistor-tht, parameters: {resistance: 10k}}
+    nets:
+      - {name: in, members: ["port:IN", u.VIN_P]}
+      - {name: fb, members: [u.VIN_N, rf.PIN1, rg.PIN1]}
+      - {name: out, members: [u.VOUT, rf.PIN2, "port:OUT"]}
+      - {name: vcc, members: ["port:VCC", u.VDD]}
+      - {name: gnd, members: [rg.PIN2, u.VSS, "port:GND"]}
+    calculations: [noninverting_gain]
+
+  common_emitter_amplifier:
+    name: Common-emitter amplifier stage
+    purpose: Small-signal voltage gain with a single NPN transistor.
+    category: amplification
+    concepts: [common_emitter_amplifier, bjt_basics]
+    ports:
+      - {name: IN, kind: signal}
+      - {name: OUT, kind: signal}
+      - {name: VCC, kind: supply}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: cin, component_type: passive:capacitor-electrolytic, parameters: {capacitance: 10u}}
+      - {role: r1, component_type: passive:resistor-tht, parameters: {resistance: 47k}}
+      - {role: r2, component_type: passive:resistor-tht, parameters: {resistance: 10k}}
+      - {role: q, component_type: semiconductor:npn-bc547}
+      - {role: rc, component_type: passive:resistor-tht, parameters: {resistance: 4.7k}}
+      - {role: re, component_type: passive:resistor-tht, parameters: {resistance: 1k}}
+      - {role: ce, component_type: passive:capacitor-electrolytic, parameters: {capacitance: 100u}}
+      - {role: cout, component_type: passive:capacitor-electrolytic, parameters: {capacitance: 10u}}
+    nets:
+      - {name: in, members: ["port:IN", cin.CATHODE]}
+      - {name: base, members: [cin.ANODE, r1.PIN2, r2.PIN1, q.B]}
+      - {name: vcc, members: ["port:VCC", r1.PIN1, rc.PIN1]}
+      - {name: collector, members: [q.C, rc.PIN2, cout.ANODE]}
+      - {name: emitter, members: [q.E, re.PIN1, ce.ANODE]}
+      - {name: gnd, members: [r2.PIN2, re.PIN2, ce.CATHODE, "port:GND"]}
+      - {name: out, members: [cout.CATHODE, "port:OUT"]}
+    calculations: [voltage_divider]
+
+  cmos_inverter:
+    name: CMOS inverter
+    purpose: Complementary PMOS/NMOS pair implementing Y = NOT A.
+    category: logic
+    concepts: [cmos_inverter, mosfet_basics]
+    ports:
+      - {name: IN, kind: signal}
+      - {name: OUT, kind: signal}
+      - {name: VDD, kind: supply}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: mp, component_type: primitive:pmos, alternatives: [semiconductor:pmos-bs250], parameters: {width: 2u, length: 180n}}
+      - {role: mn, component_type: primitive:nmos, alternatives: [semiconductor:nmos-2n7000], parameters: {width: 1u, length: 180n}}
+    nets:
+      - {name: in, members: ["port:IN", mp.G, mn.G]}
+      - {name: out, members: [mp.D, mn.D, "port:OUT"]}
+      - {name: vdd, members: ["port:VDD", mp.S]}
+      - {name: gnd, members: [mn.S, "port:GND"]}
+
+  astable_555:
+    name: 555 astable oscillator
+    purpose: Square-wave oscillator; f ≈ 1.44/((R1+2R2)C).
+    category: timing
+    concepts: [oscillators, rc_timing]
+    ports:
+      - {name: VCC, kind: supply}
+      - {name: OUT, kind: signal}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: u, component_type: ic:timer-ne555}
+      - {role: r1, component_type: passive:resistor-tht, parameters: {resistance: 1k}}
+      - {role: r2, component_type: passive:resistor-tht, parameters: {resistance: 100k}}
+      - {role: ct, component_type: passive:capacitor-electrolytic, parameters: {capacitance: 10u}}
+      - {role: cc, component_type: passive:capacitor-ceramic, parameters: {capacitance: 10n}}
+    nets:
+      - {name: vcc, members: ["port:VCC", u.VCC, u.RESET, r1.PIN1]}
+      - {name: disch, members: [r1.PIN2, r2.PIN1, u.DISCH]}
+      - {name: timing, members: [r2.PIN2, ct.ANODE, u.THRES, u.TRIG]}
+      - {name: ctrl, members: [u.CTRL, cc.PIN1]}
+      - {name: out, members: [u.OUT, "port:OUT"]}
+      - {name: gnd, members: [u.GND, ct.CATHODE, cc.PIN2, "port:GND"]}
+    calculations: [astable_555]
+
+  linear_regulator:
+    name: Linear regulator with capacitors
+    purpose: Regulated rail from a higher DC input.
+    category: power
+    concepts: [linear_regulation]
+    ports:
+      - {name: VIN, kind: supply}
+      - {name: VOUT, kind: supply}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: u, component_type: ic:regulator-lm7805, alternatives: [ic:ldo-ams1117-3v3]}
+      - {role: cin, component_type: passive:capacitor-ceramic, parameters: {capacitance: 330n}}
+      - {role: cout, component_type: passive:capacitor-ceramic, parameters: {capacitance: 100n}}
+    nets:
+      - {name: vin, members: ["port:VIN", u.VIN, cin.PIN1]}
+      - {name: vout, members: [u.VOUT, cout.PIN1, "port:VOUT"]}
+      - {name: gnd, members: [u.GND, cin.PIN2, cout.PIN2, "port:GND"]}
+    design_notes: ["AMS1117 needs ≥10 µF on the output; swap cout accordingly."]
+
+  comparator_threshold:
+    name: Comparator threshold detector
+    purpose: Logic output when a sensor voltage crosses a reference set by a divider.
+    category: interface
+    concepts: [comparator_threshold]
+    ports:
+      - {name: SENSE, kind: signal}
+      - {name: OUT, kind: signal}
+      - {name: VCC, kind: supply}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: u, component_type: ic:comparator-lm393}
+      - {role: rtop, component_type: passive:resistor-tht, parameters: {resistance: 10k}}
+      - {role: rbot, component_type: passive:resistor-tht, parameters: {resistance: 10k}}
+      - {role: rpu, component_type: passive:resistor-tht, parameters: {resistance: 10k}, purpose: output pull-up}
+    nets:
+      - {name: sense, members: ["port:SENSE", u.IN1_P]}
+      - {name: ref, members: [rtop.PIN2, rbot.PIN1, u.IN1_N]}
+      - {name: vcc, members: ["port:VCC", u.VCC, rtop.PIN1, rpu.PIN1]}
+      - {name: out, members: [u.OUT1, rpu.PIN2, "port:OUT"]}
+      - {name: gnd, members: [u.GND, rbot.PIN2, "port:GND"]}
+    calculations: [voltage_divider]
+
+  h_bridge_driver:
+    name: H-bridge DC motor driver
+    purpose: Bidirectional DC motor control with PWM speed input.
+    category: switching
+    concepts: [h_bridge, pwm_motor_control]
+    ports:
+      - {name: IN1, kind: signal}
+      - {name: IN2, kind: signal}
+      - {name: EN, kind: signal}
+      - {name: VLOGIC, kind: supply}
+      - {name: VMOTOR, kind: supply}
+      - {name: GND, kind: ground}
+    parts:
+      - {role: u, component_type: driver:l293d}
+      - {role: m, component_type: actuator:dc-motor}
+    nets:
+      - {name: in1, members: ["port:IN1", u.1A]}
+      - {name: in2, members: ["port:IN2", u.2A]}
+      - {name: en, members: ["port:EN", u.EN12]}
+      - {name: out1, members: [u.1Y, m.PIN1]}
+      - {name: out2, members: [u.2Y, m.PIN2]}
+      - {name: vl, members: ["port:VLOGIC", u.VCC1]}
+      - {name: vm, members: ["port:VMOTOR", u.VCC2]}
+      - {name: gnd, members: [u.GND1, u.GND2, u.GND3, u.GND4, "port:GND"]}
+    design_notes: ["L293D has internal clamp diodes, so no external flyback diodes are required."]

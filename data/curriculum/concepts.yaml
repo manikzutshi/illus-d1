@@ -1,88 +1,211 @@
 concepts:
   cmos_inverter:
-    name: "CMOS Inverter"
-    description: "Complementary MOS inverter using NMOS and PMOS transistors. Foundation of all CMOS digital logic."
-    prerequisites: ["mosfet_basics", "digital_logic"]
-    related_concepts: ["nand_gate", "nor_gate", "standard_cell"]
-    components: ["mosfet_nmos", "mosfet_pmos"]
-    competency_level: "INTERMEDIATE"
-    module: "VLSI Basics"
-    tools: ["ngspice", "magic_vlsi"]
+    name: CMOS Inverter
+    description: Complementary MOS inverter using NMOS and PMOS transistors. Foundation of all CMOS digital logic.
+    prerequisites:
+    - mosfet_basics
+    - digital_logic_gate
+    related_concepts:
+    - cmos_logic
+    - noise_margins
+    - logical_effort
+    components:
+    - primitive:pmos
+    - primitive:nmos
+    - semiconductor:pmos-bs250
+    - semiconductor:nmos-2n7000
+    - logic:74hc04
+    competency_level: INTERMEDIATE
+    module: VLSI Basics
+    tools:
+    - ngspice
+    - magic_vlsi
     standards: []
-
+    kind: design_pattern
+    domain: CMOS & Device Technology
+    abstraction_level: circuit
+    representations:
+    - schematic
+    - vtc_plot
+    - layout
+    patterns:
+    - cmos_inverter
   digital_logic_gate:
-    name: "Digital Logic Gate"
-    description: "Fundamental Boolean logic operations implemented as electronic gates (AND, OR, NOT, NAND, NOR, XOR)."
-    prerequisites: ["boolean_algebra"]
-    related_concepts: ["cmos_inverter", "truth_table", "timing_analysis"]
-    components: ["logic_gates"]
-    competency_level: "BEGINNER"
-    module: "Digital Logic"
-    tools: ["verilator", "icarus_verilog"]
-    standards: ["IEEE 1164"]
-
+    name: Digital Logic Gate
+    description: Fundamental Boolean logic operations implemented as electronic gates (AND, OR, NOT, NAND, NOR,
+      XOR).
+    prerequisites:
+    - boolean_algebra
+    related_concepts:
+    - cmos_inverter
+    - cmos_logic
+    - setup_hold
+    components:
+    - primitive:gate-and
+    - primitive:gate-or
+    - primitive:gate-not
+    - primitive:gate-nand
+    - primitive:gate-nor
+    - primitive:gate-xor
+    - logic:74hc00
+    - logic:74hc08
+    - logic:74hc32
+    - logic:74hc86
+    competency_level: BEGINNER
+    module: Digital Logic
+    tools:
+    - verilator
+    - icarus_verilog
+    standards:
+    - IEEE 1164
+    domain: Digital Logic
+    abstraction_level: gate
+    representations:
+    - schematic
+    - truth_table
   fsm_design:
-    name: "Finite State Machine"
-    description: "Sequential logic design using state diagrams, state tables, and HDL implementation (Mealy and Moore machines)."
-    prerequisites: ["digital_logic_gate", "flip_flop", "sequential_logic"]
-    related_concepts: ["state_encoding", "state_minimization"]
-    components: ["flip_flop_d", "clock_signal", "reset_signal"]
-    competency_level: "INTERMEDIATE"
-    module: "Sequential Logic"
-    tools: ["verilator"]
+    name: Finite State Machine
+    description: Sequential logic design using state diagrams, state tables, and HDL implementation (Mealy and Moore
+      machines).
+    prerequisites:
+    - digital_logic_gate
+    - flip_flop
+    related_concepts:
+    - rtl_module
+    components:
+    - primitive:dff
+    - logic:74hc74
+    competency_level: INTERMEDIATE
+    module: Sequential Logic
+    tools:
+    - verilator
     standards: []
-
+    domain: Digital Logic
+    abstraction_level: rtl
+    representations:
+    - state_diagram
+    - schematic
+    - waveform
   rtl_design:
-    name: "Register Transfer Level Design"
-    description: "Describing digital hardware behavior using HDL at the register-transfer abstraction level."
-    prerequisites: ["digital_logic_gate", "fsm_design"]
-    related_concepts: ["synthesis", "timing_closure", "pipelining"]
+    name: Register Transfer Level Design
+    description: Describing digital hardware behavior using HDL at the register-transfer abstraction level.
+    prerequisites:
+    - digital_logic_gate
+    - fsm_design
+    related_concepts:
+    - rtl_module
+    - setup_hold
     components: []
-    competency_level: "INTERMEDIATE"
-    module: "RTL Design"
-    tools: ["verilator", "yosys"]
-    standards: ["IEEE 1364", "IEEE 1800"]
-
+    competency_level: INTERMEDIATE
+    module: RTL Design
+    tools:
+    - verilator
+    - yosys
+    standards:
+    - IEEE 1364
+    - IEEE 1800
+    domain: RTL & SystemVerilog
+    abstraction_level: rtl
+    kind: methodology
+    representations:
+    - source_code
+    - block_diagram
   verification:
-    name: "Functional Verification"
-    description: "Systematic techniques for proving digital designs behave correctly, including simulation, formal verification, and UVM."
-    prerequisites: ["rtl_design"]
-    related_concepts: ["coverage", "assertions", "constrained_random"]
-    components: ["waveform_viewer"]
-    competency_level: "ADVANCED"
-    module: "Verification"
-    tools: ["verilator", "icarus_verilog"]
-    standards: ["IEEE 1800.2"]
-
+    name: Functional Verification
+    description: Systematic techniques for proving digital designs behave correctly, including simulation, formal
+      verification, and UVM.
+    prerequisites:
+    - rtl_design
+    related_concepts:
+    - uvm_testbench
+    - assertions_coverage
+    components: []
+    competency_level: ADVANCED
+    module: Verification
+    tools:
+    - verilator
+    - icarus_verilog
+    standards:
+    - IEEE 1800.2
+    domain: Functional Verification
+    abstraction_level: verification
+    kind: methodology
+    representations:
+    - waveform
+    - block_diagram
   timing_analysis:
-    name: "Static Timing Analysis"
-    description: "Analyzing timing paths in synchronous digital circuits to ensure setup and hold requirements are met."
-    prerequisites: ["rtl_design", "sequential_logic"]
-    related_concepts: ["clock_domain_crossing", "pipelining", "timing_closure"]
-    components: ["clock_signal"]
-    competency_level: "ADVANCED"
-    module: "Physical Design"
-    tools: ["opensta"]
+    name: Static Timing Analysis
+    description: Analyzing timing paths in synchronous digital circuits to ensure setup and hold requirements are
+      met.
+    prerequisites:
+    - rtl_design
+    - setup_hold
+    related_concepts:
+    - cdc_synchronizer
+    components:
+    - primitive:dff
+    competency_level: ADVANCED
+    module: Physical Design
+    tools:
+    - opensta
     standards: []
-
+    domain: Static Timing Analysis
+    abstraction_level: gate
+    representations:
+    - timing_report
+    - waveform
   sensor_integration:
-    name: "Sensor Integration"
-    description: "Connecting and reading data from physical sensors using microcontrollers. Covers GPIO, ADC, I2C, SPI, and UART interfaces."
-    prerequisites: ["embedded_basics"]
-    related_concepts: ["gpio_programming", "adc_conversion", "i2c_protocol"]
-    components: ["esp32_dev", "ultrasonic_hcsr04"]
-    competency_level: "BEGINNER"
-    module: "Embedded Systems"
-    tools: ["wokwi", "platformio"]
+    name: Sensor Integration
+    description: Connecting and reading data from physical sensors using microcontrollers. Covers GPIO, ADC, I2C,
+      SPI, and UART interfaces.
+    prerequisites:
+    - embedded_basics
+    related_concepts:
+    - i2c_protocol
+    - adc_conversion
+    - sensor_interface
+    components:
+    - board:esp32-devkit-v1
+    - sensor:hc-sr04
+    - sensor:ds18b20
+    - sensor:lm35
+    competency_level: BEGINNER
+    module: Embedded Systems
+    tools:
+    - wokwi
+    - platformio
     standards: []
-
+    domain: Hardware Programming / Firmware Awareness
+    abstraction_level: system
+    representations:
+    - schematic
+    patterns:
+    - divider_level_shift
+    - i2c_bus_pullups
   embedded_basics:
-    name: "Embedded Systems Basics"
-    description: "Introduction to microcontroller programming, GPIO, interrupts, and basic peripheral interfacing."
+    name: Embedded Systems Basics
+    description: Introduction to microcontroller programming, GPIO, interrupts, and basic peripheral interfacing.
     prerequisites: []
-    related_concepts: ["sensor_integration", "firmware_development"]
-    components: ["esp32_dev", "led_red", "push_button", "resistor"]
-    competency_level: "BEGINNER"
-    module: "Embedded Systems"
-    tools: ["wokwi", "platformio"]
+    related_concepts:
+    - sensor_integration
+    - transistor_switch
+    components:
+    - board:esp32-devkit-v1
+    - board:arduino-uno-r3
+    - board:raspberry-pi-pico
+    - passive:led-5mm
+    - passive:push-button-tactile
+    - passive:resistor-tht
+    competency_level: BEGINNER
+    module: Embedded Systems
+    tools:
+    - wokwi
+    - platformio
     standards: []
+    domain: Hardware Programming / Firmware Awareness
+    abstraction_level: system
+    representations:
+    - schematic
+    patterns:
+    - led_indicator
+    - button_pulldown

@@ -1,0 +1,187 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "lv5",
+    "name": "Gas warning",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "mcu1",
+        "component_type": "board:arduino-uno-r3",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "gas1",
+        "component_type": "sensor:mq2",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "led1",
+        "component_type": "passive:led-5mm",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "r1",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "150"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "pwr1",
+        "component_type": "primitive:power-rail",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "gnd1",
+        "component_type": "primitive:ground-rail",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "net_5v",
+        "connections": [
+          {
+            "instance_id": "pwr1",
+            "pin_id": "VCC"
+          },
+          {
+            "instance_id": "mcu1",
+            "pin_id": "5V"
+          },
+          {
+            "instance_id": "gas1",
+            "pin_id": "VCC"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_gnd",
+        "connections": [
+          {
+            "instance_id": "gnd1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "mcu1",
+            "pin_id": "GND1"
+          },
+          {
+            "instance_id": "gas1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "led1",
+            "pin_id": "CATHODE"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_sensor_out",
+        "connections": [
+          {
+            "instance_id": "gas1",
+            "pin_id": "D0"
+          },
+          {
+            "instance_id": "mcu1",
+            "pin_id": "D2"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_led_drive",
+        "connections": [
+          {
+            "instance_id": "mcu1",
+            "pin_id": "D13"
+          },
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "net_led_resistor",
+        "connections": [
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "led1",
+            "pin_id": "ANODE"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [
+      {
+        "rule_id": "warn_on_gas",
+        "conditions": [
+          {
+            "input_instance": "gas1",
+            "condition": "==",
+            "value": "LOW"
+          }
+        ],
+        "operator": "AND",
+        "actions": [
+          {
+            "output_instance": "led1",
+            "state": "HIGH"
+          }
+        ]
+      }
+    ],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "gas_sensor",
+        "role": "input",
+        "quantity": "gas",
+        "component_hint": null
+      },
+      {
+        "id": "warning_led",
+        "role": "output",
+        "quantity": "LED",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "warn_on_gas",
+        "when": {
+          "input": "gas_sensor",
+          "relation": "present",
+          "threshold": null
+        },
+        "then": {
+          "output": "warning_led",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "PASS"
+  }
+}

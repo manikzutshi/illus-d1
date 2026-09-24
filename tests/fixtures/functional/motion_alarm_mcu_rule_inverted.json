@@ -1,0 +1,208 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "m3",
+    "name": "Motion alarm, inverted rule",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "u1",
+        "component_type": "board:esp32-devkit-v1",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "pir",
+        "component_type": "sensor:hc-sr501",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "j1",
+        "component_type": "power:usb-5v",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "r1",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "1k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "q1",
+        "component_type": "semiconductor:npn-bc547",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "bz1",
+        "component_type": "actuator:buzzer-piezo",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "v5",
+        "connections": [
+          {
+            "instance_id": "j1",
+            "pin_id": "VBUS"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "VIN"
+          },
+          {
+            "instance_id": "pir",
+            "pin_id": "VCC"
+          },
+          {
+            "instance_id": "bz1",
+            "pin_id": "VCC"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "gnd",
+        "connections": [
+          {
+            "instance_id": "j1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GND1"
+          },
+          {
+            "instance_id": "pir",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "E"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "m",
+        "connections": [
+          {
+            "instance_id": "pir",
+            "pin_id": "OUT"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GPIO4"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "d",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "GPIO5"
+          },
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "b",
+        "connections": [
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "q1",
+            "pin_id": "B"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "c",
+        "connections": [
+          {
+            "instance_id": "q1",
+            "pin_id": "C"
+          },
+          {
+            "instance_id": "bz1",
+            "pin_id": "GND"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [
+      {
+        "rule_id": "r1",
+        "conditions": [
+          {
+            "input_instance": "pir",
+            "condition": "==",
+            "value": "HIGH"
+          }
+        ],
+        "operator": "AND",
+        "actions": [
+          {
+            "output_instance": "bz1",
+            "state": "LOW"
+          }
+        ]
+      }
+    ],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "motion",
+        "role": "input",
+        "quantity": "movement",
+        "component_hint": null
+      },
+      {
+        "id": "alarm",
+        "role": "output",
+        "quantity": "alarm",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "motion",
+          "relation": "present",
+          "threshold": null
+        },
+        "then": {
+          "output": "alarm",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "FAIL",
+    "codes": [
+      "F006"
+    ]
+  }
+}

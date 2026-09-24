@@ -1,0 +1,183 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "pico_dc_motor_pwm",
+  "name": "Raspberry Pi Pico 6V DC Motor PWM Speed Control",
+  "description": "Raspberry Pi Pico PWM controlling a 6V DC motor powered by a 4xAA battery pack via an IRLZ44N logic-level MOSFET switch with flyback protection.",
+  "curriculum_context": {
+    "module": "Actuators and Power Control",
+    "concept": "PWM DC Motor Speed Control with MOSFET",
+    "competency_level": "INTERMEDIATE"
+  },
+  "components": [
+    {
+      "instance_id": "pico",
+      "component_type": "board:raspberry-pi-pico",
+      "parameters": {},
+      "metadata": {
+        "role": "Main microcontroller unit"
+      }
+    },
+    {
+      "instance_id": "bat1",
+      "component_type": "power:battery-4xaa",
+      "parameters": {},
+      "metadata": {
+        "role": "6V motor power source"
+      }
+    },
+    {
+      "instance_id": "motor1",
+      "component_type": "actuator:dc-motor",
+      "parameters": {},
+      "metadata": {
+        "role": "6V DC motor being speed-controlled"
+      }
+    },
+    {
+      "instance_id": "q1",
+      "component_type": "semiconductor:nmos-irlz44n",
+      "parameters": {},
+      "metadata": {
+        "role": "Low-side power MOSFET for PWM motor speed control"
+      }
+    },
+    {
+      "instance_id": "rg1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "100"
+      },
+      "metadata": {
+        "role": "Gate series resistor (100 ohm)",
+        "rationale": "Limit gate current spike"
+      }
+    },
+    {
+      "instance_id": "rpd1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "rationale": "Hold MOSFET gate low during MCU startup",
+        "role": "Gate pull-down resistor (10k)"
+      }
+    },
+    {
+      "instance_id": "d1",
+      "component_type": "semiconductor:diode-1n4007",
+      "parameters": {},
+      "metadata": {
+        "role": "Flyback diode to protect MOSFET from inductive kickback"
+      }
+    },
+    {
+      "instance_id": "gnd1",
+      "component_type": "primitive:ground-rail",
+      "parameters": {},
+      "metadata": {
+        "role": "System ground reference"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "net_pwm",
+      "connections": [
+        {
+          "instance_id": "pico",
+          "pin_id": "GP0"
+        },
+        {
+          "instance_id": "rg1",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_gate",
+      "connections": [
+        {
+          "instance_id": "rg1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "rpd1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "G"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_motor_vcc",
+      "connections": [
+        {
+          "instance_id": "bat1",
+          "pin_id": "POS"
+        },
+        {
+          "instance_id": "motor1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "K"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "net_drain",
+      "connections": [
+        {
+          "instance_id": "motor1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "D"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "A"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "net_ground",
+      "connections": [
+        {
+          "instance_id": "q1",
+          "pin_id": "S"
+        },
+        {
+          "instance_id": "rpd1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "gnd1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "pico",
+          "pin_id": "GND1"
+        }
+      ],
+      "net_type": "ground"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": [
+    "Motor runs from 4xAA battery pack (~6V nominal).",
+    "Pico provides PWM signal on GP0.",
+    "Common ground is shared between the battery pack and Pico GND."
+  ]
+}

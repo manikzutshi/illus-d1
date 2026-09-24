@@ -1,0 +1,191 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "relay-driver",
+  "name": "Relay Driver",
+  "description": "ESP32 GPIO switches a 5 V relay coil through a 2N2222 with a 1N4007 flyback diode.",
+  "curriculum_context": {
+    "module": "Embedded Systems",
+    "concept": "Inductive loads",
+    "competency_level": "INTERMEDIATE"
+  },
+  "components": [
+    {
+      "instance_id": "u1",
+      "component_type": "board:esp32-devkit-v1",
+      "parameters": {},
+      "metadata": {
+        "role": "controller"
+      }
+    },
+    {
+      "instance_id": "j1",
+      "component_type": "power:usb-5v",
+      "parameters": {},
+      "metadata": {
+        "role": "5 V supply"
+      }
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "1k"
+      },
+      "metadata": {
+        "role": "base resistor"
+      }
+    },
+    {
+      "instance_id": "q1",
+      "component_type": "active:transistor-npn-2n2222",
+      "parameters": {},
+      "metadata": {
+        "role": "coil driver"
+      }
+    },
+    {
+      "instance_id": "d1",
+      "component_type": "semiconductor:diode-1n4007",
+      "parameters": {},
+      "metadata": {
+        "role": "flyback diode"
+      }
+    },
+    {
+      "instance_id": "k1",
+      "component_type": "actuator:relay-5v-coil",
+      "parameters": {},
+      "metadata": {
+        "role": "relay"
+      }
+    },
+    {
+      "instance_id": "j2",
+      "component_type": "connector:screw-terminal-2",
+      "parameters": {},
+      "metadata": {
+        "role": "switched load terminals"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "v5",
+      "connections": [
+        {
+          "instance_id": "j1",
+          "pin_id": "VBUS"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "VIN"
+        },
+        {
+          "instance_id": "k1",
+          "pin_id": "COIL1"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "K"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "j1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "GND1"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "E"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "drive",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "GPIO23"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "base",
+      "connections": [
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "B"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "coil_low",
+      "connections": [
+        {
+          "instance_id": "q1",
+          "pin_id": "C"
+        },
+        {
+          "instance_id": "k1",
+          "pin_id": "COIL2"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "A"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "load_com",
+      "connections": [
+        {
+          "instance_id": "k1",
+          "pin_id": "COM"
+        },
+        {
+          "instance_id": "j2",
+          "pin_id": "P1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "load_no",
+      "connections": [
+        {
+          "instance_id": "k1",
+          "pin_id": "NO"
+        },
+        {
+          "instance_id": "j2",
+          "pin_id": "P2"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": []
+}

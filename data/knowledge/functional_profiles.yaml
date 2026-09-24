@@ -1,0 +1,151 @@
+# Functional (signal-flow) knowledge about components, used by the deterministic
+# functional validator. Keyed by registry `family`, with per-component overrides.
+#
+# kind:            sensor | resistive_sensor | adjustable | actuator | display | controller |
+#                  comparator | amplifier | switch | logic | timer | driver | converter |
+#                  passive | power | connector | memory | interface
+# quantities:      sensed (inputs) or produced (outputs) - see functional_vocabulary.yaml
+# outputs:         sensor output pin -> sign of pin voltage vs the sensed quantity
+#                  (+1 rises with it, -1 falls, 0 = encoded/digital/unknown)
+# resistance_sign: resistive sensors: dR/dquantity (+1, -1); omitted = unknown
+# sign_parameter / sign_by_value: take resistance_sign from an instance parameter
+# terminals:       resistive sensors: the two electrical sides (lists of pins)
+# loads:           [[positive, negative], ...] current-carrying load terminals; activation = V(+) - V(-)
+# polarized:       false for loads that work in either direction (motor, relay coil)
+# controls:        control-input pin -> sign of activation vs pin level (0 = protocol/unknown)
+# transfers:       [from_pin, to_pin, sign] signal transfer through the component
+# decision:        explicit | implicit | programmable - how the part can implement a threshold
+# programmable:    true for microcontrollers (behaviour defined by firmware / design logic rules)
+# open_collector_outputs: outputs that can only SINK current (a pull-up provides the high level)
+# min_drive_ma:    approximate minimum current a load needs to do its job (with min_drive_basis)
+#
+# Signs describe *voltage* behaviour and are standard device physics, e.g. a comparator output
+# rises when IN+ exceeds IN-, a low-side transistor pulls its collector/drain down when its
+# control input rises.
+
+families:
+  resistor: {kind: passive}
+  capacitor: {kind: passive}
+  inductor: {kind: passive}
+  jumper: {kind: passive}
+  diode: {kind: passive}
+  zener: {kind: passive}
+
+  potentiometer: {kind: adjustable, quantities: [setting], outputs: {OUT: 1}, terminals_ends: [VCC, GND]}
+  photoresistor: {kind: resistive_sensor, quantities: [light], resistance_sign: -1}
+  thermistor:
+    kind: resistive_sensor
+    quantities: [temperature]
+    sign_parameter: type
+    sign_by_value: {NTC: -1, PTC: 1}
+  push_button: {kind: resistive_sensor, quantities: [press], resistance_sign: -1}
+  switch: {kind: resistive_sensor, quantities: [press], resistance_sign: -1}
+
+  temperature_sensor: {kind: sensor, quantities: [temperature]}
+  temp_humidity_sensor: {kind: sensor, quantities: [temperature, humidity], outputs: {DATA: 0}}
+  pir_sensor: {kind: sensor, quantities: [motion], outputs: {OUT: 1}}
+  ultrasonic_sensor: {kind: sensor, quantities: [distance], outputs: {ECHO: 0}}
+  gas_sensor: {kind: sensor, quantities: [gas], outputs: {A0: 1, D0: 0}}
+  imu: {kind: sensor, quantities: [acceleration], outputs: {SDA: 0, INT: 0}}
+  rotary_encoder: {kind: sensor, quantities: [rotation, press], outputs: {CLK: 0, DT: 0, SW: 0}}
+
+  led: {kind: actuator, quantities: [light_emission], loads: [[ANODE, CATHODE]], min_drive_ma: 1,
+        min_drive_basis: "an indicator LED is barely visible below about 1 mA"}
+  rgb_led: {kind: actuator, quantities: [light_emission], loads: [[R, COM], [G, COM], [B, COM]]}
+  buzzer: {kind: actuator, quantities: [sound_emission], loads: [[VCC, GND]], min_drive_ma: 10,
+           min_drive_basis: "active piezo buzzers typically draw tens of mA; below ~10 mA they do not sound reliably"}
+  motor: {kind: actuator, quantities: [motion_output], loads: [[PIN1, PIN2]], polarized: false, min_drive_ma: 50,
+          min_drive_basis: "small DC motors need hundreds of mA to start; 50 mA is a conservative floor"}
+  relay: {kind: actuator, quantities: [switching], loads: [[COIL1, COIL2]], polarized: false, min_drive_ma: 50,
+          min_drive_basis: "relay coils need their rated coil current (tens of mA) to pull in"}
+  relay_module: {kind: actuator, quantities: [switching], controls: {IN: 0}}
+  servo: {kind: actuator, quantities: [motion_output], controls: {PWM: 0}}
+  oled_display: {kind: display, quantities: [display], controls: {SDA: 0, SCL: 0}}
+  lcd_display: {kind: display, quantities: [display], controls: {SDA: 0, SCL: 0}}
+  seven_segment: {kind: display, quantities: [display, light_emission], controls: {A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, G: 0, DP: 0}}
+  logic_port: {kind: connector}
+
+  mcu_board: {kind: controller, programmable: true, decision: programmable}
+
+  comparator:
+    kind: comparator
+    decision: explicit
+    open_collector_outputs: [OUT1, OUT2]
+    transfers: [[IN1_P, OUT1, 1], [IN1_N, OUT1, -1], [IN2_P, OUT2, 1], [IN2_N, OUT2, -1]]
+  opamp:
+    kind: amplifier
+    decision: explicit
+    transfers: [[IN1_P, OUT1, 1], [IN1_N, OUT1, -1], [IN2_P, OUT2, 1], [IN2_N, OUT2, -1]]
+  timer:
+    kind: timer
+    decision: explicit
+    generator_pins: [OUT]
+    transfers: [[TRIG, OUT, -1], [THRES, OUT, -1], [RESET, OUT, 1]]
+  # An NPN collector / N-channel drain can only sink current: a load must sit between the supply
+  # and the collector/drain. PNP / P-channel collectors/drains source current.
+  bjt: {kind: switch, decision: implicit, transfers: [[B, C, -1], [B, E, 1]], sink_only_by_symbol: {npn: [C]}}
+  mosfet: {kind: switch, decision: implicit, transfers: [[G, D, -1], [G, S, 1]], sink_only_by_symbol: {nmos: [D]}}
+  flip_flop: {kind: logic, transfers: [[D, Q, 1], [D, QN, -1], [CLK, Q, 0], [CLK, QN, 0]]}
+  shift_register:
+    kind: logic
+    transfers: [[SER, QA, 0], [SER, QB, 0], [SER, QC, 0], [SER, QD, 0], [SER, QE, 0], [SER, QF, 0], [SER, QG, 0], [SER, QH, 0]]
+  motor_driver:
+    kind: driver
+    transfers: [[1A, 1Y, 1], [2A, 2Y, 1], [3A, 3Y, 1], [4A, 4Y, 1], [EN12, 1Y, 0], [EN12, 2Y, 0], [EN34, 3Y, 0], [EN34, 4Y, 0]]
+  low_side_driver:
+    kind: driver
+    open_collector_outputs: [OUT1, OUT2, OUT3, OUT4, OUT5, OUT6, OUT7]
+    transfers: [[IN1, OUT1, -1], [IN2, OUT2, -1], [IN3, OUT3, -1], [IN4, OUT4, -1], [IN5, OUT5, -1], [IN6, OUT6, -1], [IN7, OUT7, -1]]
+  adc:
+    kind: converter
+    transfers: [[AIN0, SDA, 0], [AIN1, SDA, 0], [AIN2, SDA, 0], [AIN3, SDA, 0],
+                [CH0, DOUT, 0], [CH1, DOUT, 0], [CH2, DOUT, 0], [CH3, DOUT, 0], [CH4, DOUT, 0], [CH5, DOUT, 0], [CH6, DOUT, 0], [CH7, DOUT, 0]]
+  dac: {kind: converter, transfers: [[SDA, VOUT, 0]]}
+  eeprom: {kind: memory, quantities: [storage], controls: {SDA: 0, SCL: 0}}
+  level_shifter:
+    kind: interface
+    transfers: [[LV1, HV1, 1], [HV1, LV1, 1], [LV2, HV2, 1], [HV2, LV2, 1], [LV3, HV3, 1], [HV3, LV3, 1], [LV4, HV4, 1], [HV4, LV4, 1]]
+
+  battery: {kind: power}
+  supply: {kind: power}
+  voltage_source: {kind: power}
+  supply_rail: {kind: power}
+  ground_reference: {kind: power}
+  linear_regulator: {kind: power}
+  header: {kind: connector, quantities: [signal]}
+  terminal: {kind: connector, quantities: [signal]}
+
+components:
+  sensor:lm35: {kind: sensor, quantities: [temperature], outputs: {VOUT: 1}}
+  sensor:ds18b20: {kind: sensor, quantities: [temperature], outputs: {DQ: 0}}
+  # MQ-2 breakout module (VCC/GND/A0/D0): A0 rises with concentration; D0 comes from the module's
+  # on-board LM393 comparator and goes LOW when the concentration exceeds its trimmer setting.
+  sensor:mq2: {kind: sensor, quantities: [gas], outputs: {A0: 1, D0: -1}}
+  sensor:thermistor: {kind: resistive_sensor, quantities: [temperature], sign_parameter: type, sign_by_value: {NTC: -1, PTC: 1}}
+  passive:push-button-tactile:
+    kind: resistive_sensor
+    quantities: [press]
+    resistance_sign: -1
+    terminals: [[PIN1A, PIN1B], [PIN2A, PIN2B]]
+  ic:opamp-mcp6001: {kind: amplifier, decision: explicit, transfers: [[VIN_P, VOUT, 1], [VIN_N, VOUT, -1]]}
+  primitive:opamp-ideal: {kind: amplifier, decision: explicit, transfers: [[IN_P, OUT, 1], [IN_N, OUT, -1]]}
+  primitive:gate-and: {kind: logic, decision: implicit, transfers: [[A, Y, 1], [B, Y, 1]]}
+  primitive:gate-or: {kind: logic, decision: implicit, transfers: [[A, Y, 1], [B, Y, 1]]}
+  primitive:gate-nand: {kind: logic, decision: implicit, transfers: [[A, Y, -1], [B, Y, -1]]}
+  primitive:gate-nor: {kind: logic, decision: implicit, transfers: [[A, Y, -1], [B, Y, -1]]}
+  primitive:gate-not: {kind: logic, decision: implicit, transfers: [[A, Y, -1]]}
+  primitive:gate-xor: {kind: logic, transfers: [[A, Y, 0], [B, Y, 0]]}
+  primitive:gate-xnor: {kind: logic, transfers: [[A, Y, 0], [B, Y, 0]]}
+  primitive:logic-input: {kind: sensor, quantities: [logic], outputs: {OUT: 1}}
+  primitive:logic-output: {kind: actuator, quantities: [logic], controls: {IN: 1}}
+  logic:74hc00: {kind: logic, decision: implicit, gate_sign: -1}
+  logic:74hc04: {kind: logic, decision: implicit, gate_sign: -1}
+  logic:74hc08: {kind: logic, decision: implicit, gate_sign: 1}
+  logic:74hc32: {kind: logic, decision: implicit, gate_sign: 1}
+  logic:74hc86: {kind: logic, gate_sign: 0}
+  logic:74hc74:
+    kind: logic
+    transfers: [[1D, 1Q, 1], [1D, 1Q_N, -1], [2D, 2Q, 1], [2D, 2Q_N, -1], [1CLK, 1Q, 0], [2CLK, 2Q, 0]]
+  actuator:7-segment: {kind: display, quantities: [display, light_emission], controls: {A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, G: 0, DP: 0}}
+  primitive:nmos: {kind: switch, decision: implicit, transfers: [[G, D, -1], [G, S, 1]]}
+  primitive:pmos: {kind: switch, decision: implicit, transfers: [[G, D, -1], [G, S, 1]]}

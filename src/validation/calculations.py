@@ -106,3 +106,113 @@ def _find_nearest_e24(target: float) -> Optional[float]:
             best = val
     
     return best
+
+
+# ── General engineering calculators (deterministic; used by AI tools and explanations) ──
+
+class CalculationResult(BaseModel):
+    """Result of a deterministic engineering calculation."""
+    calculation: str
+    formula: str
+    inputs: dict = Field(default_factory=dict)
+    outputs: dict = Field(default_factory=dict)
+    assumptions: List[str] = Field(default_factory=list)
+
+
+def _positive(name: str, value: float) -> float:
+    if value is None or value <= 0:
+        raise ValueError(f"{name} must be positive, got {value}")
+    return float(value)
+
+
+def calculate_voltage_divider(v_in: float, r_top: float, r_bottom: float) -> CalculationResult:
+    """Unloaded divider output: Vout = Vin * Rb / (Rt + Rb)."""
+    _positive("r_top", r_top); _positive("r_bottom", r_bottom)
+    v_out = v_in * r_bottom / (r_top + r_bottom)
+    i = v_in / (r_top + r_bottom)
+    return CalculationResult(
+        calculation="voltage_divider", formula="Vout = Vin·Rb/(Rt+Rb)",
+        inputs={"v_in": v_in, "r_top": r_top, "r_bottom": r_bottom},
+        outputs={"v_out": round(v_out, 4), "divider_current_ma": round(i * 1000, 4)},
+        assumptions=["Load current on the output is negligible compared with the divider current"])
+
+
+def calculate_rc(r: float, c: float) -> CalculationResult:
+    """RC time constant and first-order cutoff frequency."""
+    import math
+    _positive("r", r); _positive("c", c)
+    tau = r * c
+    return CalculationResult(
+        calculation="rc_time_constant", formula="τ = R·C,  fc = 1/(2πRC)",
+        inputs={"r": r, "c": c},
+        outputs={"tau_s": float(f"{tau:.6g}"), "cutoff_hz": float(f"{1 / (2 * math.pi * tau):.6g}"),
+                 "settle_5tau_s": float(f"{5 * tau:.6g}")},
+        assumptions=["Ideal first-order RC network"])
+
+
+def calculate_bjt_base_resistor(v_drive: float, load_current_ma: float, hfe_min: float,
+                                vbe: float = 0.7, overdrive: float = 3.0) -> CalculationResult:
+    """Base resistor for a saturated BJT switch: Rb = (Vdrive − Vbe) / (overdrive · Ic / hFEmin)."""
+    _positive("load_current_ma", load_current_ma); _positive("hfe_min", hfe_min)
+    if v_drive <= vbe:
+        raise ValueError(f"Drive voltage {v_drive} V must exceed Vbe {vbe} V")
+    ib = overdrive * (load_current_ma / 1000) / hfe_min
+    rb = (v_drive - vbe) / ib
+    std = _find_nearest_e24(rb)
+    # prefer the next *lower* standard value so saturation is kept
+    if std and std > rb:
+        lower = [v for v in (b * 10 ** d for d in range(0, 7) for b in E24_VALUES) if v <= rb]
+        std = round(max(lower), 1) if lower else std
+    return CalculationResult(
+        calculation="bjt_base_resistor", formula="Rb = (Vdrive − Vbe) / (k·Ic/hFE_min)",
+        inputs={"v_drive": v_drive, "load_current_ma": load_current_ma, "hfe_min": hfe_min, "vbe": vbe, "overdrive": overdrive},
+        outputs={"base_current_ma": round(ib * 1000, 4), "rb_ohms": round(rb, 1), "rb_standard_ohms": std},
+        assumptions=[f"Overdrive factor {overdrive}x ensures saturation", "Vbe(sat) ≈ 0.7 V"])
+
+
+def calculate_555_astable(r1: float, r2: float, c: float) -> CalculationResult:
+    """NE555 astable: f = 1.44 / ((R1 + 2R2)·C), duty = (R1+R2)/(R1+2R2)."""
+    _positive("r1", r1); _positive("r2", r2); _positive("c", c)
+    f = 1.44 / ((r1 + 2 * r2) * c)
+    duty = (r1 + r2) / (r1 + 2 * r2)
+    return CalculationResult(
+        calculation="astable_555", formula="f = 1.44/((R1+2R2)C),  D = (R1+R2)/(R1+2R2)",
+        inputs={"r1": r1, "r2": r2, "c": c},
+        outputs={"frequency_hz": float(f"{f:.5g}"), "period_s": float(f"{1 / f:.5g}"), "duty_cycle": round(duty, 4)},
+        assumptions=["Bipolar NE555, supply-independent to first order"])
+
+
+def calculate_noninverting_gain(rf: float, rg: float) -> CalculationResult:
+    _positive("rf", rf); _positive("rg", rg)
+    return CalculationResult(
+        calculation="noninverting_gain", formula="G = 1 + Rf/Rg",
+        inputs={"rf": rf, "rg": rg}, outputs={"gain": round(1 + rf / rg, 6)},
+        assumptions=["Ideal op-amp within its bandwidth and output swing"])
+
+
+CALCULATORS = {
+    "led_resistor": lambda p: calculate_led_resistor(p["supply_voltage"], p["forward_voltage"], p["target_current_ma"]),
+    "voltage_divider": lambda p: calculate_voltage_divider(p["v_in"], p["r_top"], p["r_bottom"]),
+    "rc_time_constant": lambda p: calculate_rc(p["r"], p["c"]),
+    "bjt_base_resistor": lambda p: calculate_bjt_base_resistor(p["v_drive"], p["load_current_ma"], p["hfe_min"],
+                                                               p.get("vbe", 0.7), p.get("overdrive", 3.0)),
+    "astable_555": lambda p: calculate_555_astable(p["r1"], p["r2"], p["c"]),
+    "noninverting_gain": lambda p: calculate_noninverting_gain(p["rf"], p["rg"]),
+}
+
+
+def run_calculation(calculation: str, params: dict):
+    """Dispatch a named calculation. Raises ValueError for unknown names / bad inputs."""
+    if calculation not in CALCULATORS:
+        raise ValueError(f"Unknown calculation '{calculation}'. Available: {sorted(CALCULATORS)}")
+    from core.units import parse_quantity
+    values = {}
+    for k, v in params.items():
+        q = parse_quantity(v)
+        if q is None:
+            raise ValueError(f"Parameter {k}={v!r} is not a number (engineering notation such as '4.7k' or '100n' is accepted)")
+        values[k] = q
+    try:
+        return CALCULATORS[calculation](values)
+    except KeyError as e:
+        raise ValueError(f"Missing parameter {e} for {calculation}")

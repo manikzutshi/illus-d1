@@ -8,7 +8,7 @@ from ai.tools import (
     validate_design,
     calculate_circuit,
 )
-from core.models import DesignProject, ComponentInstance, Net, PinRef
+from core.models import EngineeringDesignProject, EngineeringComponentInstance, Net, PinRef
 from core.enums import ValidationStatus
 
 
@@ -45,14 +45,14 @@ class TestSearchCurriculum:
 
 class TestValidateDesign:
     def test_empty_design_passes(self):
-        design = DesignProject(project_id="t", name="T", components=[], nets=[])
+        design = EngineeringDesignProject(project_id="t", name="T", components=[], nets=[])
         result = validate_design(design)
         assert result.status == ValidationStatus.PASS
 
     def test_unknown_component_fails(self):
-        design = DesignProject(
+        design = EngineeringDesignProject(
             project_id="t", name="T",
-            components=[ComponentInstance(instance_id="x1", component_type="fake:widget")],
+            components=[EngineeringComponentInstance(instance_id="x1", component_type="fake:widget")],
             nets=[
                 Net(
                     net_id="n1",

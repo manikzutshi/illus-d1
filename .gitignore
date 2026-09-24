@@ -38,3 +38,15 @@ coverage.xml
 .idea/
 .vscode/
 *.swp
+
+# Node (the frontend has its own .gitignore; this covers stray installs at the root)
+node_modules/
+
+# Secrets / local environment
+.env
+.env.*
+
+# Local artifacts: AI run traces, scratch work, backups
+runs/
+scratch/
+*.bak

@@ -1,0 +1,324 @@
+# Power sources and idealised primitives.
+# Primitives (object_type != PHYSICAL) are abstractions for teaching and logic-level design.
+# They are not purchasable parts and never carry package data.
+
+components:
+  power:battery-9v:
+    name: 9 V Battery
+    short_name: 9V
+    aliases: [9v battery, pp3, battery 9v]
+    category: POWER_SOURCE
+    object_type: PHYSICAL
+    family: battery
+    tags: [portable power, dc source]
+    description: 9 V PP3 battery (nominal).
+    pins:
+      - {pin_id: POS, name: "+", direction: POWER, supply: source, nominal_voltage: 9.0, max_voltage: 9.6}
+      - {pin_id: NEG, name: "-", direction: GROUND, max_voltage: 0.0}
+    electrical_properties: {voltage: 9V}
+    roles: [POWER]
+    symbol: {name: battery, pin_map: {POS: "+", NEG: "-"}, ref_prefix: BT}
+    physical: {package: PP3, mounting: module}
+    curriculum_mapping: [ohms_law]
+    education:
+      summary: Portable 9 V source; small capacity, best for low-current circuits.
+      common_mistakes: [Powering motors from a 9 V battery (high internal resistance)]
+
+  power:battery-4xaa:
+    name: 4×AA Battery Pack (6 V)
+    short_name: 4xAA
+    aliases: [4xaa, aa battery pack, 6v battery, battery pack]
+    category: POWER_SOURCE
+    object_type: PHYSICAL
+    family: battery
+    tags: [portable power, dc source, motor supply]
+    description: Four alkaline AA cells in series, 6 V nominal.
+    pins:
+      - {pin_id: POS, name: "+", direction: POWER, supply: source, nominal_voltage: 6.0, max_voltage: 6.4}
+      - {pin_id: NEG, name: "-", direction: GROUND, max_voltage: 0.0}
+    electrical_properties: {voltage: 6V}
+    roles: [POWER]
+    symbol: {name: battery, pin_map: {POS: "+", NEG: "-"}, ref_prefix: BT}
+    physical: {package: 4xAA holder, mounting: module}
+
+  power:battery-2xaa:
+    name: 2×AA Battery Pack (3 V)
+    short_name: 2xAA
+    aliases: [2xaa, 3v battery]
+    category: POWER_SOURCE
+    object_type: PHYSICAL
+    family: battery
+    tags: [portable power, dc source, low voltage]
+    description: Two alkaline AA cells in series, 3 V nominal.
+    pins:
+      - {pin_id: POS, name: "+", direction: POWER, supply: source, nominal_voltage: 3.0, max_voltage: 3.2}
+      - {pin_id: NEG, name: "-", direction: GROUND, max_voltage: 0.0}
+    electrical_properties: {voltage: 3V}
+    roles: [POWER]
+    symbol: {name: battery, pin_map: {POS: "+", NEG: "-"}, ref_prefix: BT}
+    physical: {package: 2xAA holder, mounting: module}
+
+  power:usb-5v:
+    name: USB 5 V Supply
+    short_name: USB 5V
+    aliases: [usb power, 5v supply, usb 5v]
+    category: POWER_SOURCE
+    object_type: PHYSICAL
+    family: supply
+    tags: [dc source, bench supply]
+    description: USB VBUS supply (5 V nominal, 500 mA for USB 2.0 ports).
+    pins:
+      - {pin_id: VBUS, name: VBUS, direction: POWER, supply: source, nominal_voltage: 5.0, max_voltage: 5.25}
+      - {pin_id: GND, name: GND, direction: GROUND, max_voltage: 0.0}
+    electrical_properties: {voltage: 5V, output_current_max: 500mA}
+    roles: [POWER]
+    symbol: {name: ic_box, ref_prefix: J}
+
+  primitive:dc-source:
+    name: Ideal DC Voltage Source
+    short_name: Vdc
+    aliases: [dc source, voltage source, ideal source, vdd source]
+    category: POWER_SOURCE
+    object_type: CIRCUIT_PRIMITIVE
+    family: voltage_source
+    tags: [ideal, simulation, education]
+    description: Ideal DC voltage source; its voltage is the instance 'voltage' parameter.
+    pins:
+      - {pin_id: POS, name: "+", direction: POWER, supply: source}
+      - {pin_id: NEG, name: "-", direction: GROUND, max_voltage: 0.0}
+    configurable_parameters: {voltage: V}
+    roles: [POWER]
+    symbol: {name: dc_source, pin_map: {POS: "+", NEG: "-"}, ref_prefix: V}
+    physical: {mounting: virtual}
+    curriculum_mapping: [ohms_law, cmos_inverter]
+
+  primitive:nmos:
+    name: Ideal NMOS Transistor
+    short_name: NMOS
+    aliases: [nmos, ideal nmos, n-channel transistor]
+    category: SEMICONDUCTOR
+    object_type: SEMICONDUCTOR_PRIMITIVE
+    family: mosfet
+    tags: [ideal, cmos, education, device level]
+    description: Idealised enhancement NMOS for transistor-level CMOS teaching (body tied to source).
+    pins:
+      - {pin_id: G, name: GATE, direction: PASSIVE}
+      - {pin_id: D, name: DRAIN, direction: PASSIVE}
+      - {pin_id: S, name: SOURCE, direction: PASSIVE}
+    configurable_parameters: {width: m, length: m}
+    symbol: {name: nmos, ref_prefix: M}
+    physical: {mounting: virtual}
+    curriculum_mapping: [mosfet_basics, cmos_inverter, logical_effort]
+    education:
+      summary: Pull-down device of CMOS logic; conducts when the gate is high.
+      how_it_works: Square-law model; drive strength scales with W/L.
+
+  primitive:pmos:
+    name: Ideal PMOS Transistor
+    short_name: PMOS
+    aliases: [pmos, ideal pmos, p-channel transistor]
+    category: SEMICONDUCTOR
+    object_type: SEMICONDUCTOR_PRIMITIVE
+    family: mosfet
+    tags: [ideal, cmos, education, device level]
+    description: Idealised enhancement PMOS for transistor-level CMOS teaching (body tied to source).
+    pins:
+      - {pin_id: G, name: GATE, direction: PASSIVE}
+      - {pin_id: S, name: SOURCE, direction: PASSIVE}
+      - {pin_id: D, name: DRAIN, direction: PASSIVE}
+    configurable_parameters: {width: m, length: m}
+    symbol: {name: pmos, ref_prefix: M}
+    physical: {mounting: virtual}
+    curriculum_mapping: [mosfet_basics, cmos_inverter, logical_effort]
+    education:
+      summary: Pull-up device of CMOS logic; conducts when the gate is low.
+      how_it_works: Holes have lower mobility, so PMOS is usually sized ~2-3x wider than NMOS for equal drive.
+
+  primitive:opamp-ideal:
+    name: Ideal Operational Amplifier
+    short_name: OPAMP
+    aliases: [ideal op-amp, ideal opamp]
+    category: INTEGRATED_CIRCUIT
+    object_type: CIRCUIT_PRIMITIVE
+    family: opamp
+    tags: [ideal, amplifier, education]
+    description: Infinite gain, infinite input impedance, zero output impedance (supply pins omitted).
+    pins:
+      - {pin_id: IN_P, name: "IN+", direction: INPUT}
+      - {pin_id: IN_N, name: "IN-", direction: INPUT}
+      - {pin_id: OUT, name: OUT, direction: OUTPUT}
+    symbol: {name: opamp, pin_map: {IN_P: "+", IN_N: "-", OUT: OUT}, ref_prefix: U}
+    physical: {mounting: virtual}
+    curriculum_mapping: [opamp_basics]
+
+  primitive:logic-input:
+    name: Logic Input
+    short_name: IN
+    aliases: [logic input, input port, stimulus, logic switch]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: logic_port
+    tags: [ideal, digital logic, stimulus]
+    description: Ideal logic-level input stimulus (state parameter 0/1).
+    pins:
+      - {pin_id: OUT, name: OUT, direction: OUTPUT}
+    configurable_parameters: {state: enum}
+    roles: [INPUT]
+    symbol: {name: logic_in, ref_prefix: IN}
+    physical: {mounting: virtual}
+    curriculum_mapping: [digital_logic_gate]
+
+  primitive:logic-output:
+    name: Logic Output Probe
+    short_name: OUT
+    aliases: [logic output, output port, probe, logic probe]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: logic_port
+    tags: [ideal, digital logic, observation]
+    description: Ideal logic probe that displays the level of its input.
+    pins:
+      - {pin_id: IN, name: IN, direction: INPUT}
+    roles: [OUTPUT, DISPLAY]
+    symbol: {name: logic_out, ref_prefix: OUT}
+    physical: {mounting: virtual}
+    curriculum_mapping: [digital_logic_gate]
+
+  primitive:gate-and:
+    name: AND Gate (ideal)
+    short_name: AND
+    aliases: [and gate, and]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: logic_gate
+    tags: [ideal, combinational, boolean]
+    description: 2-input AND gate (Y = A·B).
+    pins:
+      - {pin_id: A, name: A, direction: INPUT}
+      - {pin_id: B, name: B, direction: INPUT}
+      - {pin_id: Y, name: Y, direction: OUTPUT}
+    symbol: {name: gate_and, ref_prefix: U}
+    physical: {mounting: virtual}
+    curriculum_mapping: [digital_logic_gate, boolean_algebra]
+
+  primitive:gate-or:
+    name: OR Gate (ideal)
+    short_name: OR
+    aliases: [or gate, or]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: logic_gate
+    tags: [ideal, combinational, boolean]
+    description: 2-input OR gate (Y = A+B).
+    pins:
+      - {pin_id: A, name: A, direction: INPUT}
+      - {pin_id: B, name: B, direction: INPUT}
+      - {pin_id: Y, name: Y, direction: OUTPUT}
+    symbol: {name: gate_or, ref_prefix: U}
+    physical: {mounting: virtual}
+    curriculum_mapping: [digital_logic_gate, boolean_algebra]
+
+  primitive:gate-not:
+    name: NOT Gate / Inverter (ideal)
+    short_name: NOT
+    aliases: [not gate, inverter, not]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: logic_gate
+    tags: [ideal, combinational, boolean]
+    description: Inverter (Y = ¬A).
+    pins:
+      - {pin_id: A, name: A, direction: INPUT}
+      - {pin_id: Y, name: Y, direction: OUTPUT}
+    symbol: {name: gate_not, ref_prefix: U}
+    physical: {mounting: virtual}
+    curriculum_mapping: [digital_logic_gate, cmos_inverter]
+
+  primitive:gate-nand:
+    name: NAND Gate (ideal)
+    short_name: NAND
+    aliases: [nand gate, nand]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: logic_gate
+    tags: [ideal, combinational, boolean, universal gate]
+    description: 2-input NAND gate (Y = ¬(A·B)).
+    pins:
+      - {pin_id: A, name: A, direction: INPUT}
+      - {pin_id: B, name: B, direction: INPUT}
+      - {pin_id: Y, name: Y, direction: OUTPUT}
+    symbol: {name: gate_nand, ref_prefix: U}
+    physical: {mounting: virtual}
+    curriculum_mapping: [digital_logic_gate, boolean_algebra]
+
+  primitive:gate-nor:
+    name: NOR Gate (ideal)
+    short_name: NOR
+    aliases: [nor gate, nor]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: logic_gate
+    tags: [ideal, combinational, boolean, universal gate]
+    description: 2-input NOR gate (Y = ¬(A+B)).
+    pins:
+      - {pin_id: A, name: A, direction: INPUT}
+      - {pin_id: B, name: B, direction: INPUT}
+      - {pin_id: Y, name: Y, direction: OUTPUT}
+    symbol: {name: gate_nor, ref_prefix: U}
+    physical: {mounting: virtual}
+    curriculum_mapping: [digital_logic_gate, boolean_algebra]
+
+  primitive:gate-xor:
+    name: XOR Gate (ideal)
+    short_name: XOR
+    aliases: [xor gate, xor, exclusive or]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: logic_gate
+    tags: [ideal, combinational, boolean, adder]
+    description: 2-input XOR gate (Y = A⊕B).
+    pins:
+      - {pin_id: A, name: A, direction: INPUT}
+      - {pin_id: B, name: B, direction: INPUT}
+      - {pin_id: Y, name: Y, direction: OUTPUT}
+    symbol: {name: gate_xor, ref_prefix: U}
+    physical: {mounting: virtual}
+    curriculum_mapping: [digital_logic_gate, boolean_algebra]
+
+  primitive:gate-xnor:
+    name: XNOR Gate (ideal)
+    short_name: XNOR
+    aliases: [xnor gate, xnor]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: logic_gate
+    tags: [ideal, combinational, boolean, comparator]
+    description: 2-input XNOR gate (Y = ¬(A⊕B)).
+    pins:
+      - {pin_id: A, name: A, direction: INPUT}
+      - {pin_id: B, name: B, direction: INPUT}
+      - {pin_id: Y, name: Y, direction: OUTPUT}
+    symbol: {name: gate_xnor, ref_prefix: U}
+    physical: {mounting: virtual}
+    curriculum_mapping: [digital_logic_gate]
+
+  primitive:dff:
+    name: D Flip-Flop (ideal)
+    short_name: DFF
+    aliases: [d flip flop, flip-flop, dff, register bit]
+    category: LOGIC
+    object_type: DIGITAL_PRIMITIVE
+    family: flip_flop
+    tags: [ideal, sequential, storage, clocked]
+    description: Positive-edge-triggered D flip-flop.
+    pins:
+      - {pin_id: D, name: D, direction: INPUT}
+      - {pin_id: CLK, name: CLK, direction: INPUT}
+      - {pin_id: Q, name: Q, direction: OUTPUT}
+      - {pin_id: QN, name: QN, direction: OUTPUT}
+    symbol: {name: dff, ref_prefix: U}
+    physical: {mounting: virtual}
+    curriculum_mapping: [flip_flop, fsm_design, timing_analysis]
+    education:
+      summary: Captures D on the rising clock edge and holds it until the next edge.
+      how_it_works: Setup and hold times around the edge must be met for reliable capture.

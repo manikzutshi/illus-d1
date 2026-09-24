@@ -7,9 +7,9 @@ from core.enums import (
     ValidationStatus, ValidationSeverity, ObjectType,
 )
 from core.models import (
-    CurriculumContext, PinDefinition, ComponentType, LayoutHints,
-    ComponentInstance, PinRef, Net, SimulationMetadata,
-    DesignProject, ValidationError, ValidationResult,
+    CurriculumContext, PinDefinition, ComponentType,
+    EngineeringComponentInstance, PinRef, Net, SimulationMetadata,
+    EngineeringDesignProject, ValidationError, ValidationResult,
 )
 
 
@@ -52,14 +52,14 @@ class TestPinRef:
         assert ref.ref == original
 
 
-class TestComponentInstance:
+class TestEngineeringComponentInstance:
     def test_minimal(self):
-        ci = ComponentInstance(instance_id="u1", component_type="board:esp32-devkit-v1")
+        ci = EngineeringComponentInstance(instance_id="u1", component_type="board:esp32-devkit-v1")
         assert ci.parameters == {}
-        assert ci.layout is None
+        assert ci.metadata == {}
 
     def test_with_parameters(self):
-        ci = ComponentInstance(
+        ci = EngineeringComponentInstance(
             instance_id="r1",
             component_type="passive:resistor-tht",
             parameters={"resistance": "330"}
@@ -89,13 +89,13 @@ class TestNet:
         assert net.net_type == "power"
 
 
-class TestDesignProject:
+class TestEngineeringDesignProject:
     def test_minimal_valid(self):
-        dp = DesignProject(
+        dp = EngineeringDesignProject(
             project_id="test",
             name="Test Project",
             components=[
-                ComponentInstance(instance_id="u1", component_type="board:esp32-devkit-v1"),
+                EngineeringComponentInstance(instance_id="u1", component_type="board:esp32-devkit-v1"),
             ],
             nets=[],
         )
@@ -103,12 +103,12 @@ class TestDesignProject:
         assert dp.project_id == "test"
 
     def test_empty_components(self):
-        dp = DesignProject(project_id="empty", name="Empty", components=[], nets=[])
+        dp = EngineeringDesignProject(project_id="empty", name="Empty", components=[], nets=[])
         assert len(dp.components) == 0
 
     def test_missing_required_fields(self):
         with pytest.raises(PydanticValidationError):
-            DesignProject(name="Missing ID")
+            EngineeringDesignProject(name="Missing ID")
 
 
 class TestValidationResult:

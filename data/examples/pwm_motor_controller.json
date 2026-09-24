@@ -1,0 +1,213 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "pwm-motor",
+  "name": "PWM Motor Speed Controller",
+  "description": "Arduino reads a potentiometer and PWM-drives a DC motor through a logic-level MOSFET with a flyback diode.",
+  "curriculum_context": {
+    "module": "Power / HV",
+    "concept": "PWM motor control",
+    "competency_level": "INTERMEDIATE"
+  },
+  "components": [
+    {
+      "instance_id": "u1",
+      "component_type": "board:arduino-uno-r3",
+      "parameters": {},
+      "metadata": {
+        "role": "controller"
+      }
+    },
+    {
+      "instance_id": "rv1",
+      "component_type": "passive:potentiometer",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "speed setpoint"
+      }
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "100"
+      },
+      "metadata": {
+        "role": "gate resistor"
+      }
+    },
+    {
+      "instance_id": "r2",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "gate pull-down"
+      }
+    },
+    {
+      "instance_id": "q1",
+      "component_type": "semiconductor:nmos-irlz44n",
+      "parameters": {},
+      "metadata": {
+        "role": "low-side switch"
+      }
+    },
+    {
+      "instance_id": "d1",
+      "component_type": "semiconductor:diode-1n4007",
+      "parameters": {},
+      "metadata": {
+        "role": "flyback diode"
+      }
+    },
+    {
+      "instance_id": "m1",
+      "component_type": "actuator:dc-motor",
+      "parameters": {},
+      "metadata": {
+        "role": "load"
+      }
+    },
+    {
+      "instance_id": "bt1",
+      "component_type": "power:battery-4xaa",
+      "parameters": {},
+      "metadata": {
+        "role": "motor supply"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "v5",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "5V"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "VCC"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "vmot",
+      "connections": [
+        {
+          "instance_id": "bt1",
+          "pin_id": "POS"
+        },
+        {
+          "instance_id": "m1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "K"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "GND1"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "S"
+        },
+        {
+          "instance_id": "bt1",
+          "pin_id": "NEG"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "speed",
+      "connections": [
+        {
+          "instance_id": "rv1",
+          "pin_id": "OUT"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "A0"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "pwm",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "D9"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "gate",
+      "connections": [
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "q1",
+          "pin_id": "G"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "drain",
+      "connections": [
+        {
+          "instance_id": "q1",
+          "pin_id": "D"
+        },
+        {
+          "instance_id": "m1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "A"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": [
+    "Motor stall current assumed below 2 A (well within the IRLZ44N rating)."
+  ]
+}

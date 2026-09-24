@@ -1,0 +1,215 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "u1",
+    "name": "Overheat LED (thermistor, type not stated)",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "bt1",
+        "component_type": "power:battery-9v",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "th",
+        "component_type": "sensor:thermistor",
+        "parameters": {
+          "type": "NTC"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "rt",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "ra",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "rb",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "u2",
+        "component_type": "ic:comparator-lm393",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "rp",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "1k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "d1",
+        "component_type": "passive:led-5mm",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "v9",
+        "connections": [
+          {
+            "instance_id": "bt1",
+            "pin_id": "POS"
+          },
+          {
+            "instance_id": "th",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "ra",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "u2",
+            "pin_id": "VCC"
+          },
+          {
+            "instance_id": "rp",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "gnd",
+        "connections": [
+          {
+            "instance_id": "bt1",
+            "pin_id": "NEG"
+          },
+          {
+            "instance_id": "rt",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "rb",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "u2",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "d1",
+            "pin_id": "CATHODE"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "s",
+        "connections": [
+          {
+            "instance_id": "th",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "rt",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "u2",
+            "pin_id": "IN1_P"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "ref",
+        "connections": [
+          {
+            "instance_id": "ra",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "rb",
+            "pin_id": "PIN1"
+          },
+          {
+            "instance_id": "u2",
+            "pin_id": "IN1_N"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "o",
+        "connections": [
+          {
+            "instance_id": "u2",
+            "pin_id": "OUT1"
+          },
+          {
+            "instance_id": "rp",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "d1",
+            "pin_id": "ANODE"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "t",
+        "role": "input",
+        "quantity": "heat",
+        "component_hint": null
+      },
+      {
+        "id": "warn",
+        "role": "output",
+        "quantity": "led",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "t",
+          "relation": "above",
+          "threshold": {
+            "kind": "fixed"
+          }
+        },
+        "then": {
+          "output": "warn",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "PASS"
+  }
+}

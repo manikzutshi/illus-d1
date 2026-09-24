@@ -15,9 +15,9 @@ The LLM may NOT:
 from pathlib import Path
 from typing import Optional
 
-from components.registry import ComponentRegistry, get_default_registry
+from components.registry import ComponentRegistry, get_default_registry, get_shared_registry
 from core.models import (
-    ComponentType, DesignProject, ValidationResult,
+    ComponentType, EngineeringDesignProject, ValidationResult,
 )
 from curriculum.store import CurriculumStore, ConceptRecord, get_default_curriculum
 from validation.calculations import ResistorCalculation, calculate_led_resistor
@@ -28,7 +28,7 @@ def search_components(query: str, registry: Optional[ComponentRegistry] = None) 
     """Search the component registry. Returns matching ComponentType objects.
     The AI uses this to discover which components are supported."""
     if registry is None:
-        registry = get_default_registry()
+        registry = get_shared_registry()
     return registry.search(query)
 
 
@@ -36,7 +36,7 @@ def get_component(component_type_id: str, registry: Optional[ComponentRegistry] 
     """Get a specific component type by canonical ID.
     Returns None if the component is not in the registry (must be flagged, not hallucinated)."""
     if registry is None:
-        registry = get_default_registry()
+        registry = get_shared_registry()
     return registry.get(component_type_id)
 
 
@@ -48,13 +48,13 @@ def search_curriculum(query: str, store: Optional[CurriculumStore] = None) -> li
 
 
 def validate_design(
-    design: DesignProject,
+    design: EngineeringDesignProject,
     registry: Optional[ComponentRegistry] = None,
 ) -> ValidationResult:
-    """Run deterministic validation on a DesignProject.
+    """Run deterministic validation on a EngineeringDesignProject.
     The AI MUST NOT override this result."""
     if registry is None:
-        registry = get_default_registry()
+        registry = get_shared_registry()
     validator = DesignValidator(registry)
     return validator.validate(design)
 

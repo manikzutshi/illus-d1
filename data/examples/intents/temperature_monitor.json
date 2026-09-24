@@ -1,0 +1,36 @@
+{
+  "signals": [
+    {
+      "id": "temp",
+      "role": "input",
+      "quantity": "temperature",
+      "component_hint": "DS18B20",
+      "description": ""
+    },
+    {
+      "id": "screen",
+      "role": "output",
+      "quantity": "display",
+      "component_hint": null,
+      "description": ""
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "show",
+      "when": {
+        "input": "temp",
+        "relation": "changes",
+        "threshold": null
+      },
+      "then": {
+        "output": "screen",
+        "effect": "display"
+      },
+      "description": "Show the temperature on the display"
+    }
+  ],
+  "processing": "any",
+  "required_components": [],
+  "notes": []
+}

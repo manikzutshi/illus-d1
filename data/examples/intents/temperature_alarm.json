@@ -1,0 +1,36 @@
+{
+  "signals": [
+    {
+      "id": "temp",
+      "role": "input",
+      "quantity": "temperature",
+      "component_hint": "LM35"
+    },
+    {
+      "id": "alarm",
+      "role": "output",
+      "quantity": "buzzer",
+      "component_hint": null
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "b1",
+      "when": {
+        "input": "temp",
+        "relation": "above",
+        "threshold": {
+          "kind": "adjustable"
+        }
+      },
+      "then": {
+        "output": "alarm",
+        "effect": "on"
+      },
+      "description": "Buzzer ON above the adjustable temperature threshold, OFF below"
+    }
+  ],
+  "required_components": [],
+  "processing": "any",
+  "notes": []
+}

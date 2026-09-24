@@ -1,0 +1,141 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "t6",
+    "name": "LM35 straight to buzzer",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "bt1",
+        "component_type": "power:battery-9v",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "u1",
+        "component_type": "sensor:lm35",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "r1",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "100"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "bz1",
+        "component_type": "actuator:buzzer-piezo",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "v9",
+        "connections": [
+          {
+            "instance_id": "bt1",
+            "pin_id": "POS"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "VS"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "gnd",
+        "connections": [
+          {
+            "instance_id": "bt1",
+            "pin_id": "NEG"
+          },
+          {
+            "instance_id": "u1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "bz1",
+            "pin_id": "GND"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "t",
+        "connections": [
+          {
+            "instance_id": "u1",
+            "pin_id": "VOUT"
+          },
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "b",
+        "connections": [
+          {
+            "instance_id": "r1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "bz1",
+            "pin_id": "VCC"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "temp",
+        "role": "input",
+        "quantity": "temperature",
+        "component_hint": null
+      },
+      {
+        "id": "alarm",
+        "role": "output",
+        "quantity": "buzzer",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "temp",
+          "relation": "above",
+          "threshold": {
+            "kind": "fixed",
+            "value": "30 degC"
+          }
+        },
+        "then": {
+          "output": "alarm",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "FAIL",
+    "codes": [
+      "F005"
+    ]
+  }
+}

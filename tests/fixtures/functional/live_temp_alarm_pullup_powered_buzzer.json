@@ -1,0 +1,202 @@
+{
+  "design": {
+    "schema_version": "0.2.0",
+    "project_id": "lv1",
+    "name": "Temperature alarm (buzzer on open-collector pull-up)",
+    "description": "",
+    "components": [
+      {
+        "instance_id": "sens1",
+        "component_type": "sensor:lm35",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "pot1",
+        "component_type": "passive:potentiometer",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "comp1",
+        "component_type": "ic:comparator-lm393",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "buz1",
+        "component_type": "actuator:buzzer-piezo",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "rpu1",
+        "component_type": "passive:resistor-tht",
+        "parameters": {
+          "resistance": "10k"
+        },
+        "metadata": {}
+      },
+      {
+        "instance_id": "pwr1",
+        "component_type": "power:usb-5v",
+        "parameters": {},
+        "metadata": {}
+      },
+      {
+        "instance_id": "gnd1",
+        "component_type": "primitive:ground-rail",
+        "parameters": {},
+        "metadata": {}
+      }
+    ],
+    "nets": [
+      {
+        "net_id": "vcc_net",
+        "connections": [
+          {
+            "instance_id": "pwr1",
+            "pin_id": "VBUS"
+          },
+          {
+            "instance_id": "comp1",
+            "pin_id": "VCC"
+          },
+          {
+            "instance_id": "sens1",
+            "pin_id": "VS"
+          },
+          {
+            "instance_id": "pot1",
+            "pin_id": "VCC"
+          },
+          {
+            "instance_id": "rpu1",
+            "pin_id": "PIN1"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "gnd_net",
+        "connections": [
+          {
+            "instance_id": "gnd1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "comp1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "sens1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "pot1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "pwr1",
+            "pin_id": "GND"
+          },
+          {
+            "instance_id": "buz1",
+            "pin_id": "GND"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "sensor_signal_net",
+        "connections": [
+          {
+            "instance_id": "sens1",
+            "pin_id": "VOUT"
+          },
+          {
+            "instance_id": "comp1",
+            "pin_id": "IN1_P"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "threshold_net",
+        "connections": [
+          {
+            "instance_id": "pot1",
+            "pin_id": "OUT"
+          },
+          {
+            "instance_id": "comp1",
+            "pin_id": "IN1_N"
+          }
+        ],
+        "net_type": null
+      },
+      {
+        "net_id": "alarm_output_net",
+        "connections": [
+          {
+            "instance_id": "comp1",
+            "pin_id": "OUT1"
+          },
+          {
+            "instance_id": "rpu1",
+            "pin_id": "PIN2"
+          },
+          {
+            "instance_id": "buz1",
+            "pin_id": "VCC"
+          }
+        ],
+        "net_type": null
+      }
+    ],
+    "logic": [],
+    "metadata": {},
+    "assumptions": []
+  },
+  "intent": {
+    "signals": [
+      {
+        "id": "temp",
+        "role": "input",
+        "quantity": "temperature",
+        "component_hint": "LM35"
+      },
+      {
+        "id": "alarm",
+        "role": "output",
+        "quantity": "buzzer",
+        "component_hint": null
+      }
+    ],
+    "behaviors": [
+      {
+        "id": "b1",
+        "when": {
+          "input": "temp",
+          "relation": "above",
+          "threshold": {
+            "kind": "adjustable"
+          }
+        },
+        "then": {
+          "output": "alarm",
+          "effect": "on"
+        }
+      }
+    ],
+    "required_components": []
+  },
+  "expect": {
+    "status": "FAIL",
+    "codes": [
+      "F010"
+    ]
+  }
+}

@@ -1,0 +1,226 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "ne555-blinker",
+  "name": "555 Astable LED Blinker",
+  "description": "NE555 in astable mode; f ≈ 1.44 / ((R1 + 2·R2)·C1) ≈ 0.69 Hz.",
+  "curriculum_context": {
+    "module": "Digital & Computer Architecture",
+    "concept": "Oscillators",
+    "competency_level": "BEGINNER"
+  },
+  "components": [
+    {
+      "instance_id": "bt1",
+      "component_type": "power:battery-9v",
+      "parameters": {},
+      "metadata": {
+        "role": "supply"
+      }
+    },
+    {
+      "instance_id": "u1",
+      "component_type": "ic:timer-ne555",
+      "parameters": {},
+      "metadata": {
+        "role": "oscillator"
+      }
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "1k"
+      },
+      "metadata": {
+        "role": "timing R1"
+      }
+    },
+    {
+      "instance_id": "r2",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "100k"
+      },
+      "metadata": {
+        "role": "timing R2"
+      }
+    },
+    {
+      "instance_id": "c1",
+      "component_type": "passive:capacitor-electrolytic",
+      "parameters": {
+        "capacitance": "10u",
+        "max_voltage": "16"
+      },
+      "metadata": {
+        "role": "timing capacitor"
+      }
+    },
+    {
+      "instance_id": "c2",
+      "component_type": "passive:capacitor-ceramic",
+      "parameters": {
+        "capacitance": "10n"
+      },
+      "metadata": {
+        "role": "control decoupling"
+      }
+    },
+    {
+      "instance_id": "r3",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "470"
+      },
+      "metadata": {
+        "role": "LED current limit"
+      }
+    },
+    {
+      "instance_id": "d1",
+      "component_type": "passive:led-5mm",
+      "parameters": {
+        "color": "red"
+      },
+      "metadata": {
+        "role": "indicator"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "vcc",
+      "connections": [
+        {
+          "instance_id": "bt1",
+          "pin_id": "POS"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "VCC"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "RESET"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "bt1",
+          "pin_id": "NEG"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "c1",
+          "pin_id": "CATHODE"
+        },
+        {
+          "instance_id": "c2",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "CATHODE"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "disch",
+      "connections": [
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "DISCH"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "timing",
+      "connections": [
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "c1",
+          "pin_id": "ANODE"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "THRES"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "TRIG"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "ctrl",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "CTRL"
+        },
+        {
+          "instance_id": "c2",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "out",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "OUT"
+        },
+        {
+          "instance_id": "r3",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "led_a",
+      "connections": [
+        {
+          "instance_id": "r3",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "d1",
+          "pin_id": "ANODE"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": []
+}

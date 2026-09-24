@@ -1,0 +1,185 @@
+{
+  "schema_version": "0.2.0",
+  "project_id": "opamp-gain",
+  "name": "Non-Inverting Op-Amp Amplifier",
+  "description": "MCP6001 non-inverting stage with gain 1 + Rf/Rg = 2, input from a potentiometer.",
+  "curriculum_context": {
+    "module": "Analog IC Design",
+    "concept": "Op-amp feedback",
+    "competency_level": "INTERMEDIATE"
+  },
+  "components": [
+    {
+      "instance_id": "j1",
+      "component_type": "power:usb-5v",
+      "parameters": {},
+      "metadata": {
+        "role": "supply"
+      }
+    },
+    {
+      "instance_id": "rv1",
+      "component_type": "passive:potentiometer",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "input source"
+      }
+    },
+    {
+      "instance_id": "u1",
+      "component_type": "ic:opamp-mcp6001",
+      "parameters": {},
+      "metadata": {
+        "role": "amplifier"
+      }
+    },
+    {
+      "instance_id": "r1",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "Rf feedback"
+      }
+    },
+    {
+      "instance_id": "r2",
+      "component_type": "passive:resistor-tht",
+      "parameters": {
+        "resistance": "10k"
+      },
+      "metadata": {
+        "role": "Rg to ground"
+      }
+    },
+    {
+      "instance_id": "c1",
+      "component_type": "passive:capacitor-ceramic",
+      "parameters": {
+        "capacitance": "100n"
+      },
+      "metadata": {
+        "role": "VDD decoupling"
+      }
+    },
+    {
+      "instance_id": "j2",
+      "component_type": "connector:header-1x2",
+      "parameters": {},
+      "metadata": {
+        "role": "output"
+      }
+    }
+  ],
+  "nets": [
+    {
+      "net_id": "v5",
+      "connections": [
+        {
+          "instance_id": "j1",
+          "pin_id": "VBUS"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "VDD"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "VCC"
+        },
+        {
+          "instance_id": "c1",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "power"
+    },
+    {
+      "net_id": "gnd",
+      "connections": [
+        {
+          "instance_id": "j1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "VSS"
+        },
+        {
+          "instance_id": "rv1",
+          "pin_id": "GND"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "c1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "j2",
+          "pin_id": "P2"
+        }
+      ],
+      "net_type": "ground"
+    },
+    {
+      "net_id": "vin",
+      "connections": [
+        {
+          "instance_id": "rv1",
+          "pin_id": "OUT"
+        },
+        {
+          "instance_id": "u1",
+          "pin_id": "VIN_P"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "fb",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "VIN_N"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN1"
+        },
+        {
+          "instance_id": "r2",
+          "pin_id": "PIN1"
+        }
+      ],
+      "net_type": "signal"
+    },
+    {
+      "net_id": "vout",
+      "connections": [
+        {
+          "instance_id": "u1",
+          "pin_id": "VOUT"
+        },
+        {
+          "instance_id": "r1",
+          "pin_id": "PIN2"
+        },
+        {
+          "instance_id": "j2",
+          "pin_id": "P1"
+        }
+      ],
+      "net_type": "signal"
+    }
+  ],
+  "logic": [],
+  "simulation": null,
+  "metadata": {},
+  "assumptions": []
+}
