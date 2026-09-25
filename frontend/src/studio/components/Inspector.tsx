@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import type { Studio } from '../store';
+import { PhysicalSection } from './PhysicalSection';
+import { issuesForPart } from '../ui/checks';
 import type { ComponentDetails } from '../types';
 
 const detailsCache = new Map<string, ComponentDetails>();
@@ -29,7 +31,17 @@ function EditableField({ value, onCommit, placeholder, mono }: { value: string; 
   );
 }
 
-export function Inspector({ studio }: { studio: Studio }) {
+function LocateButtons({ locate, view, can3d }: { locate?: (v: 'schematic' | 'physical') => void; view?: 'schematic' | 'physical'; can3d: boolean }) {
+  if (!locate) return null;
+  return (
+    <div className="locate">
+      <button className={view === 'schematic' ? 'on' : ''} onClick={() => locate('schematic')} title="Show it in the schematic">◎ Schematic</button>
+      <button className={view === 'physical' ? 'on' : ''} disabled={!can3d} onClick={() => locate('physical')} title="Show it on the breadboard">◎ 3D</button>
+    </div>
+  );
+}
+
+export function Inspector({ studio, locate, view }: { studio: Studio; locate?: (v: 'schematic' | 'physical') => void; view?: 'schematic' | 'physical' }) {
   const { state, dispatch, applyOps } = studio;
   const st = state.studio;
   const sel = state.selection;
@@ -46,6 +58,11 @@ export function Inspector({ studio }: { studio: Studio }) {
     return (
       <div className="inspector">
         <div className="insp-head"><span className={`chip net-${trace.net_class}`}>{trace.net_class}</span><h3>Net</h3></div>
+        <LocateButtons locate={locate} view={view} can3d />
+        {st.physical?.nets[net.net_id] && (
+          <div className="muted small">On the breadboard: {st.physical.nets[net.net_id].nodes.length} strip/rail node(s) · {st.physical.nets[net.net_id].wires.length} wire(s)
+            {st.physical.nets[net.net_id].rails.length ? ` · rail ${st.physical.nets[net.net_id].rails.join(', ')}` : ''}</div>
+        )}
         <label className="lbl">Name</label>
         <EditableField value={net.net_id} mono onCommit={v => applyOps([{ op: 'rename_net', net_id: net.net_id, new_net_id: v }])} />
         {trace.display_name !== net.net_id && <div className="muted">Drawn as <b>{trace.display_name}</b>{trace.voltage != null ? ` (${trace.voltage} V)` : ''}</div>}
@@ -89,6 +106,7 @@ export function Inspector({ studio }: { studio: Studio }) {
         </div>
         <div className="title2">{details?.name ?? comp.component_type}</div>
         <div className="muted mono">{comp.instance_id} · {comp.component_type}</div>
+        <LocateButtons locate={locate} view={view} can3d={details?.object_type === 'PHYSICAL'} />
         {(comp.metadata.role || comp.metadata.rationale) && (
           <div className="note">
             {comp.metadata.role && <div><b>Role:</b> {comp.metadata.role}</div>}
@@ -137,6 +155,20 @@ export function Inspector({ studio }: { studio: Studio }) {
             })}
           </tbody>
         </table>
+
+        {(() => {
+          const issues = issuesForPart(st, comp.instance_id);
+          return issues.length > 0 && (
+            <>
+              <label className="lbl">Checks for this part</label>
+              <ul className="issues compact">
+                {issues.map((i, k) => <li key={k} className={`issue ${i.severity}`}><span className="code">{i.code}</span><span className="src">{i.source}</span> {i.message}</li>)}
+              </ul>
+            </>
+          );
+        })()}
+
+        {st.physical && <PhysicalSection studio={studio} instanceId={comp.instance_id} />}
 
         {details && (
           <>
@@ -189,6 +221,8 @@ export function Inspector({ studio }: { studio: Studio }) {
         <tr><td>Revision</td><td>{st.document.revision}</td></tr>
         <tr><td>Drawing ↔ netlist</td><td className={st.verification.ok ? 'ok' : 'bad'}>{st.verification.ok ? 'consistent' : 'MISMATCH'}</td></tr>
         <tr><td>Layout</td><td>{st.schematic.stats.crossings} crossings · {st.schematic.stats.elapsed_ms} ms</td></tr>
+        {st.physical?.verification && <tr><td>Breadboard ↔ netlist</td>
+          <td className={st.physical.verification.ok ? 'ok' : 'bad'}>{st.physical.verification.status === 'NOT_APPLICABLE' ? 'no physical form' : st.physical.verification.ok ? 'consistent' : 'MISMATCH'}</td></tr>}
       </tbody></table>
       {prov.prompt && <><label className="lbl">Prompt</label><p className="prose muted">“{prov.prompt}”</p></>}
       {st.schematic.diagnostics.length > 0 && <><label className="lbl">Drawing notes</label><ul className="bul">{st.schematic.diagnostics.map((x, i) => <li key={i}>{x}</li>)}</ul></>}

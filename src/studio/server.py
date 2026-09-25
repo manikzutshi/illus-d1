@@ -120,7 +120,7 @@ def make_handler(service: StudioService, static_dir: Optional[Path] = DIST_DIR):
                 return self._json(200, {"examples": service.examples()})
             if method == "POST" and len(parts) == 2 and parts[0] == "examples":
                 try:
-                    return self._json(200, service.open_example(parts[1]).model_dump(mode="json"))
+                    return self._json(200, service.open_example(parts[1], bool(self._body().get("physical"))).model_dump(mode="json"))
                 except KeyError:
                     raise ApiError(404, "UNKNOWN_EXAMPLE", f"No example '{parts[1]}'")
             if method == "POST" and parts == ["open"]:
@@ -136,9 +136,12 @@ def make_handler(service: StudioService, static_dir: Optional[Path] = DIST_DIR):
                         intent = FunctionalIntent.model_validate(data["intent"])
                     except ValidationError as e:
                         raise ApiError(400, "BAD_INTENT", str(e))
-                return self._json(200, service.open_design(design, intent=intent).model_dump(mode="json"))
+                return self._json(200, service.open_design(design, intent=intent, physical=bool(data.get("physical")))
+                                  .model_dump(mode="json"))
             if method == "POST" and parts == ["state"]:
-                return self._json(200, service.state(self._document(self._body())).model_dump(mode="json"))
+                data = self._body()
+                return self._json(200, service.state(self._document(data), physical=bool(data.get("physical")))
+                                  .model_dump(mode="json"))
             if method == "POST" and parts == ["edit"]:
                 data = self._body()
                 doc = self._document(data)
@@ -146,7 +149,7 @@ def make_handler(service: StudioService, static_dir: Optional[Path] = DIST_DIR):
                     ops = _OPS.validate_python(data.get("ops", []))
                 except ValidationError as e:
                     raise ApiError(400, "BAD_OPS", str(e))
-                return self._json(200, service.apply(doc, ops).model_dump(mode="json"))
+                return self._json(200, service.apply(doc, ops, physical=bool(data.get("physical"))).model_dump(mode="json"))
             if method == "POST" and parts == ["export", "svg"]:
                 from schematic.svg import render_svg
                 state = service.state(self._document(self._body()))

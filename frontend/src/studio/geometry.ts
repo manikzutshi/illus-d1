@@ -50,3 +50,17 @@ export function zoomAt(v: ViewBox, factor: number, wx: number, wy: number): View
 
 /** Centre of the schematic view the user currently sees (updated by the canvas). */
 export const viewCenter = { x: 0, y: 0 };
+
+/** Keep the zoom, move the view so the box is centred; widen it if the box does not fit. */
+export function centerOn(v: ViewBox, box: number[], pad = 3): ViewBox {
+  const [x0, y0, x1, y1] = box;
+  const bw = x1 - x0 + 2 * pad, bh = y1 - y0 + 2 * pad;
+  let { w, h } = v;
+  if (bw > w || bh > h) { const k = Math.max(bw / w, bh / h); w *= k; h *= k; }
+  return { x: (x0 + x1) / 2 - w / 2, y: (y0 + y1) / 2 - h / 2, w, h };
+}
+
+/** Zoom level relative to a reference (fitted) view, in percent. */
+export function zoomPercent(v: ViewBox, fitted: ViewBox): number {
+  return Math.round((fitted.w / v.w) * 100);
+}

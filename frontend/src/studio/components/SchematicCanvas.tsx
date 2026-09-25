@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { fitView, VEC, viewCenter, zoomAt, type ViewBox } from '../geometry';
+import { centerOn, fitView, VEC, viewCenter, zoomAt, zoomPercent, type ViewBox } from '../geometry';
+import type { CanvasCmd } from './CanvasToolbar';
 import type { Studio } from '../store';
 import type { SchematicComponent, SchematicProject, ValidationResult } from '../types';
 import { NetLabelShape, PowerPortShape, SymbolBody } from './SymbolGraphics';
 
-interface Props { studio: Studio; fitSignal: number }
+interface Props { studio: Studio; fitSignal: number; cmd?: CanvasCmd; onZoom?: (pct: number) => void }
 
 type Drag =
   | { kind: 'pan'; sx: number; sy: number; view: ViewBox; moved: boolean }
@@ -27,7 +28,7 @@ function issueMaps(v: ValidationResult) {
   return { inst, nets, pins };
 }
 
-export function SchematicCanvas({ studio, fitSignal }: Props) {
+export function SchematicCanvas({ studio, fitSignal, cmd, onZoom }: Props) {
   const { state, dispatch, applyOps } = studio;
   const sch = state.studio?.schematic as SchematicProject;
   const validation = state.studio?.validation as ValidationResult;
@@ -50,6 +51,40 @@ export function SchematicCanvas({ studio, fitSignal }: Props) {
     if (sch) setView(fitView(sch.bounds, aspect()));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitSignal]);
+
+  // Toolbar commands (view-only: never touch the design).
+  useEffect(() => {
+    if (!cmd || !cmd.n || !sch) return;
+    const cx = view.x + view.w / 2, cy = view.y + view.h / 2;
+    if (cmd.kind === 'fit') setView(fitView(sch.bounds, aspect()));
+    else if (cmd.kind === 'zoomIn') setView(v => zoomAt(v, 1 / 1.25, cx, cy));
+    else if (cmd.kind === 'zoomOut') setView(v => zoomAt(v, 1.25, cx, cy));
+    else if (cmd.kind === 'locate') {
+      const box = selectionBox();
+      if (box) setView(v => centerOn(v, box));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cmd?.n]);
+
+  useEffect(() => {
+    if (sch && onZoom) onZoom(zoomPercent(view, fitView(sch.bounds, aspect())));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, sch?.bounds]);
+
+  /** World box of the selected component / net (for "locate"). */
+  function selectionBox(): number[] | null {
+    const s = state.selection;
+    if (!s || !sch) return null;
+    if (s.kind === 'component' || s.kind === 'pin') {
+      const c = sch.components.find(q => q.instance_id === s.id.split('.')[0]);
+      return c?.bbox?.length === 4 ? c.bbox : null;
+    }
+    const ws = sch.wires.filter(w => w.net_id === s.id);
+    const pins = sch.components.flatMap(c => c.pins.filter(p => p.net_id === s.id));
+    const xs = [...ws.flatMap(w => [w.x1, w.x2]), ...pins.map(p => p.x)];
+    const ys = [...ws.flatMap(w => [w.y1, w.y2]), ...pins.map(p => p.y)];
+    return xs.length ? [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] : null;
+  }
 
   const toWorld = useCallback((cx: number, cy: number): [number, number] => {
     const svg = svgRef.current;

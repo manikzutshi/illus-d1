@@ -3,10 +3,11 @@
     StudioDocument
       ├── design   : EngineeringDesignProject   (the only source of connectivity/parameters)
       ├── layout   : LayoutState                 (placement / rotation / net style - no connectivity)
+      ├── physical : PhysicalLayoutState         (breadboard / table placements - no connectivity)
       ├── intent   : FunctionalIntent            (requested behaviour; graded by the functional validator)
       └── provenance
 
-Everything else the studio shows (validation, schematic, explanation) is *derived* from the
+Everything else the studio shows (validation, schematic, physical build, explanation) is *derived* from the
 document on every request and never stored as authority.
 """
 from __future__ import annotations
@@ -18,6 +19,7 @@ from pydantic import BaseModel, Field
 from core.models import EngineeringDesignProject, ValidationResult
 from functional.intent import FunctionalIntent
 from functional.validator import FunctionalReport
+from physical.models import PhysicalLayoutState, PhysicalProject
 from schematic.models import LayoutState, SchematicProject
 
 DOCUMENT_SCHEMA_VERSION = "1.0"
@@ -35,6 +37,7 @@ class StudioDocument(BaseModel):
     schema_version: str = DOCUMENT_SCHEMA_VERSION
     design: EngineeringDesignProject
     layout: LayoutState = Field(default_factory=LayoutState)
+    physical: PhysicalLayoutState = Field(default_factory=PhysicalLayoutState)
     intent: Optional[FunctionalIntent] = None      # what the design must do (from the request), not how
     provenance: Provenance = Field(default_factory=Provenance)
     revision: int = 0
@@ -54,4 +57,5 @@ class StudioState(BaseModel):
     schematic: SchematicProject
     verification: Dict[str, object]
     explanation: Dict[str, object] = Field(default_factory=dict)
+    physical: Optional[PhysicalProject] = None     # computed on request (the 3D view), else None
     op_results: List[OpResult] = Field(default_factory=list)

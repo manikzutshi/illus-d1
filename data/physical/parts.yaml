@@ -1,0 +1,212 @@
+# Per-part physical definitions (breadboard / 3D projection).
+#
+# Used when a part needs more than its package template: parts without a `physical` block in the
+# registry, pin orders that are not given by registry pin numbers, modules and boards, and
+# off-board items. Anything not known stays out; a part with no entry and no usable package is
+# shown as a clearly labelled fallback module ("assumed" geometry) and physical verification says so.
+#
+# Fields (in addition to those in packages.yaml)
+#   package        package template to start from (packages.yaml key)
+#   mount          breadboard | offboard (default: from the template)
+#   pin_order      site order for inline / two_lead parts (default: registry pin numbers)
+#   pin_numbers    physical pin numbers for dip / dual_row parts whose registry pins lack them
+#   pin_alias      engineering pin -> the physical pin it shares (internally common pins)
+#   internal_links groups of pins that are connected inside the part
+#   body_offset_mm body centre relative to the first pin, in the unrotated footprint [x, y]
+#   terminals      off-board: [{pin, style: lead|header|screw|pad, at: [x, y, z], color}] relative to
+#                  the body centre (z measured from the table)
+#   header         off-board shortcut: {pins: [...], pitch, y, z, x0} generates header terminals
+#   variant_note   pinout/order that differs between vendors (reported as a physical warning)
+
+parts:
+  # ── two-lead parts ─────────────────────────────────────────────────────────
+  passive:resistor-tht:
+    {package: axial-0.25W, pin_order: [PIN1, PIN2]}
+  passive:inductor:
+    {package: axial-0.25W, pin_order: [PIN1, PIN2], visual: axial_inductor, source: typical,
+     note: "Shown as a small axial (resistor-style) inductor; real inductors vary widely in shape."}
+  passive:led-5mm:
+    {template: two_lead, spans: [1, 2, 3], pin_order: [ANODE, CATHODE], body_mm: [5.8, 5.8, 8.6], body_z: 1.0,
+     visual: led_5mm, source: standard,
+     note: "5 mm (T-1 3/4) LED, 2.54 mm lead spacing; the anode is the longer lead, the cathode is at the flat on the rim."}
+  passive:capacitor-ceramic:
+    {template: two_lead, spans: [1, 2], pin_order: [PIN1, PIN2], body_mm: [4.0, 2.5, 5.0], body_z: 1.0,
+     visual: ceramic_cap, source: typical,
+     note: "Small radial ceramic capacitor; lead spacing 2.54 or 5.08 mm depending on the part."}
+  passive:capacitor-electrolytic:
+    {template: two_lead, spans: [1, 2], pin_order: [ANODE, CATHODE], body_mm: [5.0, 5.0, 11.0], body_z: 0.5,
+     visual: electrolytic_cap, source: typical,
+     note: "Small radial electrolytic (5 mm diameter); the stripe marks the negative lead."}
+  passive:push-button-2pin:
+    {package: 6mm tactile, pin_order: [PIN1, PIN2]}
+  passive:switch-slide-spst:
+    {template: two_lead, spans: [2, 1], pin_order: [PIN1, PIN2], body_mm: [8.6, 3.6, 4.0], body_z: 0.5,
+     visual: slide_switch, source: typical,
+     note: "Miniature slide switch; only the two contacts of the SPST function are modelled."}
+  sensor:photoresistor:
+    {template: two_lead, spans: [2, 1, 3], pin_order: [PIN1, PIN2], body_mm: [5.1, 2.0, 4.3], body_z: 2.0,
+     visual: ldr, source: typical, note: "5 mm light-dependent resistor (GL55-style); flexible leads."}
+  sensor:thermistor:
+    {template: two_lead, spans: [2, 1, 3], pin_order: [PIN1, PIN2], body_mm: [5.0, 2.5, 5.0], body_z: 2.0,
+     visual: thermistor_disc, source: typical, note: "Radial disc thermistor; flexible leads."}
+  actuator:buzzer-piezo:
+    {template: two_lead, spans: [3], pin_order: [VCC, GND], body_mm: [12.0, 12.0, 9.5], body_z: 0.5,
+     visual: buzzer, source: typical,
+     note: "12 mm active buzzer, lead spacing about 7.6 mm; + is the longer lead / marked on the top."}
+
+  # ── inline parts ───────────────────────────────────────────────────────────
+  passive:potentiometer:
+    {template: inline, pin_order: [VCC, OUT, GND], body_mm: [9.5, 5.0, 10.0], body_z: 0.5, visual: trimpot,
+     source: typical,
+     note: "Breadboard-friendly potentiometer with three pins in line at 2.54 mm: end, wiper, end."}
+  passive:push-button-tactile:
+    {template: dual_row, pin_numbers: {PIN1A: 1, PIN2A: 2, PIN2B: 3, PIN1B: 4}, row_span: 3, pitch_steps: 2, body_mm: [6.0, 6.0, 5.0],
+     body_z: 0.0, visual: pushbutton, internal_links: [[PIN1A, PIN1B], [PIN2A, PIN2B]], source: typical,
+     note: "6 x 6 mm tactile switch straddling the trench; the pins of each pair are connected inside the switch."}
+  active:transistor-npn-2n2222:
+    {package: TO-92, pin_order: [E, B, C], source: typical,
+     variant_note: "PN2222A (TO-92) pinout E-B-C assumed; the metal-can 2N2222 and some TO-92 variants differ - check the datasheet of the part in hand."}
+  semiconductor:pmos-bs250:
+    {package: TO-92, pin_order: [S, G, D], source: assumed,
+     variant_note: "Pin order not recorded in the library; shown in registry order - check the datasheet."}
+  sensor:ds18b20:
+    {package: TO-92, pin_order: [GND, DQ, VCC], source: datasheet, note: "DS18B20 (TO-92): pin 1 GND, 2 DQ, 3 VDD."}
+  actuator:led-rgb:
+    {template: inline, pin_order: [R, COM, G, B], body_mm: [5.8, 5.8, 8.6], body_z: 1.0, visual: led_rgb,
+     source: typical, variant_note: "Common 5 mm RGB LED lead order R, COM (longest), G, B; varies by maker."}
+  sensor:dht11:
+    {template: inline, pin_order: [VCC, DATA, GND], body_mm: [12.0, 5.5, 15.5], body_z: 2.0, visual: dht11,
+     source: typical, variant_note: "3-pin DHT11 module order VCC, DATA, GND assumed; the bare 4-pin sensor and other modules differ."}
+  sensor:hc-sr04:
+    {template: inline, pin_order: [VCC, TRIG, ECHO, GND], body_mm: [45.0, 12.0, 20.0], body_z: 3.0,
+     body_offset_mm: [3.81, -5.0], visual: hcsr04, source: datasheet,
+     note: "HC-SR04 module 45 x 20 mm; straight 4-pin header (Vcc, Trig, Echo, Gnd), so the board stands upright."}
+  sensor:mpu6050:
+    {template: inline, pin_order: [VCC, GND, SCL, SDA, XDA, XCL, ADD, INT], body_mm: [21.0, 16.0, 3.0], body_z: 8.5,
+     body_offset_mm: [8.89, -7.0], visual: module_pcb, source: typical,
+     variant_note: "GY-521 breakout header order VCC, GND, SCL, SDA, XDA, XCL, AD0, INT assumed."}
+  actuator:oled-i2c:
+    {template: inline, pin_order: [GND, VCC, SCL, SDA], body_mm: [27.3, 27.8, 3.7], body_z: 8.5,
+     body_offset_mm: [3.81, -12.5], visual: oled, source: typical,
+     variant_note: "0.96-inch I2C OLED header order GND, VCC, SCL, SDA assumed; many modules swap GND and VCC - check the silkscreen."}
+  actuator:7-segment:
+    {template: dual_row, row_span: 5, pin_numbers: {E: 1, D: 2, COM1: 3, C: 4, DP: 5, B: 6, A: 7, COM2: 8, F: 9, G: 10},
+     body_mm: [12.6, 19.0, 8.0], body_z: 0.5, visual: seven_segment, source: typical,
+     variant_note: "Common 0.56-inch single-digit pinout (pins 1-5 E D COM C DP, 6-10 B A COM F G) assumed; row spacing modelled as 5 grid steps."}
+  logic:74hc595:
+    {package: DIP-16, pin_numbers: {QB: 1, QC: 2, QD: 3, QE: 4, QF: 5, QG: 6, QH: 7, GND: 8, QH_PRIME: 9, SRCLR: 10,
+                                    SRCLK: 11, RCLK: 12, OE: 13, SER: 14, QA: 15, VCC: 16}, source: datasheet,
+     note: "74HC595 (DIP-16) standard pinout."}
+
+  # ── boards and modules ─────────────────────────────────────────────────────
+  board:raspberry-pi-pico:
+    {template: dual_row, row_span: 7, body_mm: [51.0, 21.0, 4.0], body_z: 8.5, visual: pico, source: datasheet,
+     pin_numbers: {GP0: 1, GP1: 2, GND2: 3, GP2: 4, GP3: 5, GP4: 6, GP5: 7, GND3: 8, GP6: 9, GP7: 10, GP8: 11, GP9: 12,
+                   GP10: 14, GP11: 15, GP12: 16, GP13: 17, GP14: 19, GP15: 20, GP16: 21, GP17: 22, GP18: 24, GP19: 25,
+                   GP20: 26, GP21: 27, GP22: 29, GP26: 31, GP27: 32, GP28: 34, 3V3: 36, GND1: 38, VSYS: 39, VBUS: 40},
+     total_pins: 40,
+     note: "Raspberry Pi Pico: 2 x 20 castellated/header pins, rows 17.78 mm apart (7 grid steps), straddling the trench. Pin numbers from the Pico datasheet; GND1-3 are pins 38, 3 and 8."}
+  board:arduino-uno-r3:
+    {template: offboard, body_mm: [68.6, 53.4, 15.0], visual: arduino_uno, source: typical,
+     note: "Arduino Uno R3 sits next to the breadboard and is wired with jumper wires. Header order follows the Uno R3; pin positions are approximate.",
+     terminals: [
+       {pin: D0, style: header, at: [29.21, -24.1, 12.0]}, {pin: D1, style: header, at: [26.67, -24.1, 12.0]},
+       {pin: D2, style: header, at: [24.13, -24.1, 12.0]}, {pin: D3, style: header, at: [21.59, -24.1, 12.0]},
+       {pin: D4, style: header, at: [19.05, -24.1, 12.0]}, {pin: D5, style: header, at: [16.51, -24.1, 12.0]},
+       {pin: D6, style: header, at: [13.97, -24.1, 12.0]}, {pin: D7, style: header, at: [11.43, -24.1, 12.0]},
+       {pin: D8, style: header, at: [7.37, -24.1, 12.0]}, {pin: D9, style: header, at: [4.83, -24.1, 12.0]},
+       {pin: D10, style: header, at: [2.29, -24.1, 12.0]}, {pin: D11, style: header, at: [-0.25, -24.1, 12.0]},
+       {pin: D12, style: header, at: [-2.79, -24.1, 12.0]}, {pin: D13, style: header, at: [-5.33, -24.1, 12.0]},
+       {pin: GND3, style: header, at: [-7.87, -24.1, 12.0]},
+       {pin: 3V3, style: header, at: [1.52, 24.1, 12.0]}, {pin: 5V, style: header, at: [4.06, 24.1, 12.0]},
+       {pin: GND1, style: header, at: [6.60, 24.1, 12.0]}, {pin: GND2, style: header, at: [9.14, 24.1, 12.0]},
+       {pin: VIN, style: header, at: [11.68, 24.1, 12.0]},
+       {pin: A0, style: header, at: [16.76, 24.1, 12.0]}, {pin: A1, style: header, at: [19.30, 24.1, 12.0]},
+       {pin: A2, style: header, at: [21.84, 24.1, 12.0]}, {pin: A3, style: header, at: [24.38, 24.1, 12.0]},
+       {pin: A4, style: header, at: [26.92, 24.1, 12.0]}, {pin: A5, style: header, at: [29.46, 24.1, 12.0]}],
+     internal_links: [[GND1, GND2, GND3]]}
+  board:esp32-devkit-v1:
+    {template: offboard, body_mm: [51.5, 28.3, 13.0], visual: esp32_devkit, source: typical,
+     note: "ESP32 DevKit V1 (30-pin): its header rows are 25.4 mm apart, which leaves no free holes on one side of a standard breadboard, so it is placed beside the board and wired with jumpers.",
+     variant_note: "DOIT ESP32 DevKit V1 30-pin header order assumed (36/38-pin DevKit boards differ); GND3 is the same physical pin as GND2.",
+     pin_alias: {GND3: GND2},
+     terminals: [
+       {pin: EN, style: header, at: [-17.78, -12.7, 11.0]},
+       {pin: GPIO32, style: header, at: [-5.08, -12.7, 11.0]}, {pin: GPIO33, style: header, at: [-2.54, -12.7, 11.0]},
+       {pin: GPIO25, style: header, at: [0.0, -12.7, 11.0]}, {pin: GPIO26, style: header, at: [2.54, -12.7, 11.0]},
+       {pin: GPIO27, style: header, at: [5.08, -12.7, 11.0]}, {pin: GPIO14, style: header, at: [7.62, -12.7, 11.0]},
+       {pin: GPIO12, style: header, at: [10.16, -12.7, 11.0]}, {pin: GPIO13, style: header, at: [12.70, -12.7, 11.0]},
+       {pin: GND1, style: header, at: [15.24, -12.7, 11.0]}, {pin: VIN, style: header, at: [17.78, -12.7, 11.0]},
+       {pin: GPIO23, style: header, at: [-17.78, 12.7, 11.0]}, {pin: GPIO22, style: header, at: [-15.24, 12.7, 11.0]},
+       {pin: GPIO21, style: header, at: [-7.62, 12.7, 11.0]}, {pin: GPIO19, style: header, at: [-5.08, 12.7, 11.0]},
+       {pin: GPIO18, style: header, at: [-2.54, 12.7, 11.0]}, {pin: GPIO5, style: header, at: [0.0, 12.7, 11.0]},
+       {pin: GPIO17, style: header, at: [2.54, 12.7, 11.0]}, {pin: GPIO16, style: header, at: [5.08, 12.7, 11.0]},
+       {pin: GPIO4, style: header, at: [7.62, 12.7, 11.0]}, {pin: GPIO2, style: header, at: [10.16, 12.7, 11.0]},
+       {pin: GPIO15, style: header, at: [12.70, 12.7, 11.0]}, {pin: GND2, style: header, at: [15.24, 12.7, 11.0]},
+       {pin: 3V3, style: header, at: [17.78, 12.7, 11.0]}],
+     internal_links: [[GND1, GND2]]}
+  interface:level-shifter-bss138-4ch:
+    {template: offboard, body_mm: [15.0, 13.0, 3.0], visual: module_pcb, source: assumed,
+     variant_note: "Header order of this level-shifter module is not recorded; pins are shown in registry order.",
+     header: {pins: [LV1, LV2, LV, GND, LV3, LV4], pitch: 2.54, y: -5.0, z: 4.0},
+     header2: {pins: [HV1, HV2, HV, GND, HV3, HV4], pitch: 2.54, y: 5.0, z: 4.0}}
+  sensor:hc-sr501:
+    {template: offboard, body_mm: [32.0, 24.0, 25.0], visual: pir_module, source: typical,
+     variant_note: "HC-SR501 header order VCC, OUT, GND assumed; some clones differ.",
+     header: {pins: [VCC, OUT, GND], pitch: 2.54, y: 10.0, z: 3.0}}
+  sensor:mq2:
+    {template: offboard, body_mm: [32.0, 22.0, 26.0], visual: gas_module, source: typical,
+     variant_note: "MQ-2 module header order VCC, GND, D0, A0 assumed; modules differ.",
+     header: {pins: [VCC, GND, D0, A0], pitch: 2.54, y: 9.0, z: 3.0}}
+  sensor:rotary-encoder:
+    {template: offboard, body_mm: [26.0, 19.0, 28.0], visual: encoder_module, source: typical,
+     variant_note: "KY-040 style header order CLK, DT, SW, +, GND assumed.",
+     header: {pins: [CLK, DT, SW, VCC, GND], pitch: 2.54, y: 8.0, z: 3.0}}
+  actuator:lcd-i2c:
+    {template: offboard, body_mm: [80.0, 36.0, 20.0], visual: lcd_module, source: typical,
+     variant_note: "PCF8574 I2C backpack header order GND, VCC, SDA, SCL assumed.",
+     header: {pins: [GND, VCC, SDA, SCL], pitch: 2.54, y: 16.0, z: 3.0}}
+  actuator:relay-module:
+    {template: offboard, body_mm: [50.0, 26.0, 19.0], visual: relay_module, source: typical,
+     variant_note: "Single-channel relay module: control header VCC, GND, IN and screw terminals NO, COM, NC assumed; modules differ.",
+     terminals: [
+       {pin: VCC, style: header, at: [-23.0, -2.54, 3.0]}, {pin: GND, style: header, at: [-23.0, 0.0, 3.0]},
+       {pin: IN, style: header, at: [-23.0, 2.54, 3.0]},
+       {pin: "NO", style: screw, at: [22.0, -5.0, 10.0]}, {pin: COM, style: screw, at: [22.0, 0.0, 10.0]},
+       {pin: NC, style: screw, at: [22.0, 5.0, 10.0]}]}
+  actuator:relay-5v-coil:
+    {template: offboard, body_mm: [19.0, 15.5, 15.3], visual: relay, source: assumed,
+     note: "Bare PCB relay: its pins are not on the 2.54 mm grid, so it is shown off-board with labelled terminals.",
+     variant_note: "Pin positions of this relay are not recorded; terminals are shown in registry order.",
+     header: {pins: [COIL1, COIL2, COM, "NO", NC], pitch: 3.0, y: 9.0, z: 1.0, style: pad}}
+  actuator:servo-sg90:
+    {template: offboard, body_mm: [23.0, 12.2, 29.0], visual: servo, source: typical,
+     note: "SG90 servo with a 3-wire lead: brown GND, red V+, orange signal.",
+     terminals: [{pin: GND, style: header, at: [-8.0, 20.0, 2.0], color: "#6d4c41"},
+                 {pin: VCC, style: header, at: [-5.46, 20.0, 2.0], color: "#d32f2f"},
+                 {pin: PWM, style: header, at: [-2.92, 20.0, 2.0], color: "#fb8c00"}]}
+  actuator:dc-motor:
+    {template: offboard, body_mm: [25.0, 20.0, 15.0], visual: dc_motor, source: typical,
+     note: "Small brushed DC motor with two flying leads.",
+     terminals: [{pin: PIN1, style: lead, at: [-12.5, -3.0, 7.5], color: "#d32f2f"},
+                 {pin: PIN2, style: lead, at: [-12.5, 3.0, 7.5], color: "#212121"}]}
+  power:battery-9v:
+    {package: PP3,
+     terminals: [{pin: POS, style: lead, at: [24.0, -4.0, 8.75], color: "#d32f2f"},
+                 {pin: NEG, style: lead, at: [24.0, 4.0, 8.75], color: "#212121"}]}
+  power:battery-4xaa:
+    {package: 4xAA holder,
+     terminals: [{pin: POS, style: lead, at: [31.0, -6.0, 7.5], color: "#d32f2f"},
+                 {pin: NEG, style: lead, at: [31.0, 6.0, 7.5], color: "#212121"}]}
+  power:battery-2xaa:
+    {package: 2xAA holder,
+     terminals: [{pin: POS, style: lead, at: [29.0, -4.0, 7.5], color: "#d32f2f"},
+                 {pin: NEG, style: lead, at: [29.0, 4.0, 7.5], color: "#212121"}]}
+  power:usb-5v:
+    {template: offboard, body_mm: [30.0, 20.0, 8.0], visual: usb_supply, source: assumed,
+     note: "Generic 5 V USB supply (e.g. a USB breakout) with two flying leads; the actual supply hardware is not specified by the design.",
+     terminals: [{pin: VBUS, style: lead, at: [15.0, -3.0, 4.0], color: "#d32f2f"},
+                 {pin: GND, style: lead, at: [15.0, 3.0, 4.0], color: "#212121"}]}
+  connector:screw-terminal-2:
+    {package: 2x 5.08mm terminal,
+     terminals: [{pin: P1, style: screw, at: [-2.54, 0.0, 8.0]}, {pin: P2, style: screw, at: [2.54, 0.0, 8.0]}]}

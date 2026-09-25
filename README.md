@@ -10,7 +10,9 @@ drawn. The result opens in an interactive 2D Schematic Studio in the browser.
 
 > **AI proposes. Deterministic systems verify.**
 
-Current milestone: **2D Schematic Studio + functional validation** (see [Roadmap](#roadmap)).
+Current milestone: **2D Schematic Studio + functional validation**, tagged `v0.2.0-2d-studio`, plus a first
+vertical slice of the **Physical / 3D Electronics Studio** (breadboard build of the same design; see
+[Roadmap](#roadmap)).
 
 ---
 
@@ -44,6 +46,9 @@ Natural language
   → Deterministic schematic generation    symbols, placement, orthogonal routing, junctions, ports
   → Schematic LVS                         drawn connectivity == engineering nets
   → Interactive 2D Schematic Studio       view · inspect · edit · explain · export
+  → Physical projection (breadboard)      footprints · deterministic placement · leads + jumpers
+  → Physical verification                 build connectivity == engineering nets
+  → Physical 3D Studio                    orbit · select · move on the board · assembly steps
 ```
 
 | Layer | Code |
@@ -57,8 +62,9 @@ Natural language
 | Electrical validation | `src/validation/engine.py` |
 | Functional validation | `src/functional/`, `data/knowledge/functional_profiles.yaml`, `data/knowledge/functional_vocabulary.yaml` |
 | Schematic projection, layout, SVG, LVS | `src/schematic/` |
+| Physical projection: breadboard, placement, wiring, verification | `src/physical/`, `data/physical/` |
 | Studio document, edit operations, HTTP API | `src/studio/` |
-| Studio web app (React + TypeScript + Vite) | `frontend/src/studio/` |
+| Studio web app (React + TypeScript + Vite; 3D view with react-three-fiber) | `frontend/src/studio/`, `frontend/src/studio/physical/` |
 | Curriculum knowledge graph | `src/curriculum/`, `data/curriculum/` |
 | CLI (Typer) | `src/cli/main.py` |
 
@@ -132,26 +138,28 @@ deliberately keeps four kinds of knowledge apart:
 Parts and patterns link to the concepts they teach, so a schematic can point a learner at the
 underlying idea.
 
-## The 2D Schematic Studio
+## The Studio (2D schematic + physical 3D)
 
 ```
-┌ Illustration Engine · Schematic Studio   [✓ valid] [✓ function]   Select · Wire · ↶ ↷ · Fit · Auto-arrange · Export SVG · Export IR ┐
-│ AI Assistant │ Library │ Examples  │            Schematic canvas             │ Inspector │ Function │ Electrical │ Explain │
-└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌ Illustration Engine · project · [✓ valid] [✓ function] [✓ build]   [ Schematic | Physical 3D ]   Export ▾ · ✦ AI Assistant ┐
+│ Library │ Building blocks │ Examples │   canvas (2D or 3D) + floating toolbar   │ Assistant │ Inspector │ Checks │ Assembly │ Explain │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-* **AI Assistant.** Describe a circuit. Progress shows each step: the required behaviour, library
-  lookups, "Functional check → FAIL: F006 …", repairs. The result opens on the canvas.
-* **Library and Examples.** Search the registry and add parts or whole patterns; open any
-  reference design.
+* **AI Assistant** (right). Describe a circuit; the generation is shown as a checklist of phases
+  (understand, search the library, calculate, draft, validate, repair, schematic, breadboard), each
+  tagged AI or engine; the final verdicts come from the deterministic checks.
+* **Library, Building blocks, Examples** (left). Search the registry by name, function, package or
+  tag; browse categories; open a part's detail card and add it; insert design patterns as building
+  blocks; open any reference design.
+* **Schematic | Physical 3D** (top). One design, two views; the selection is shared, and switching
+  views (or ◎ locate) brings the selected part or net into view.
 * **Schematic canvas.** Pan and zoom; select parts and nets; the status bar shows
   "drawing matches netlist ✓".
 * **Inspector.** Part identity, role, pins and their nets (disconnect with ✕), editable
   parameters, registry electrical characteristics, rotate, mirror, delete.
-* **Electrical.** Validation errors and warnings with codes, highlighted on the drawing.
-* **Function.** The requested behaviour, the verdict, the signal path (click to highlight), the
-  decision, driver and threshold parts, findings with repair hints, and any interpretation of the
-  intent.
+* **Checks.** Electrical, Function and Physical build side by side, each with its findings, plus
+  the design's assumptions and what could not be checked.
 * **Explain.** A deterministic explanation of parts, rails, signals, checks performed and
   limitations.
 * **Editing.** Wire tool, move, rotate, mirror, add, delete, rename nets, set parameters, insert
@@ -159,7 +167,10 @@ underlying idea.
   re-projection. Full undo/redo.
 * **Auto-arrange** re-runs the deterministic layout. **Export** gives SVG (drawing) or IR (the
   engineering design JSON).
-* *Physical preview (3D, experimental)* is a pre-existing prototype tab, not part of this milestone.
+* **Physical 3D** (centre tab) shows the same design built on a breadboard: orbit / pan / zoom, click a part,
+  wire or pin (the selection is shared with the schematic), drag a part to another hole (the backend accepts
+  or refuses the move, e.g. "would short"), R rotates. The **Assembly** tab shows the physical check and
+  numbered build steps; the Inspector shows each pin's hole and where the part's geometry comes from.
 
 ## Architectural invariants
 
@@ -215,19 +226,22 @@ $py = ".\.venv\Scripts\python.exe"
 & $py -m cli.main schematic verify   data/examples/relay_driver.json    # schematic LVS
 & $py -m cli.main calc led-resistor --supply 3.3 --vf 2.0 --current 10
 & $py -m cli.main curriculum search "CMOS inverter"
+& $py -m cli.main physical build   data/examples/temperature_alarm.json      # breadboard build summary (-o: Physical IR JSON)
+& $py -m cli.main physical verify  data/examples/temperature_alarm.json      # physical LVS
+& $py -m cli.main physical steps   data/examples/temperature_alarm.json      # step-by-step assembly
 & $py -m cli.main agent run "night light with an LDR and a 9 V battery" -v   # needs GEMINI_API_KEY
 ```
 
 ## Testing
 
-Verified on 2026-09-25 for this milestone:
+Verified on 2026-09-25 (milestone `v0.2.0-2d-studio`: 460 / 13 / 16; now, with the physical stage):
 
 | Suite | Command | Result |
 |---|---|---|
-| Python unit and integration | `.\.venv\Scripts\python.exe -m pytest` | **460 passed, 5 skipped** (the skips are opt-in live-provider tests) |
-| Frontend unit | `cd frontend && npm test` | **13 passed** (includes backend ↔ frontend geometry consistency) |
+| Python unit and integration | `.\.venv\Scripts\python.exe -m pytest` | **513 passed, 5 skipped** (the skips are opt-in live-provider tests) |
+| Frontend unit | `cd frontend && npm test` | **38 passed** (includes backend ↔ frontend schematic and breadboard geometry consistency) |
 | TypeScript | `cd frontend && npx tsc -b` | **clean** |
-| Browser E2E (real Chrome via DevTools protocol) | `.\.venv\Scripts\python.exe scripts\ui_e2e.py --url http://127.0.0.1:8765` (server running) | **16/16** |
+| Browser E2E (real Chrome via DevTools protocol) | `.\.venv\Scripts\python.exe scripts\ui_e2e.py --url http://127.0.0.1:8765` (server running; software WebGL) | **28/28** |
 | Live Gemini (opt-in, spends quota) | `$env:ILLUS_LIVE_TESTS=1; .\.venv\Scripts\python.exe -m pytest tests/integration/test_gemini_live.py` | not part of the default run |
 
 The functional layer has 28 fixture designs. All are electrically valid, and each isolates one
@@ -246,8 +260,9 @@ document the design decisions and verification in detail.
 * **Layout** is greedy placement with local refinement; there is no hierarchical grouping of large
   designs yet.
 * **No conversational refinement** of an existing design by the AI yet (edits are manual).
-* The **3D / physical view** is an older experimental prototype and is not maintained in this
-  milestone.
+* The **Physical 3D Studio** is a first vertical slice: one breadboard, automatic wiring, procedural
+  (not photorealistic) models; part geometry is partly "typical"/"assumed" and flagged as such
+  (reports 26–32).
 * Development and verification were done on Windows. Other platforms are expected to work but have
   not been verified.
 * Live AI behaviour has been sampled on a limited set of prompts with the Gemini flash tiers.
@@ -260,7 +275,7 @@ document the design decisions and verification in detail.
 | AI orchestration with tool calling, validation boundaries and repair | done |
 | **2D Schematic Studio**: layout engine, schematic LVS, interactive workspace, library expansion, curriculum mapping | **done (current)** |
 | **Functional / behavioural validation**, integrated into the repair loop and the studio | **done (current)** |
-| **Physical / 3D Electronics Studio**: breadboard and physical layout projected from the same Engineering Design, with physical ↔ netlist verification | **next major stage, not started** |
+| **Physical / 3D Electronics Studio**: breadboard and physical layout projected from the same Engineering Design, with physical ↔ netlist verification | **in progress: first vertical slice done** (breadboard placement, wiring, physical verification, interactive 3D view; reports 26–32) |
 | Simulation (SPICE / microcontroller), richer educational workflows (guided labs, misconception feedback, curriculum paths), conversational design refinement, more providers | future |
 
 ## Repository layout

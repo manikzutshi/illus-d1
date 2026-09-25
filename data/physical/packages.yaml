@@ -1,0 +1,78 @@
+# Package geometry templates for the physical (breadboard / 3D) projection.
+#
+# Keyed by the registry's `physical.package` string. A template describes how a package's pins sit
+# on the 2.54 mm breadboard grid and the size of its body. Sources:
+#   standard - dimension set by the package standard (JEDEC outline, 2.54 mm headers, ...)
+#   typical  - common breadboard practice or a typical part; real parts vary
+#   assumed  - a stand-in chosen so the part can be shown at all; flagged in physical verification
+#
+# Fields
+#   template  two_lead | inline | dip | dual_row | smd_adapter | offboard
+#   pins      pin count (inline/dip)
+#   spans     two_lead: allowed lead spans in grid steps, preferred first (bendable leads)
+#   row_span  dip/dual_row: grid steps between the two pin rows
+#   body_mm   [length along the pin row, depth across it, height]
+#   body_z    height of the body's underside above the board surface (mm)
+#   visual    procedural visual kind used by the 3D view
+
+packages:
+  DIP-8:
+    {template: dip, pins: 8, row_span: 3, body_mm: [9.8, 6.4, 3.3], body_z: 0.5, visual: dip, source: standard,
+     note: "Plastic DIP: 2.54 mm pitch, 7.62 mm between rows, so it straddles the centre trench."}
+  DIP-14:
+    {template: dip, pins: 14, row_span: 3, body_mm: [19.0, 6.4, 3.3], body_z: 0.5, visual: dip, source: standard,
+     note: "Plastic DIP: 2.54 mm pitch, 7.62 mm between rows."}
+  DIP-16:
+    {template: dip, pins: 16, row_span: 3, body_mm: [19.3, 6.4, 3.3], body_z: 0.5, visual: dip, source: standard,
+     note: "Plastic DIP: 2.54 mm pitch, 7.62 mm between rows."}
+  TO-92:
+    {template: inline, pins: 3, body_mm: [4.8, 3.8, 4.8], body_z: 3.0, visual: to92, source: standard,
+     note: "TO-92 leads are 1.27 mm apart at the body and are formed out to the 2.54 mm grid for breadboard use."}
+  TO-220:
+    {template: inline, pins: 3, body_mm: [10.2, 4.6, 15.5], body_z: 4.0, visual: to220, source: standard,
+     note: "TO-220: 2.54 mm lead pitch; body and tab stand upright."}
+  DO-35:
+    {template: two_lead, spans: [3, 4, 5, 6], body_mm: [3.8, 1.9, 1.9], body_z: 0.6, visual: axial_diode, source: standard,
+     note: "Axial glass diode; leads bent to the hole spacing (typically 7.62 mm)."}
+  DO-41:
+    {template: two_lead, spans: [4, 5, 3, 6], body_mm: [5.2, 2.7, 2.7], body_z: 0.6, visual: axial_diode, source: standard,
+     note: "Axial plastic diode; leads bent to the hole spacing (typically 10.16 mm)."}
+  axial-0.25W:
+    {template: two_lead, spans: [4, 3, 5, 6], body_mm: [6.3, 2.5, 2.5], body_z: 0.6, visual: axial_resistor, source: typical,
+     note: "1/4 W through-hole resistor; leads bent to the hole spacing (typically 10.16 mm)."}
+  6mm tactile:
+    {template: two_lead, spans: [2], body_mm: [6.0, 3.5, 5.0], body_z: 0.0, visual: pushbutton, source: typical,
+     note: "Two-pin 6 mm tactile switch; pin spacing about 5 mm (two grid steps)."}
+  1x2 2.54mm:
+    {template: inline, pins: 2, body_mm: [5.08, 2.5, 8.5], body_z: 0.0, visual: header, source: standard,
+     note: "Pin header, 2.54 mm pitch."}
+  1x3 2.54mm:
+    {template: inline, pins: 3, body_mm: [7.62, 2.5, 8.5], body_z: 0.0, visual: header, source: standard,
+     note: "Pin header, 2.54 mm pitch."}
+  1x4 2.54mm:
+    {template: inline, pins: 4, body_mm: [10.16, 2.5, 8.5], body_z: 0.0, visual: header, source: standard,
+     note: "Pin header, 2.54 mm pitch."}
+  SOT-23-5:
+    {template: smd_adapter, visual: smd_adapter, source: assumed,
+     note: "A bare SOT-23 part cannot be pushed into a breadboard; shown on a generic breakout adapter with its pins in package order."}
+  SOT-23-6:
+    {template: smd_adapter, visual: smd_adapter, source: assumed,
+     note: "A bare SOT-23 part cannot be pushed into a breadboard; shown on a generic breakout adapter with its pins in package order."}
+  SOT-223:
+    {template: smd_adapter, visual: smd_adapter, source: assumed,
+     note: "A bare SOT-223 part cannot be pushed into a breadboard; shown on a generic breakout adapter with its pins in package order."}
+  MSOP-10:
+    {template: smd_adapter, visual: smd_adapter, source: assumed,
+     note: "A bare MSOP part cannot be pushed into a breadboard; shown on a generic breakout adapter with its pins in package order (breakout modules exist for most such chips)."}
+  PP3:
+    {template: offboard, visual: battery_9v, body_mm: [48.5, 26.5, 17.5], source: standard,
+     note: "PP3 9 V battery with a snap connector; red lead +, black lead -."}
+  4xAA holder:
+    {template: offboard, visual: battery_holder, body_mm: [62.0, 58.0, 15.0], source: typical,
+     note: "4 x AA holder (side by side) with red/black flying leads."}
+  2xAA holder:
+    {template: offboard, visual: battery_holder, body_mm: [58.0, 31.0, 15.0], source: typical,
+     note: "2 x AA holder with red/black flying leads."}
+  2x 5.08mm terminal:
+    {template: offboard, visual: screw_terminal, body_mm: [10.2, 8.0, 10.0], source: typical,
+     note: "Two-way screw terminal, 5.08 mm pitch; its pins do not fit the 2.54 mm grid reliably, so it is wired off-board."}

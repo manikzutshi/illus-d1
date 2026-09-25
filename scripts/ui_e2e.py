@@ -27,7 +27,9 @@ CHROME = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 class Browser:
     def __init__(self, port: int = 9333):
         self.profile = tempfile.mkdtemp(prefix="studio-e2e-")
-        self.proc = subprocess.Popen([CHROME, "--headless=new", "--disable-gpu", f"--remote-debugging-port={port}",
+        # software WebGL (SwiftShader) so the Physical 3D view can render headless
+        self.proc = subprocess.Popen([CHROME, "--headless=new", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
+                                      "--ignore-gpu-blocklist", f"--remote-debugging-port={port}",
                                       f"--user-data-dir={self.profile}", "--window-size=1600,950", "about:blank"],
                                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(50):
@@ -117,6 +119,13 @@ def main() -> int:
         step("studio loads a starter design", True, b.js("document.querySelector('.docname').textContent"))
         b.shot(out / "01_loaded.png")
 
+        def open_check(kind):
+            x, y = b.center("[...document.querySelectorAll('aside.right .tabs button')].find(b => b.textContent.startsWith('Checks'))")
+            b.click(x, y)
+            b.wait(f"document.querySelector('.check-card[data-check={kind}]') !== null")
+            x, y = b.center(f"document.querySelector('.check-card[data-check={kind}]')")
+            b.click(x, y)
+
         part = lambda ref: f"[...document.querySelectorAll('svg.canvas g.part')].find(g => [...g.querySelectorAll('text.ref')].some(t => t.textContent === '{ref}'))"
         # 1. select R3 (LED resistor) by clicking its body
         x, y = b.center(part("R3") + ".querySelector('rect:not(.sel-box)')")
@@ -140,9 +149,7 @@ def main() -> int:
         b.wait("document.querySelector('.badge.bad') !== null")
         badge = b.js("document.querySelector('.badge').textContent")
         errors = b.js("fetch('/api/health').then(() => [...document.querySelectorAll('.issue')].map(e => e.textContent))")
-        b.wait("document.querySelector('.tabs button.on')?.textContent.startsWith('Validation') || true")
-        x, y = b.center("[...document.querySelectorAll('aside.right .tabs button')].find(b => b.textContent.startsWith('Electrical'))")
-        b.click(x, y)
+        open_check("electrical")
         b.wait("document.querySelectorAll('.issue.error').length > 0")
         issues = b.js("[...document.querySelectorAll('.issue.error')].map(e => e.textContent)")
         step("deleting the LED resistor produces validation errors", any("E007" in i for i in issues) or any("E009" in i for i in issues),
@@ -230,8 +237,7 @@ def main() -> int:
         x, y = b.center("[...document.querySelectorAll('.example')].find(e => e.textContent.includes('Temperature Alarm'))")
         b.click(x, y)
         b.wait("document.querySelector('.docname').textContent.includes('Temperature Alarm')")
-        x, y = b.center("[...document.querySelectorAll('aside.right .tabs button')].find(b => b.textContent.startsWith('Function'))")
-        b.click(x, y)
+        open_check("function")
         b.wait("document.querySelector('.fstatus.pass') !== null")
         step("temperature alarm: functional check PASS with explanation", True,
              b.js("[...document.querySelectorAll('.behavior li')].map(l => l.textContent).slice(0, 3).join(' | ')"))
@@ -244,11 +250,12 @@ def main() -> int:
         x, y = b.center(part("BZ1") + ".querySelector('rect:not(.sel-box):not(.hl-box)')")
         b.click(x, y)
         b.wait("document.querySelector('.inspector h3')?.textContent === 'BZ1'")
+        b.wait("document.querySelector('.inspector')?.textContent.includes('Electrical characteristics')")
+        time.sleep(0.3)
         x, y = b.center("[...document.querySelectorAll('.inspector table.pins tr')].find(r => r.textContent.startsWith('GND')).querySelector('button.icon')")
         b.click(x, y)
         b.wait("document.querySelector('.badge.bad')?.textContent.includes('function') === true")
-        x, y = b.center("[...document.querySelectorAll('aside.right .tabs button')].find(b => b.textContent.startsWith('Function'))")
-        b.click(x, y)
+        open_check("function")
         b.wait("[...document.querySelectorAll('.function .issue.error')].some(e => e.textContent.startsWith('F004'))")
         elec = b.js("document.querySelector('.badge').textContent")
         step("disconnecting the buzzer's drive: electrically still valid, functionally FAIL (F004)", "valid" in elec,
@@ -257,6 +264,131 @@ def main() -> int:
         b.key("z", "KeyZ", 90, modifiers=2)
         b.wait("document.querySelector('.fstatus.pass') !== null")
         step("undo restores the functional PASS", True)
+
+        # ── Physical 3D studio (same document, second projection) ──
+        tab = lambda group, label: f"[...document.querySelectorAll('{group} .tabs button')].find(b => b.textContent.startsWith('{label}'))"
+        x, y = b.center("document.querySelector('.viewswitch button[data-view=physical]')")
+        b.click(x, y)
+        b.wait("window.__physicalView && window.__physicalView.parts > 0", 40)
+        b.wait("document.querySelector('.physical3d canvas') !== null")
+        pv = b.js("JSON.stringify(window.__physicalView)")
+        footer = b.js("document.querySelector('footer.status .right')?.textContent || ''")
+        step("physical 3D view renders the breadboard build (WebGL)", "build matches netlist ✓" in footer, pv)
+        time.sleep(1.5)
+        b.shot(out / "10_physical_3d.png")
+
+        x, y = b.center(tab("aside.right", "Assembly"))
+        b.click(x, y)
+        b.wait("document.querySelectorAll('.assembly .step').length > 5")
+        status = b.js("document.querySelector('.assembly .fstatus b')?.textContent || ''")
+        step("assembly tab: physical verification + build steps", "matches the netlist" in status,
+             f"{status} · {b.js('document.querySelectorAll(`.assembly .step`).length')} steps")
+
+        # selecting a part from the build steps selects the engineering component in both views
+        b.js("[...document.querySelectorAll('.assembly .step.part')].find(s => s.textContent.includes('Q1'))?.click()")
+        b.wait("window.__physicalView.highlightedParts.includes('q1')")
+        assert b.js("[...document.querySelectorAll('aside.right .tabs button')].find(b => b.classList.contains('on')).textContent").startswith('Assembly')
+        x, y = b.center("[...document.querySelectorAll('aside.right .tabs button')].find(b => b.textContent === 'Inspector')")
+        b.click(x, y)
+        b.wait("document.querySelector('.inspector h3')?.textContent === 'Q1'")
+        b.wait("window.__physicalView.highlightedParts.includes('q1')")
+        holes = b.js("[...document.querySelectorAll('.phys-section table.pins td.mono')].map(t => t.textContent).join(' ')")
+        step("selection is shared: inspector shows Q1's holes, 3D highlights it", bool(holes), holes[:60])
+
+        # move through the physical placement engine (a presentation op; engineering unchanged)
+        b.js("""(() => { const inp = document.querySelector('.phys-section .hole-input');
+                 const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+                 set.call(inp, 'a20'); inp.dispatchEvent(new Event('input', {bubbles: true})); })()""")
+        x, y = b.center("[...document.querySelectorAll('.phys-section button')].find(b => b.textContent === 'Move')")
+        b.click(x, y)
+        b.wait("document.querySelector('.phys-section')?.textContent.includes('first pin in a20')", 20)
+        step("move Q1 on the breadboard (validated by the backend)", True, "Q1 → a20")
+        b.shot(out / "11_physical_moved.png")
+
+        # an illegal move is refused with the engine's reason and changes nothing
+        b.js("""(() => { const inp = document.querySelector('.phys-section .hole-input');
+                 const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+                 set.call(inp, 'a10'); inp.dispatchEvent(new Event('input', {bubbles: true})); })()""")
+        x, y = b.center("[...document.querySelectorAll('.phys-section button')].find(b => b.textContent === 'Move')")
+        b.click(x, y)
+        b.wait("(document.querySelector('.err-msg')?.textContent || '').includes('short')", 20)
+        still = b.js("document.querySelector('.phys-section')?.textContent.includes('first pin in a20')")
+        step("an illegal move (would short two nets) is refused", bool(still),
+             b.js("document.querySelector('.err-msg')?.textContent.slice(0, 90)"))
+
+        # back to the schematic: the same engineering component is still selected
+        x, y = b.center("document.querySelector('.viewswitch button[data-view=schematic]')")
+        b.click(x, y)
+        b.wait("document.querySelector('svg.canvas') !== null")
+        same = b.js("document.querySelector('.inspector h3')?.textContent") == "Q1"
+        sel_box = b.js(part("Q1") + "?.querySelector('.sel-box') !== null")
+        step("switching views keeps the selection (2D <-> 3D traceability)", same and bool(sel_box))
+        b.key("z", "KeyZ", 90, modifiers=2)
+        x, y = b.center("document.querySelector('.viewswitch button[data-view=physical]')")
+        b.click(x, y)
+        b.wait("document.querySelector('.phys-section')?.textContent.includes('first pin in a20') === false", 20)
+        step("undo restores the previous breadboard placement", True)
+
+        # ── product-level interaction model ──
+        # locate: select in the schematic, switch views -> the 3D camera goes to the same part
+        x, y = b.center("document.querySelector('.viewswitch button[data-view=schematic]')")
+        b.click(x, y)
+        b.wait("document.querySelector('svg.canvas') !== null")
+        x, y = b.center("document.querySelector('.viewswitch button[data-view=schematic]')")
+        b.click(x, y)                                   # (already on the schematic)
+        x, y = b.center("[...document.querySelectorAll('.canvas-toolbar button')].find(b => b.title.startsWith('Fit'))")
+        b.click(x, y)
+        time.sleep(0.4)
+        x, y = b.center(part("U2"))                     # centre of the IC symbol
+        b.click(x, y)
+        b.wait("document.querySelector('.inspector h3')?.textContent === 'U2'")
+        b.js("window.__physicalView = null")        # the 3D view remounts; require a fresh focus on U2
+        x, y = b.center("document.querySelector('.viewswitch button[data-view=physical]')")
+        b.click(x, y)
+        b.wait("window.__physicalView && window.__physicalView.focusCount >= 1 && window.__physicalView.focusCenter !== null && window.__physicalView.highlightedParts.includes('u2')", 30)
+        step("selecting in the schematic and switching views focuses the same part in 3D", True,
+             b.js("JSON.stringify(window.__physicalView.focusCenter)"))
+        b.shot(out / "12_locate_3d.png")
+
+        # checks hub: three deterministic verdicts incl. the physical build
+        x, y = b.center("[...document.querySelectorAll('aside.right .tabs button')].find(b => b.textContent.startsWith('Checks'))")
+        b.click(x, y)
+        b.wait("document.querySelectorAll('.check-card').length === 3")
+        cards = b.js("[...document.querySelectorAll('.check-card')].map(c => c.querySelector('.cc-verdict').textContent)")
+        step("checks hub shows electrical, function and physical verdicts", "Build matches netlist" in cards, " | ".join(cards))
+
+        # canvas toolbar: zoom is view-only
+        x, y = b.center("document.querySelector('.viewswitch button[data-view=schematic]')")
+        b.click(x, y)
+        b.wait("document.querySelector('.canvas-toolbar .zoom') !== null")
+        x, y = b.center("[...document.querySelectorAll('.canvas-toolbar button')].find(b => b.title === 'Zoom in')")
+        b.click(x, y)
+        b.wait("document.querySelector('.canvas-toolbar .zoom').textContent !== '100%'")
+        zin = b.js("document.querySelector('.canvas-toolbar .zoom').textContent")
+        x, y = b.center("[...document.querySelectorAll('.canvas-toolbar button')].find(b => b.title.startsWith('Fit'))")
+        b.click(x, y)
+        b.wait("document.querySelector('.canvas-toolbar .zoom').textContent === '100%'")
+        step("canvas toolbar zooms and fits without editing the design", zin != "100%", f"{zin} → 100%")
+
+        # building blocks: insert a design pattern through the ordinary engineering op, then undo
+        n0 = b.js("document.querySelectorAll('svg.canvas g.part').length")
+        x, y = b.center("[...document.querySelectorAll('aside.left .tabs button')].find(b => b.textContent === 'Building blocks')")
+        b.click(x, y)
+        b.wait("document.querySelectorAll('.block-card').length > 3")
+        b.js("[...document.querySelectorAll('.block-card')].find(c => c.textContent.includes('LED')).querySelector('button').click()")
+        b.wait(f"document.querySelectorAll('svg.canvas g.part').length > {n0}", 20)
+        n1 = b.js("document.querySelectorAll('svg.canvas g.part').length")
+        b.key("z", "KeyZ", 90, modifiers=2)
+        b.wait(f"document.querySelectorAll('svg.canvas g.part').length === {n0}", 20)
+        step("building blocks insert a pattern (engineering op) and undo removes it", True, f"{n0} → {n1} → {n0} parts")
+
+        # assistant: the AI's role is stated; the composer is always available
+        x, y = b.center("[...document.querySelectorAll('aside.right .tabs button')].find(b => b.textContent === 'Assistant')")
+        b.click(x, y)
+        b.wait("document.querySelector('.assistant .composer textarea') !== null")
+        roles = b.js("[...document.querySelectorAll('.assistant .role')].map(r => r.textContent).join(' / ')")
+        step("assistant states the roles and offers the composer", "Deterministic" in roles, roles)
+        b.shot(out / "13_assistant.png")
     except Exception as e:
         step("unexpected failure", False, f"{type(e).__name__}: {e}")
         b.shot(out / "zz_failure.png")

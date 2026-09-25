@@ -1,5 +1,5 @@
 // TypeScript mirror of the backend models the studio consumes.
-// Source of truth: src/core/models.py, src/schematic/models.py, src/studio/document.py.
+// Source of truth: src/core/models.py, src/schematic/models.py, src/physical/models.py, src/studio/document.py.
 
 export type Orient = 'left' | 'right' | 'up' | 'down';
 
@@ -26,7 +26,7 @@ export interface EngineeringDesign {
 export interface Placement { x: number; y: number; rotation: number; mirror: boolean; locked: boolean; show_all_pins: boolean }
 export interface LayoutState { placements: Record<string, Placement>; net_styles: Record<string, 'auto' | 'wire' | 'label'> }
 export interface Provenance { source: string; prompt?: string | null; provider?: string | null; model?: string | null; example?: string | null }
-export interface StudioDocument { schema_version: string; design: EngineeringDesign; layout: LayoutState; intent?: FunctionalIntent | null; provenance: Provenance; revision: number }
+export interface StudioDocument { schema_version: string; design: EngineeringDesign; layout: LayoutState; physical?: PhysicalLayoutState; intent?: FunctionalIntent | null; provenance: Provenance; revision: number }
 
 export interface SymbolPrimitive {
   kind: 'line' | 'polyline' | 'polygon' | 'rect' | 'circle' | 'path' | 'text';
@@ -90,6 +90,7 @@ export interface StudioState {
   document: StudioDocument; validation: ValidationResult; functional: FunctionalReport; schematic: SchematicProject;
   verification: { ok: boolean; opens: string[]; shorts: string[]; hygiene: string[] };
   explanation: Explanation; op_results: OpResult[];
+  physical?: PhysicalProject | null;
 }
 
 export interface LibraryItem {
@@ -125,7 +126,7 @@ export type EditOp =
   | { op: 'delete_net'; net_id: string }
   | { op: 'rename_net'; net_id: string; new_net_id: string }
   | { op: 'set_net_type'; net_id: string; net_type: 'power' | 'ground' | 'signal' | null }
-  | { op: 'insert_pattern'; pattern_id: string; prefix?: string; bindings?: Record<string, string> }
+  | { op: 'insert_pattern'; pattern_id: string; prefix?: string; bindings?: Record<string, string>; choices?: Record<string, string> }
   | { op: 'set_design_info'; name?: string; description?: string }
   | { op: 'move_component'; instance_id: string; x: number; y: number }
   | { op: 'rotate_component'; instance_id: string; rotation?: number }
@@ -133,7 +134,11 @@ export type EditOp =
   | { op: 'set_net_style'; net_id: string; style: 'auto' | 'wire' | 'label' }
   | { op: 'set_show_all_pins'; instance_id: string; value: boolean }
   | { op: 'auto_arrange'; keep_locked: boolean }
-  | { op: 'set_intent'; intent: FunctionalIntent | null };
+  | { op: 'set_intent'; intent: FunctionalIntent | null }
+  | { op: 'physical_move'; instance_id: string; anchor?: string; x?: number; y?: number; rotation?: number; span?: number }
+  | { op: 'physical_rotate'; instance_id: string }
+  | { op: 'physical_auto_arrange'; keep_locked: boolean }
+  | { op: 'set_breadboard'; board: 'auto' | 'half' | 'full' };
 
 export type Selection =
   | { kind: 'component'; id: string }
@@ -169,3 +174,48 @@ export interface FunctionalReport {
   intent_notes?: string[];
 }
 export interface Highlight { instances: string[]; nets: string[] }
+
+// ── physical projection (src/physical/models.py) ──
+export type Vec3 = [number, number, number];
+export interface PhysicalPlacement { anchor?: string | null; orientation?: string | null; rotation: number; span?: number | null; x?: number | null; y?: number | null; locked: boolean; seq: number }
+export interface PhysicalLayoutState { board: 'auto' | 'half' | 'full'; placements: Record<string, PhysicalPlacement> }
+export interface RailInfo { rail_id: string; polarity: '+' | '-'; y: number; columns: number[]; net_id?: string | null }
+export interface BoardInfo {
+  board_id: string; kind: 'half' | 'full'; name: string; columns: number; rows: string[]; row_y: Record<string, number>;
+  column_x: number[]; pitch_mm: number; size_mm: [number, number, number]; rails: RailInfo[]; note: string;
+}
+export interface PhysicalPin { pin_id: string; name: string; net_id?: string | null; position: Vec3; hole?: string | null; node?: string | null; terminal?: string | null; alias_of?: string | null }
+export interface PhysicalPart {
+  instance_id: string; component_type_id: string; reference: string; value: string;
+  mount: 'breadboard' | 'offboard' | 'virtual' | 'unplaced'; template: string; position: Vec3; rotation: number;
+  anchor?: string | null; orientation: string; span?: number | null; body?: { center: Vec3; size: Vec3 } | null;
+  pins: PhysicalPin[];
+  visual: { kind: string; asset_url?: string | null; fallback: boolean; label: string; params: Record<string, string> };
+  geometry: { source: 'datasheet' | 'standard' | 'typical' | 'assumed'; notes: string[]; variant_note?: string | null };
+  locked: boolean; internal_links: string[][]; notes: string[];
+}
+export interface WireEnd { kind: 'hole' | 'pin'; hole?: string | null; pin_ref?: string | null; position: Vec3 }
+export interface PhysicalWire { wire_id: string; net_id: string; kind: 'jumper' | 'lead' | 'rail_bridge'; a: WireEnd; b: WireEnd; path: Vec3[]; color: string; length_mm: number; purpose: string }
+export interface PhysicalNetTrace { net_id: string; display_name: string; net_class: 'power' | 'ground' | 'signal'; nodes: string[]; wires: string[]; pins: string[]; rails: string[]; color: string }
+export interface PhysicalFinding { code: string; severity: 'ERROR' | 'WARNING' | 'INFO'; message: string; instances: string[]; pins: string[]; nets: string[]; holes: string[]; wires: string[] }
+export interface PhysicalVerification {
+  status: 'PASS' | 'WARN' | 'FAIL' | 'NOT_APPLICABLE'; ok: boolean; summary: string;
+  findings: PhysicalFinding[]; checks: { code: string; name: string; outcome: 'PASS' | 'FAIL' | 'WARN' | 'NOT_APPLICABLE' }[];
+}
+export interface AssemblyStep { step: number; kind: 'board' | 'part' | 'lead' | 'wire' | 'note'; text: string; instance_id?: string | null; wire_id?: string | null; net_id?: string | null }
+export interface PhysicalProject {
+  schema_version: string; project_id: string; name: string; applicable: boolean; board?: BoardInfo | null;
+  parts: PhysicalPart[]; wires: PhysicalWire[]; nets: Record<string, PhysicalNetTrace>; occupied: Record<string, string>;
+  covered: string[]; bounds: [number, number, number, number]; assembly: AssemblyStep[];
+  verification?: PhysicalVerification | null;
+  stats: { parts_on_board: number; parts_offboard: number; parts_virtual: number; wires: number; leads: number; wire_length_mm: number; holes_used: number; elapsed_ms: number };
+  diagnostics: string[];
+}
+
+// ── design patterns (src/knowledge/patterns.py) ──
+export interface DesignPatternInfo {
+  pattern_id: string; name: string; purpose: string; category: string; concepts: string[];
+  parts: { role: string; component_type: string; alternatives: string[]; parameters: Record<string, string>; purpose: string }[];
+  ports: { name: string; kind: 'signal' | 'supply' | 'ground'; description: string }[];
+  nets: { name: string; members: string[] }[]; calculations: string[]; design_notes: string[];
+}

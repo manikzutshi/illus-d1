@@ -12,6 +12,7 @@ from components.registry import ComponentRegistry, get_shared_registry
 from core.models import EngineeringDesignProject
 from curriculum.store import get_default_curriculum
 from knowledge import get_default_patterns
+from physical import generate_physical, placements_from_physical
 from schematic import generate_schematic, placements_from_schematic, verify_schematic
 from schematic.symbols import build_box_symbol, default_box_side, get_fixed_symbol, pin_mapping, symbol_name_for
 from validation.engine import DesignValidator
@@ -35,7 +36,10 @@ class StudioService:
         self._lock = threading.Lock()
 
     # ── derived state ─────────────────────────────────────────────────────
-    def state(self, doc: StudioDocument, op_results: Optional[List[OpResult]] = None) -> StudioState:
+    def state(self, doc: StudioDocument, op_results: Optional[List[OpResult]] = None,
+              physical: bool = False) -> StudioState:
+        """Derive everything from the document. ``physical`` also projects the breadboard build
+        (only requested by clients that show it, to keep the 2D path fast)."""
         validation = DesignValidator(self.registry).validate(doc.design)
         functional = validate_function(doc.design, doc.intent, self.registry)
         schematic = generate_schematic(doc.design, self.registry, doc.layout)
@@ -43,19 +47,24 @@ class StudioService:
         doc = doc.model_copy(deep=True)
         doc.layout.placements = placements_from_schematic(schematic, doc.layout)
         verification = verify_schematic(schematic, doc.design).as_dict()
+        phys = None
+        if physical:
+            phys = generate_physical(doc.design, self.registry, doc.physical, schematic)
+            doc.physical.placements = placements_from_physical(phys, doc.physical)
         explanation = explain_design(doc.design, self.registry, validation, schematic, self.curriculum)
         explanation["function"] = functional.explanation or [i.statement for i in functional.inferred]
         return StudioState(document=doc, validation=validation, functional=functional, schematic=schematic,
-                           verification=verification,
+                           verification=verification, physical=phys,
                            explanation=explanation, op_results=op_results or [])
 
     def open_design(self, design: EngineeringDesignProject, provenance: Optional[Provenance] = None,
-                    intent: Optional[FunctionalIntent] = None) -> StudioState:
-        return self.state(StudioDocument(design=design, intent=intent, provenance=provenance or Provenance(source="import")))
+                    intent: Optional[FunctionalIntent] = None, physical: bool = False) -> StudioState:
+        return self.state(StudioDocument(design=design, intent=intent, provenance=provenance or Provenance(source="import")),
+                          physical=physical)
 
-    def apply(self, doc: StudioDocument, ops: List[EditOp]) -> StudioState:
+    def apply(self, doc: StudioDocument, ops: List[EditOp], physical: bool = False) -> StudioState:
         new_doc, results = apply_ops(doc, ops, self.registry)
-        return self.state(new_doc, results)
+        return self.state(new_doc, results, physical=physical)
 
     # ── library / knowledge ───────────────────────────────────────────────
     def symbol_preview(self, ctype) -> dict:
@@ -103,7 +112,7 @@ class StudioService:
                         "concept": (d.get("curriculum_context") or {}).get("concept")})
         return out
 
-    def open_example(self, example_id: str) -> StudioState:
+    def open_example(self, example_id: str, physical: bool = False) -> StudioState:
         path = EXAMPLES_DIR / f"{example_id}.json"
         if not path.is_file() or path.parent != EXAMPLES_DIR:
             raise KeyError(example_id)
@@ -111,7 +120,7 @@ class StudioService:
         ipath = EXAMPLES_DIR / "intents" / f"{example_id}.json"
         intent = FunctionalIntent.model_validate(json.loads(ipath.read_text(encoding="utf-8"))) if ipath.is_file() else None
         return self.state(StudioDocument(design=design, intent=intent,
-                                         provenance=Provenance(source="example", example=example_id)))
+                                         provenance=Provenance(source="example", example=example_id)), physical=physical)
 
     # ── AI generation (background jobs) ───────────────────────────────────
     def start_generation(self, prompt: str, provider: Optional[str] = None, model: Optional[str] = None) -> "GenerationJob":
@@ -143,7 +152,7 @@ class StudioService:
             job.trace_summary = {k: v for k, v in orch.metrics.items() if k != "start_time"}
             if design is not None:
                 job.result = self.state(StudioDocument(design=design, intent=orch.functional_intent, provenance=Provenance(
-                    source="ai", prompt=job.prompt, provider=job.provider, model=job.model)))
+                    source="ai", prompt=job.prompt, provider=job.provider, model=job.model)), physical=True)
                 job.status = "done"
             elif orch.state == AgentState.CLARIFICATION_REQUIRED:
                 clar = next((t["data"] for t in reversed(orch.traces) if t["event"] == "CLARIFICATION_REQUIRED"), {})

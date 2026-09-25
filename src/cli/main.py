@@ -398,6 +398,54 @@ def design_function(design_file: str, intent_file: Optional[str] = typer.Option(
         raise typer.Exit(code=1)
 
 
+# ── Physical projection (breadboard build) ─────────────────────────────
+
+physical_app = typer.Typer(help="Physical projection: breadboard build, 3D scene data, physical verification",
+                           no_args_is_help=True)
+app.add_typer(physical_app, name="physical")
+
+
+def _physical(design_file: str, board: str):
+    from physical import PhysicalLayoutState, generate_physical
+    design = _load_design(design_file)
+    return generate_physical(design, get_default_registry(), PhysicalLayoutState(board=board))
+
+
+@physical_app.command("build")
+def physical_build(design_file: str,
+                   out: Optional[str] = typer.Option(None, "--out", "-o", help="Write the Physical IR JSON here"),
+                   board: str = typer.Option("auto", "--board", help="auto | half | full")) -> None:
+    """Project a design onto a breadboard and print a summary (or write the Physical IR)."""
+    proj = _physical(design_file, board)
+    if out:
+        Path(out).write_text(proj.model_dump_json(indent=2), encoding="utf-8")
+        typer.echo(f"Wrote {out}")
+    s, v = proj.stats, proj.verification
+    typer.echo(f"{proj.name}: {proj.board.name if proj.board else 'no physical form'} · {s.parts_on_board} on the board, "
+               f"{s.parts_offboard} beside it, {s.wires} wires, {s.leads} leads, {s.wire_length_mm:.0f} mm of wire "
+               f"({s.elapsed_ms:.0f} ms) · physical check {v.status}")
+
+
+@physical_app.command("verify")
+def physical_verify(design_file: str, board: str = typer.Option("auto", "--board", help="auto | half | full")) -> None:
+    """Check that the breadboard build's connectivity equals the engineering nets (physical LVS)."""
+    proj = _physical(design_file, board)
+    v = proj.verification
+    typer.echo(f"{v.status}: {v.summary}")
+    for f in v.findings:
+        typer.echo(f"  [{f.severity}] {f.code} {f.message}")
+    if not v.ok:
+        raise typer.Exit(code=1)
+
+
+@physical_app.command("steps")
+def physical_steps(design_file: str, board: str = typer.Option("auto", "--board", help="auto | half | full")) -> None:
+    """Print step-by-step assembly instructions for the breadboard build."""
+    proj = _physical(design_file, board)
+    for step in proj.assembly:
+        typer.echo(f"{step.step:3d}. {step.text}")
+
+
 # ── Studio server ───────────────────────────────────────────────────────
 
 studio_app = typer.Typer(help="2D Schematic Studio (web workspace)", no_args_is_help=True)

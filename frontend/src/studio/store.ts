@@ -9,6 +9,7 @@ export interface StoreState {
   undo: StudioDocument[];
   redo: StudioDocument[];
   selection: Selection;
+  selectionSource: 'canvas' | 'panel';
   hoverNet: string | null;
   highlight: Highlight | null;
   tool: Tool;
@@ -19,16 +20,17 @@ export interface StoreState {
 }
 
 export const initialState: StoreState = {
-  studio: null, undo: [], redo: [], selection: null, hoverNet: null, highlight: null, tool: 'select',
+  studio: null, undo: [], redo: [], selection: null, selectionSource: 'canvas', hoverNet: null, highlight: null, tool: 'select',
   wireStart: null, busy: false, error: null, notice: null,
 };
 
 export type Action =
   | { type: 'loaded'; studio: StudioState; notice?: string }
+  | { type: 'refreshed'; studio: StudioState }
   | { type: 'edited'; studio: StudioState; previous: StudioDocument }
   | { type: 'undone'; studio: StudioState; current: StudioDocument }
   | { type: 'redone'; studio: StudioState; current: StudioDocument }
-  | { type: 'select'; selection: Selection }
+  | { type: 'select'; selection: Selection; source?: 'canvas' | 'panel' }
   | { type: 'hoverNet'; net: string | null }
   | { type: 'highlight'; highlight: Highlight | null }
   | { type: 'tool'; tool: Tool }
@@ -52,6 +54,8 @@ export function reducer(s: StoreState, a: Action): StoreState {
   switch (a.type) {
     case 'loaded':
       return { ...s, studio: a.studio, undo: [], redo: [], selection: null, highlight: null, wireStart: null, busy: false, error: null, notice: a.notice ?? null };
+    case 'refreshed':
+      return { ...s, studio: a.studio, busy: false, error: null, selection: keepSelection(s.selection, a.studio) };
     case 'edited': {
       const msg = a.studio.op_results.map(r => r.message).join(' · ') || null;
       return { ...s, studio: a.studio, undo: [...s.undo, a.previous].slice(-HISTORY), redo: [], busy: false, error: null,
@@ -64,7 +68,7 @@ export function reducer(s: StoreState, a: Action): StoreState {
       return { ...s, studio: a.studio, redo: s.redo.slice(0, -1), undo: [...s.undo, a.current], busy: false,
                selection: keepSelection(s.selection, a.studio), notice: 'Redone' };
     case 'select':
-      return { ...s, selection: a.selection };
+      return { ...s, selection: a.selection, selectionSource: a.source ?? 'canvas' };
     case 'hoverNet':
       return s.hoverNet === a.net ? s : { ...s, hoverNet: a.net };
     case 'highlight':
@@ -139,7 +143,19 @@ export function useStudio() {
     }
   }, []);
 
-  return { state, dispatch, load, applyOps, undo, redo };
+  /** Re-derive the state of the current document (e.g. to add the physical build) without touching history. */
+  const refresh = useCallback(async () => {
+    const current = ref.current.studio;
+    if (!current) return;
+    dispatch({ type: 'busy', busy: true });
+    try {
+      dispatch({ type: 'refreshed', studio: await api.state(current.document) });
+    } catch (e) {
+      dispatch({ type: 'error', error: message(e) });
+    }
+  }, []);
+
+  return { state, dispatch, load, applyOps, undo, redo, refresh };
 }
 
 export type Studio = ReturnType<typeof useStudio>;

@@ -4,7 +4,9 @@ Engineering ops (connectivity, parts, parameters) mutate the EngineeringDesignPr
 checked against the registry *before* they are applied: they may produce an electrically
 invalid design (that is what validation feedback is for), but never a structurally invalid
 one (unknown part types, unknown pins, dangling references). Presentation ops only touch the
-LayoutState. A batch of ops is atomic: any failure leaves the document unchanged.
+LayoutState (schematic) or the PhysicalLayoutState (breadboard build); physical moves are checked
+by the physical placement engine itself, so a move that would short two nets or collide is refused.
+A batch of ops is atomic: any failure leaves the document unchanged.
 """
 from __future__ import annotations
 
@@ -141,9 +143,36 @@ class AutoArrange(BaseModel):
     keep_locked: bool = False
 
 
+class PhysicalMove(BaseModel):
+    """Move a part on the breadboard (first pin to ``anchor``, e.g. "c12") or on the table (x, y mm)."""
+    op: Literal["physical_move"] = "physical_move"
+    instance_id: str
+    anchor: Optional[str] = None
+    x: Optional[float] = None
+    y: Optional[float] = None
+    rotation: Optional[int] = None
+    span: Optional[int] = None
+
+
+class PhysicalRotate(BaseModel):
+    op: Literal["physical_rotate"] = "physical_rotate"
+    instance_id: str
+
+
+class PhysicalAutoArrange(BaseModel):
+    op: Literal["physical_auto_arrange"] = "physical_auto_arrange"
+    keep_locked: bool = False
+
+
+class SetBreadboard(BaseModel):
+    op: Literal["set_breadboard"] = "set_breadboard"
+    board: Literal["auto", "half", "full"]
+
+
 EditOp = Annotated[Union[AddComponent, RemoveComponent, SetParameter, Connect, Disconnect, DeleteNet, RenameNet,
                          SetNetType, InsertPattern, SetDesignInfo, MoveComponent, RotateComponent, MirrorComponent,
-                         SetNetStyle, SetShowAllPins, AutoArrange, SetIntent], Field(discriminator="op")]
+                         SetNetStyle, SetShowAllPins, AutoArrange, SetIntent, PhysicalMove, PhysicalRotate,
+                         PhysicalAutoArrange, SetBreadboard], Field(discriminator="op")]
 
 
 class EditBatch(BaseModel):
@@ -265,6 +294,7 @@ def _apply_one(doc: StudioDocument, op, registry: ComponentRegistry) -> OpResult
                 d.logic.remove(rule)
                 dropped_rules.append(rule.rule_id)
         L.placements.pop(op.instance_id, None)
+        doc.physical.placements.pop(op.instance_id, None)
         msg = f"Removed {op.instance_id}"
         if removed_nets:
             msg += f"; nets left with one pin were deleted: {', '.join(removed_nets)}"
@@ -420,4 +450,93 @@ def _apply_one(doc: StudioDocument, op, registry: ComponentRegistry) -> OpResult
         L.placements = {k: v for k, v in L.placements.items() if op.keep_locked and v.locked}
         return OpResult(op=op.op, kind="presentation", message="Re-arranged the schematic")
 
+    if isinstance(op, (PhysicalMove, PhysicalRotate)):
+        return _physical_move(doc, op, registry)
+
+    if isinstance(op, PhysicalAutoArrange):
+        P = doc.physical
+        P.placements = {k: v for k, v in P.placements.items() if op.keep_locked and v.locked}
+        return OpResult(op=op.op, kind="presentation", message="Re-arranged the breadboard build")
+
+    if isinstance(op, SetBreadboard):
+        doc.physical.board = op.board
+        doc.physical.placements = {k: v for k, v in doc.physical.placements.items() if v.locked and v.anchor is None}
+        label = {"auto": "automatic size", "half": "half-size", "full": "full-size"}[op.board]
+        return OpResult(op=op.op, kind="presentation", message=f"Breadboard: {label}")
+
     raise EditError("EDIT_UNKNOWN_OP", f"Unsupported operation {getattr(op, 'op', op)}")
+
+
+# ── physical moves (validated by the physical placement engine) ───────────────
+
+def _project(doc: StudioDocument, registry: ComponentRegistry):
+    from physical import generate_physical
+    return generate_physical(doc.design, registry, doc.physical)
+
+
+def _physical_move(doc: StudioDocument, op, registry: ComponentRegistry) -> OpResult:
+    from physical.models import PhysicalPlacement
+    comp = _comp(doc, op.instance_id)
+    P = doc.physical
+    current = _project(doc, registry)
+    part = current.part(op.instance_id)
+    if part is None or part.mount == "virtual":
+        raise EditError("EDIT_NOT_PHYSICAL", f"{op.instance_id} ({comp.component_type}) has no physical form")
+    previous = dict(P.placements)
+    if not P.placements or op.instance_id not in P.placements:
+        # remember the current build so that other parts keep their positions
+        from physical import placements_from_physical
+        P.placements = placements_from_physical(current, P)
+        previous = dict(P.placements)
+    seq = max((p.seq for p in P.placements.values()), default=0) + 1
+
+    def attempt(pl: PhysicalPlacement) -> Tuple[bool, str]:
+        pl.seq = seq
+        P.placements[op.instance_id] = pl
+        proj = _project(doc, registry)
+        got = proj.part(op.instance_id)
+        why = next((n for n in (got.notes if got else []) if n.startswith("Requested placement")), "")
+        if got is None or why:
+            return False, why.split(": ", 1)[-1].rstrip(".") if why else "no legal position"
+        if pl.anchor is not None and got.anchor != pl.anchor:
+            return False, "no legal position there"
+        return True, ""
+
+    if isinstance(op, PhysicalRotate):
+        if part.mount == "offboard":
+            rot = (part.rotation + 90) % 360
+            ok, why = attempt(PhysicalPlacement(x=part.position[0], y=part.position[1], rotation=rot, locked=True))
+            if not ok:
+                P.placements = previous
+                raise EditError("EDIT_PHYSICAL_BLOCKED", f"Cannot rotate {op.instance_id}: {why}")
+            return OpResult(op=op.op, kind="presentation", message=f"Rotated {op.instance_id} to {rot}°")
+        steps = (90, 180, 270) if part.template == "two_lead" else (180,)
+        reasons = []
+        for d in steps:
+            rot = (part.rotation + d) % 360
+            ok, why = attempt(PhysicalPlacement(anchor=part.anchor, rotation=rot, span=part.span, locked=True))
+            if ok:
+                return OpResult(op=op.op, kind="presentation", message=f"Rotated {op.instance_id} on the breadboard")
+            reasons.append(why)
+        P.placements = previous
+        raise EditError("EDIT_PHYSICAL_BLOCKED", f"Cannot rotate {op.instance_id} in place: {reasons[0]}")
+
+    if part.mount == "offboard":
+        if op.x is None or op.y is None:
+            raise EditError("EDIT_BAD_POSITION", f"{op.instance_id} sits beside the board: give x and y (mm)")
+        rot = op.rotation if op.rotation is not None else part.rotation
+        ok, why = attempt(PhysicalPlacement(x=float(op.x), y=float(op.y), rotation=rot, locked=True))
+        if not ok:
+            P.placements = previous
+            raise EditError("EDIT_PHYSICAL_BLOCKED", f"Cannot move {op.instance_id} there: {why}")
+        return OpResult(op=op.op, kind="presentation", message=f"Moved {op.instance_id}")
+
+    if not op.anchor:
+        raise EditError("EDIT_BAD_POSITION", f"{op.instance_id} is on the breadboard: give the target hole (e.g. c12)")
+    rot = op.rotation if op.rotation is not None else part.rotation
+    span = op.span if op.span is not None else part.span
+    ok, why = attempt(PhysicalPlacement(anchor=op.anchor.strip(), rotation=rot, span=span, locked=True))
+    if not ok:
+        P.placements = previous
+        raise EditError("EDIT_PHYSICAL_BLOCKED", f"Cannot put {op.instance_id} at {op.anchor}: {why}")
+    return OpResult(op=op.op, kind="presentation", message=f"Moved {op.instance_id} to {op.anchor}")

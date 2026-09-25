@@ -38,6 +38,18 @@ This comprehensive audit examined the Illustration Engine repository with the fo
 | [23_functional_validator.md](./23_functional_validator.md) | Functional validator | F001–F011 / F101–F106, confidence boundaries, tests |
 | [24_functional_verification.md](./24_functional_verification.md) | Functional verification | Offline results, live Gemini runs reviewed by hand, defects found and fixed, limitations |
 | [25_release_checkpoint.md](./25_release_checkpoint.md) | Release checkpoint | Milestone frozen in Git: verified tests, commit, tag, push |
+| [26_3d_physical_architecture.md](./26_3d_physical_architecture.md) | Physical / 3D architecture | Reconnaissance of the 3D prototype, RETAIN/REFACTOR/REPLACE/DEFER, architecture |
+| [27_physical_ir.md](./27_physical_ir.md) | Physical IR | Parts, pins, holes, leads, wires, traceability, presentation state |
+| [28_physical_layout_engine.md](./28_physical_layout_engine.md) | Physical layout engine | Rails, deterministic placement, capacity-aware wiring, validated moves |
+| [29_breadboard_system.md](./29_breadboard_system.md) | Breadboard & physical data | Board model and connectivity, package templates, per-part data with sources |
+| [30_3d_studio.md](./30_3d_studio.md) | 3D Studio | Physical 3D view, Assembly tab, shared selection, procedural assets, performance |
+| [31_physical_verification.md](./31_physical_verification.md) | Physical verification | P001–P010 / P101–P105, independence, fault injection |
+| [32_3d_verification.md](./32_3d_verification.md) | Physical stage verification | Test results, reference builds, live NL → physical runs, defects, limitations |
+| [33_product_visual_refinement_plan.md](./33_product_visual_refinement_plan.md) | Refinement plan | GREEN verification, reference-image analysis, diagnosis, decisions |
+| [34_ui_ux_decisions.md](./34_ui_ux_decisions.md) | UI / UX decisions | Design tokens, layout, one-design-two-views interaction model |
+| [35_2d_3d_refinement.md](./35_2d_3d_refinement.md) | 2D / 3D refinement | Schematic presentation and locate; 3D lighting, printed board, arched wires, focus |
+| [36_library_assistant_checks.md](./36_library_assistant_checks.md) | Library, assistant, checks | Data-driven library + building blocks, AI process checklist, checks hub, inspector |
+| [37_refinement_verification.md](./37_refinement_verification.md) | Refinement verification | Tests before/after, new unit and browser tests, invariants |
 | [00_master_audit.md](./00_master_audit.md) | Master Audit Index | This consolidated index and summary |
 
 ## Key Findings Summary
@@ -220,4 +232,67 @@ reports 14–24, `.gitignore`), followed by the README/checkpoint documentation 
 of the GitHub repository's initial commit. Verified at freeze time: 460 Python passed / 5 opt-in
 skipped, 13 frontend, `tsc` clean, browser E2E 16/16. The next major stage is the Physical / 3D
 Electronics Studio; it has not been started.
+
+## Stage update: Physical / 3D Electronics Studio, first vertical slice (2026-09-25)
+
+Built on top of the frozen milestone `v0.2.0-2d-studio` (no Git operations in this stage; the
+changes are uncommitted in the working tree for the owner to review).
+
+### What changed
+```
+Engineering Design ──► Schematic projection ──► schematic LVS ──► 2D Studio
+                   └─► Physical projection  ──► physical verification ──► 3D Studio (Physical 3D + Assembly)
+```
+* `src/physical/`: breadboard model with real connectivity (strips, rails, trench), footprint
+  resolution from registry + `data/physical/*.yaml` (package templates and per-part data with a
+  recorded source), deterministic placement (a strip or rail carries at most one net, so placement
+  cannot short), capacity-aware jumper wiring, assembly steps, and an **independent physical
+  verification** (P001–P010 errors, P101–P105 warnings/infos).
+* Studio: `StudioDocument.physical` (placements only), `StudioState.physical` computed on request,
+  ops `physical_move / physical_rotate / physical_auto_arrange / set_breadboard` validated by the
+  placement engine, CLI `physical build | verify | steps`.
+* Frontend: lazy Physical 3D view (react-three-fiber), procedural kind-keyed assets sized from real
+  dimensions, shared engineering selection with the schematic, drag-to-hole moves, Inspector physical
+  section, Assembly tab with verification and build steps.
+* The old frontend-only 3D prototype (hardcoded to one project) was replaced, not deleted (report 26).
+
+### Key numbers
+* Tests: 513 Python passed / 5 opt-in skipped (baseline 460 / 5), 24 frontend, tsc clean, browser
+  E2E 23/23 (16 + 7 physical, real WebGL via SwiftShader).
+* All 10 physical reference designs build on a half-size board and match their netlists (0 errors);
+  2 primitive-only designs are correctly "no physical form". 41–175 ms per projection.
+* Physical data: all 69 physical registry types resolve (53 breadboard-insertable, 16 off-board;
+  4 datasheet / 28 standard / 29 typical / 8 assumed; 0 generic fallbacks).
+* Live Gemini: "temperature alarm using an LM35, a comparator, a transistor and a buzzer" and a 555
+  blinker went NL → electrical PASS → functional PASS → schematic LVS → physical build verified;
+  both builds checked by hand.
+
+### Invariants preserved
+The engineering design is the only connectivity truth; schematic and physical are projections with
+full traceability and their own LVS; the AI never produces coordinates; the UI never changes
+connectivity outside engineering ops; provider abstraction unchanged; no API key in any file.
+
+### Top remaining gaps
+Physical data is partly "typical"/"assumed" (flagged); single breadboard only; automatic wiring
+only; procedural (not photorealistic) models; no simulation; no multi-board or perfboard layouts;
+legacy prototype files left in place for the owner to remove.
+
+## Stage update: Product / visual refinement (2026-09-25)
+
+GREEN verified first (report 33): 513 Python passed / 5 skipped, all reference designs electrically
+PASS and schematic-LVS OK, physical builds verified, 24 frontend tests, tsc clean, browser E2E 23/23.
+
+Frontend-only stage (no file under `src/` or `data/` changed): one dark engineering workspace with
+design tokens; a top bar with the project, clickable health pills and a centred
+**Schematic | Physical 3D** switch; a floating canvas toolbar shared by both views; a data-driven
+library with search, filters, categories, part detail cards and **building blocks** (design patterns
+inserted with the existing op); the AI Assistant as a visible process (phases derived from real job
+events, verdicts taken from the deterministic result); a Checks hub for electrical, functional and
+physical verification with assumptions and "not checkable"; an Inspector with per-part checks and
+**locate in schematic / 3D**; a polished 3D scene (studio lighting, printed breadboard, arched
+jumpers pinned to the IR endpoints, hover, labels toggle) whose camera follows selections made
+elsewhere.
+
+After: 513 Python passed / 5 skipped (unchanged), 38 frontend tests, tsc clean, browser E2E 28/28
+(23 adapted + 5 new; the known flaky step fixed). Details in reports 34–37.
 
